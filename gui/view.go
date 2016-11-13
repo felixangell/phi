@@ -1,4 +1,4 @@
-package editor
+package gui
 
 type View struct {
 	
