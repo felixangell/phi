@@ -12,22 +12,24 @@ type NateEditor struct {
 	surface *sdl.Surface
 	running bool
     panels []*gui.Panel
+    input_handler *gui.InputHandler
 }
 
 func (n *NateEditor) init() {
     // setup a default panel
-    testPanel := gui.NewPanel()
+    testPanel := gui.NewPanel(n.input_handler)
     testPanel.AddComponent(gui.NewBuffer())
     n.panels = append(n.panels, testPanel)
 }
 
 func (n *NateEditor) update() {
-	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		switch t := event.(type) {
+	n.input_handler.Event = nil
+    for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+		switch event.(type) {
 		case *sdl.QuitEvent:
 			n.running = false
 		case *sdl.TextInputEvent:
-			fmt.Println("todo, text input", t)
+            n.input_handler.Event = event
 		}
 	}
 
@@ -69,7 +71,7 @@ func main() {
         panic(err)
     }
 
-    editor := &NateEditor{window: window, surface: surface, running: true}
+    editor := &NateEditor{window: window, surface: surface, running: true, input_handler: &gui.InputHandler{}}
     editor.init()
 
     timer := sdl.GetTicks()

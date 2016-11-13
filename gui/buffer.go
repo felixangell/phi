@@ -4,6 +4,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/sdl_ttf"
 	"github.com/vinzmay/go-rope"
+	"unicode/utf8"
 )
 
 type Cursor struct {
@@ -11,11 +12,26 @@ type Cursor struct {
 	rx, ry int32
 }
 
+func (c *Cursor) move(x, y int32) {
+	c.move_render(x, y, x, y)
+}
+
+// moves the cursors position, and the
+// rendered coordinates by the given amount
+func (c *Cursor) move_render(x, y, rx, ry int32) {
+	c.x += x
+	c.y += y
+
+	c.rx += rx
+	c.ry += ry
+}
+
 type Buffer struct {
 	x, y int
 	font *ttf.Font
 	contents []*rope.Rope
 	curs *Cursor
+	input_handler *InputHandler
 }
 
 func NewBuffer() *Buffer {
@@ -29,16 +45,40 @@ func NewBuffer() *Buffer {
 		font: font,
 		curs: &Cursor{},
 	}
-	buff.appendLine("Hello, World!\nHello!")
+	buff.appendLine("This is a test.")
 	return buff
+}
+
+func (b *Buffer) SetInputHandler(i *InputHandler) {
+	b.input_handler = i
+}
+
+func (b *Buffer) GetInputHandler() *InputHandler {
+	return b.input_handler
 }
 
 func (b *Buffer) appendLine(val string) {
 	b.contents = append(b.contents, rope.New(val))
+	b.curs.move(int32(len(val)), 0)
+}
+
+func (b *Buffer) processTextInput(t *sdl.TextInputEvent) {
+	raw_val, _ := utf8.DecodeLastRune(t.Text[0:1])
+	if raw_val == utf8.RuneError {
+		return
+	}
+
+	b.contents[b.curs.y] = b.contents[b.curs.y].Concat(rope.New(string(raw_val)))
+	b.curs.move(1, 0)
 }
 
 func (b *Buffer) Update() {
-
+	if b.input_handler.Event != nil {
+		switch t := b.input_handler.Event.(type) {
+		case *sdl.TextInputEvent:
+			b.processTextInput(t)
+		}
+	}
 }
 
 var last_w, last_h int32

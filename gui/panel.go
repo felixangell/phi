@@ -6,16 +6,27 @@ import (
 
 type Panel struct {
 	components []Component
+	input_handler *InputHandler
 }
 
-func NewPanel() *Panel {
+func NewPanel(input *InputHandler) *Panel {
 	return &Panel{
 		components: []Component{},
+		input_handler: input,
 	}
 }
 
 func (p *Panel) AddComponent(c Component) {
 	p.components = append(p.components, c)
+	c.SetInputHandler(p.input_handler)
+}
+
+func (p *Panel) SetInputHandler(i *InputHandler) {
+	p.input_handler = i
+}
+
+func (p *Panel) GetInputHandler() *InputHandler {
+	return p.input_handler
 }
 
 func (p *Panel) Update() {
