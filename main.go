@@ -68,8 +68,29 @@ func main() {
     editor := &NateEditor{window: window, surface: surface, running: true}
     editor.init()
 
+    timer := sdl.GetTicks()
+    var tick_interval uint32 = 20
+    num_frames := 0
+    frame_idx := sdl.GetTicks() / tick_interval
+    simulate := true
+
     for editor.running {
-    	editor.update()
+        if sdl.GetTicks() / tick_interval > frame_idx {
+            frame_idx = sdl.GetTicks() / tick_interval
+            simulate = true
+        }
+
+    	if simulate {
+            editor.update()
+        }
+
     	editor.render()
+        num_frames += 1
+
+        if sdl.GetTicks() - timer > 1000 {
+            timer = sdl.GetTicks()
+            fmt.Println("frames: ", num_frames)
+            num_frames = 0
+        }
     }
 }
