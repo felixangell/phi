@@ -37,9 +37,13 @@ func (n *NateEditor) update() {
 }
 
 func (n *NateEditor) render() {
+    w, h := n.window.GetSize()
+    n.surface.FillRect(&sdl.Rect{0, 0, int32(w), int32(h)}, 0xffffff)
+
     for _, panel := range n.panels {
         panel.Render(n.surface)
     }
+
     n.window.UpdateSurface()
 }
 
