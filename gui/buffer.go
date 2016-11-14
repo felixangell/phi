@@ -120,6 +120,25 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 		if b.curs.x > 0 {
 			b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
 			b.curs.move(-1, 0)
+		} else if b.curs.x == 0 && b.curs.y > 0 {
+			// start of line, wrap to previous 
+			// two cases here:
+			
+			// the line_len is zero, in which case
+			// we delete the line and go to the end
+			// of the previous line
+			if b.contents[b.curs.y].Len() == 0 {
+				b.curs.move(b.contents[b.curs.y - 1].Len(), -1)
+				b.contents = b.contents[:len(b.contents) - 1]
+				return
+			}
+
+			// or, the line has characters, so we join
+			// that line with the previous line
+			prev_line_len := b.contents[b.curs.y - 1].Len()
+			b.contents[b.curs.y - 1] = b.contents[b.curs.y - 1].Concat(b.contents[b.curs.y])
+			b.curs.move(prev_line_len, -1)
+			b.contents = b.contents[:len(b.contents) - 1]
 		}
 	case sdl.SCANCODE_RIGHT:
 		curr_line_length := b.contents[b.curs.y].Len()
@@ -139,6 +158,8 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 		} else if (b.curs.x > 0) {
 			b.curs.move(-1, 0)
 		}
+	case sdl.SCANCODE_TAB:
+		// TODO
 	}
 }
 
@@ -212,6 +233,9 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 			case '\n':
 				x_col = 0
 				y_col += 1
+				continue
+			case '\t':
+				x_col += b.cfg.Editor.Tab_Size
 				continue
 			}
 

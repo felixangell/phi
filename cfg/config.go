@@ -6,6 +6,7 @@ type TomlConfig struct {
 
 type EditorConfig struct {
 	Aliased bool
+	Tab_Size int32
 }
 
 func NewDefaultConfig() *TomlConfig {

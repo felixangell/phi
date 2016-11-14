@@ -36,6 +36,6 @@ func Setup() TomlConfig {
 	}
 
 	fmt.Println("Loaded '" + CONFIG_PATH + "'.")
-	fmt.Println("\taliased: ", conf.Editor.Aliased)
+	fmt.Println(conf)
 	return conf
 }
