@@ -26,6 +26,18 @@ func (c *Cursor) move_render(x, y, rx, ry int) {
 	c.ry += ry
 }
 
+const (
+	cursor_flash_ms uint32 = 400
+	reset_delay_ms uint32 = 400
+)
+
+var (
+	should_draw bool = false
+	should_flash bool = true
+	timer uint32 = 0
+	reset_timer uint32 = 0
+)
+
 type Buffer struct {
 	x, y int
 	font *ttf.Font
@@ -89,6 +101,9 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 }
 
 func (b *Buffer) Update() {
+	prev_x := b.curs.x
+	prev_y := b.curs.y
+
 	if b.input_handler.Event != nil {
 		switch t := b.input_handler.Event.(type) {
 		case *sdl.TextInputEvent:
@@ -97,19 +112,36 @@ func (b *Buffer) Update() {
 			b.processActionKey(t)
 		}
 	}
+
+	if b.curs.x != prev_x || b.curs.y != prev_y {
+		should_draw = true
+		should_flash = false
+		reset_timer = sdl.GetTicks()
+	}
+
+	if !should_flash && sdl.GetTicks() - reset_timer > reset_delay_ms {
+		should_flash = true
+	}
+
+	if sdl.GetTicks() - timer > cursor_flash_ms && should_flash {
+		timer = sdl.GetTicks()
+		should_draw = !should_draw
+	}
 }
 
 var last_w, last_h int32
 func (b *Buffer) Render(ctx *sdl.Renderer) {
 
 	// render the ol' cursor
-	ctx.SetDrawColor(255, 0, 255, 255)
-	ctx.FillRect(&sdl.Rect{
-		(int32(b.curs.rx) + 1) * last_w, 
-		int32(b.curs.ry) * last_h, 
-		last_w, 
-		last_h,
-	})
+	if (should_draw) {
+		ctx.SetDrawColor(255, 0, 255, 255)
+		ctx.FillRect(&sdl.Rect{
+			(int32(b.curs.rx) + 1) * last_w, 
+			int32(b.curs.ry) * last_h, 
+			last_w, 
+			last_h,
+		})
+	}
 
 	var y_col int32
 	for _, rope := range b.contents {
