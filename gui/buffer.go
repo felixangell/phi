@@ -4,6 +4,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/sdl_ttf"
 	"github.com/vinzmay/go-rope"
+	"github.com/felixangell/nate/gfx"
 	"unicode/utf8"
 )
 
@@ -134,7 +135,7 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 
 	// render the ol' cursor
 	if (should_draw) {
-		ctx.SetDrawColor(255, 0, 255, 255)
+		gfx.SetDrawColorHex(ctx, 0x657B83)
 		ctx.FillRect(&sdl.Rect{
 			(int32(b.curs.rx) + 1) * last_w, 
 			int32(b.curs.ry) * last_h, 
@@ -157,7 +158,7 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 
 			x_col += 1
 
-			text, err := b.font.RenderUTF8_Solid(string(char), sdl.Color{0, 0, 0, 255})
+			text, err := b.font.RenderUTF8_Solid(string(char), gfx.HexColor(0x7a7a7a))
 			if err != nil {
 				continue
 			}

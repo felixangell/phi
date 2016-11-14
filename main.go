@@ -4,7 +4,8 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
     "github.com/veandco/go-sdl2/sdl_ttf"
 	"github.com/felixangell/nate/gui"
-	"fmt"
+	"github.com/felixangell/nate/gfx"
+    "fmt"
 )
 
 const (
@@ -45,7 +46,7 @@ func (n *NateEditor) update() {
 }
 
 func (n *NateEditor) render() {
-    n.renderer.SetDrawColor(255, 255, 255, 255)
+    gfx.SetDrawColorHex(n.renderer, 0xfdf6e3)
     n.renderer.Clear()
 
     for _, panel := range n.panels {
