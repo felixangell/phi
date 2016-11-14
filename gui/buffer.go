@@ -5,20 +5,21 @@ import (
 	"github.com/veandco/go-sdl2/sdl_ttf"
 	"github.com/vinzmay/go-rope"
 	"unicode/utf8"
+	"fmt"
 )
 
 type Cursor struct {
-	x, y int32
-	rx, ry int32
+	x, y int
+	rx, ry int
 }
 
-func (c *Cursor) move(x, y int32) {
+func (c *Cursor) move(x, y int) {
 	c.move_render(x, y, x, y)
 }
 
 // moves the cursors position, and the
 // rendered coordinates by the given amount
-func (c *Cursor) move_render(x, y, rx, ry int32) {
+func (c *Cursor) move_render(x, y, rx, ry int) {
 	c.x += x
 	c.y += y
 
@@ -59,17 +60,31 @@ func (b *Buffer) GetInputHandler() *InputHandler {
 
 func (b *Buffer) appendLine(val string) {
 	b.contents = append(b.contents, rope.New(val))
-	b.curs.move(int32(len(val)), 0)
+	b.curs.move(len(val), 0)
 }
 
 func (b *Buffer) processTextInput(t *sdl.TextInputEvent) {
-	raw_val, _ := utf8.DecodeLastRune(t.Text[0:1])
-	if raw_val == utf8.RuneError {
+	// how the fuck do we decode a 32 byte array of junk?
+
+	raw_val, size := utf8.DecodeLastRune(t.Text[1:5])
+	if raw_val == utf8.RuneError || size == 0 {
 		return
 	}
 
-	b.contents[b.curs.y] = b.contents[b.curs.y].Concat(rope.New(string(raw_val)))
+	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(raw_val))
 	b.curs.move(1, 0)
+}
+
+func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
+	switch t.Keysym.Scancode {
+	case sdl.SCANCODE_RETURN:
+		line_len := -b.contents[b.curs.y].Len()
+		fmt.Println(line_len, " is the line len bitch")
+		b.curs.move(line_len, 1)
+		b.contents = append(b.contents, rope.New(" "))
+	case sdl.SCANCODE_BACKSPACE:
+		b.curs.move(-1, 0)
+	}
 }
 
 func (b *Buffer) Update() {
@@ -77,6 +92,8 @@ func (b *Buffer) Update() {
 		switch t := b.input_handler.Event.(type) {
 		case *sdl.TextInputEvent:
 			b.processTextInput(t)
+		case *sdl.KeyDownEvent:
+			b.processActionKey(t)
 		}
 	}
 }
@@ -86,8 +103,8 @@ func (b *Buffer) Render(ctx *sdl.Surface) {
 
 	// render the ol' cursor
 	ctx.FillRect(&sdl.Rect{
-		(b.curs.rx + 1) * last_w, 
-		b.curs.ry * last_h, 
+		(int32(b.curs.rx) + 1) * last_w, 
+		int32(b.curs.ry) * last_h, 
 		last_w, 
 		last_h,
 	}, 0xff00ff)
@@ -106,7 +123,11 @@ func (b *Buffer) Render(ctx *sdl.Surface) {
 
 			x_col += 1
 
-			text, _ := b.font.RenderUTF8_Solid(string(char), sdl.Color{0, 0, 0, 255})
+			text, err := b.font.RenderUTF8_Solid(string(char), sdl.Color{0, 0, 0, 255})
+			if err != nil {
+				continue
+			}
+
 			last_w = text.W
 			last_h = text.H
 
@@ -118,5 +139,7 @@ func (b *Buffer) Render(ctx *sdl.Surface) {
 				text.H,
 			})
 		}
+
+		y_col += 1
 	}
 }

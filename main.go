@@ -25,7 +25,9 @@ func (n *NateEditor) init() {
 func (n *NateEditor) update() {
 	n.input_handler.Event = nil
     for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		switch event.(type) {
+		n.input_handler.Event = event
+        
+        switch event.(type) {
 		case *sdl.QuitEvent:
 			n.running = false
 		case *sdl.TextInputEvent:
