@@ -5,13 +5,13 @@ import (
 )
 
 type Panel struct {
-	components []Component
+	components    []Component
 	input_handler *InputHandler
 }
 
 func NewPanel(input *InputHandler) *Panel {
 	return &Panel{
-		components: []Component{},
+		components:    []Component{},
 		input_handler: input,
 	}
 }

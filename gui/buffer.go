@@ -1,15 +1,16 @@
 package gui
 
 import (
+	"github.com/felixangell/nate/cfg"
+	"github.com/felixangell/nate/gfx"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/sdl_ttf"
 	"github.com/vinzmay/go-rope"
-	"github.com/felixangell/nate/gfx"
 	"unicode/utf8"
 )
 
 type Cursor struct {
-	x, y int
+	x, y   int
 	rx, ry int
 }
 
@@ -29,25 +30,26 @@ func (c *Cursor) move_render(x, y, rx, ry int) {
 
 const (
 	cursor_flash_ms uint32 = 400
-	reset_delay_ms uint32 = 400
+	reset_delay_ms  uint32 = 400
 )
 
 var (
-	should_draw bool = false
-	should_flash bool = true
-	timer uint32 = 0
-	reset_timer uint32 = 0
+	should_draw  bool   = false
+	should_flash bool   = true
+	timer        uint32 = 0
+	reset_timer  uint32 = 0
 )
 
 type Buffer struct {
-	x, y int
-	font *ttf.Font
-	contents []*rope.Rope
-	curs *Cursor
+	x, y          int
+	font          *ttf.Font
+	contents      []*rope.Rope
+	curs          *Cursor
 	input_handler *InputHandler
+	cfg           *cfg.Config
 }
 
-func NewBuffer() *Buffer {
+func NewBuffer(conf *cfg.Config) *Buffer {
 	font, err := ttf.OpenFont("./res/firacode.ttf", 24)
 	if err != nil {
 		panic(err)
@@ -55,8 +57,9 @@ func NewBuffer() *Buffer {
 
 	buff := &Buffer{
 		contents: []*rope.Rope{},
-		font: font,
-		curs: &Cursor{},
+		font:     font,
+		curs:     &Cursor{},
+		cfg:      conf,
 	}
 	buff.appendLine("This is a test.")
 	return buff
@@ -94,11 +97,28 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 		b.curs.move(line_len, 1)
 		b.contents = append(b.contents, rope.New(" "))
 	case sdl.SCANCODE_BACKSPACE:
-		if (b.curs.x > 0) {
+		if b.curs.x > 0 {
 			b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
 			b.curs.move(-1, 0)
 		}
 	}
+}
+
+func renderString(font *ttf.Font, val string, col sdl.Color, smooth bool) *sdl.Surface {
+	if smooth {
+		text, err := font.RenderUTF8_Blended(val, col)
+		if err != nil {
+			panic(err)
+		}
+		return text
+	} else {
+		text, err := font.RenderUTF8_Solid(val, col)
+		if err != nil {
+			panic(err)
+		}
+		return text
+	}
+	return nil
 }
 
 func (b *Buffer) Update() {
@@ -120,33 +140,34 @@ func (b *Buffer) Update() {
 		reset_timer = sdl.GetTicks()
 	}
 
-	if !should_flash && sdl.GetTicks() - reset_timer > reset_delay_ms {
+	if !should_flash && sdl.GetTicks()-reset_timer > reset_delay_ms {
 		should_flash = true
 	}
 
-	if sdl.GetTicks() - timer > cursor_flash_ms && should_flash {
+	if sdl.GetTicks()-timer > cursor_flash_ms && should_flash {
 		timer = sdl.GetTicks()
 		should_draw = !should_draw
 	}
 }
 
 var last_w, last_h int32
+
 func (b *Buffer) Render(ctx *sdl.Renderer) {
 
 	// render the ol' cursor
-	if (should_draw) {
+	if should_draw {
 		gfx.SetDrawColorHex(ctx, 0x657B83)
 		ctx.FillRect(&sdl.Rect{
-			(int32(b.curs.rx) + 1) * last_w, 
-			int32(b.curs.ry) * last_h, 
-			last_w, 
+			(int32(b.curs.rx) + 1) * last_w,
+			int32(b.curs.ry) * last_h,
+			last_w,
 			last_h,
 		})
 	}
 
 	var y_col int32
 	for _, rope := range b.contents {
-		
+
 		var x_col int32
 		for _, char := range rope.String() {
 			switch char {
@@ -158,23 +179,20 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 
 			x_col += 1
 
-			text, err := b.font.RenderUTF8_Solid(string(char), gfx.HexColor(0x7a7a7a))
-			if err != nil {
-				continue
-			}
+			text := renderString(b.font, string(char), gfx.HexColor(0x7a7a7a), b.cfg.Aliased)
 			defer text.Free()
 
 			last_w = text.W
 			last_h = text.H
 
 			// FIXME very slow
-			texture, err := ctx.CreateTextureFromSurface(text)
+			texture, _ := ctx.CreateTextureFromSurface(text)
 			defer texture.Destroy()
 
 			ctx.Copy(texture, nil, &sdl.Rect{
-				(x_col * text.W), 
-				(y_col * text.H), 
-				text.W, 
+				(x_col * text.W),
+				(y_col * text.H),
+				text.W,
 				text.H,
 			})
 		}
