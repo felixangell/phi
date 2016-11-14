@@ -99,15 +99,16 @@ func (b *Buffer) Update() {
 }
 
 var last_w, last_h int32
-func (b *Buffer) Render(ctx *sdl.Surface) {
+func (b *Buffer) Render(ctx *sdl.Renderer) {
 
 	// render the ol' cursor
+	ctx.SetDrawColor(255, 0, 255, 255)
 	ctx.FillRect(&sdl.Rect{
 		(int32(b.curs.rx) + 1) * last_w, 
 		int32(b.curs.ry) * last_h, 
 		last_w, 
 		last_h,
-	}, 0xff00ff)
+	})
 
 	var y_col int32
 	for _, rope := range b.contents {
@@ -127,12 +128,16 @@ func (b *Buffer) Render(ctx *sdl.Surface) {
 			if err != nil {
 				continue
 			}
+			defer text.Free()
 
 			last_w = text.W
 			last_h = text.H
 
-			defer text.Free()
-			text.Blit(nil, ctx, &sdl.Rect{
+			// FIXME very slow
+			texture, err := ctx.CreateTextureFromSurface(text)
+			defer texture.Destroy()
+
+			ctx.Copy(texture, nil, &sdl.Rect{
 				(x_col * text.W), 
 				(y_col * text.H), 
 				text.W, 

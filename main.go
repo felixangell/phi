@@ -7,9 +7,13 @@ import (
 	"fmt"
 )
 
+const (
+    PRINT_FPS bool = false
+)
+
 type NateEditor struct {
 	window *sdl.Window
-	surface *sdl.Surface
+	renderer *sdl.Renderer
 	running bool
     panels []*gui.Panel
     input_handler *gui.InputHandler
@@ -41,14 +45,14 @@ func (n *NateEditor) update() {
 }
 
 func (n *NateEditor) render() {
-    w, h := n.window.GetSize()
-    n.surface.FillRect(&sdl.Rect{0, 0, int32(w), int32(h)}, 0xffffff)
+    n.renderer.SetDrawColor(255, 255, 255, 255)
+    n.renderer.Clear()
 
     for _, panel := range n.panels {
-        panel.Render(n.surface)
+        panel.Render(n.renderer)
     }
 
-    n.window.UpdateSurface()
+    n.renderer.Present()
 }
 
 func main() {
@@ -68,37 +72,31 @@ func main() {
     }
     defer window.Destroy()
 
-    surface, err := window.GetSurface()
+    renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
     if err != nil {
         panic(err)
     }
+    defer renderer.Destroy()
 
-    editor := &NateEditor{window: window, surface: surface, running: true, input_handler: &gui.InputHandler{}}
+    editor := &NateEditor{window: window, renderer: renderer, running: true, input_handler: &gui.InputHandler{}}
     editor.init()
 
     timer := sdl.GetTicks()
-    var tick_interval uint32 = 20
     num_frames := 0
-    frame_idx := sdl.GetTicks() / tick_interval
-    simulate := true
 
     for editor.running {
-        if sdl.GetTicks() / tick_interval > frame_idx {
-            frame_idx = sdl.GetTicks() / tick_interval
-            simulate = true
-        }
-
-    	if simulate {
-            editor.update()
-        }
-
+        editor.update()
     	editor.render()
         num_frames += 1
 
         if sdl.GetTicks() - timer > 1000 {
             timer = sdl.GetTicks()
-            fmt.Println("frames: ", num_frames)
+            if (PRINT_FPS) {
+                fmt.Println("frames: ", num_frames)
+            }
             num_frames = 0
         }
+
+        sdl.Delay(2)
     }
 }

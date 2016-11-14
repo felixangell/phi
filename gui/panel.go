@@ -35,7 +35,7 @@ func (p *Panel) Update() {
 	}
 }
 
-func (p *Panel) Render(ctx *sdl.Surface) {
+func (p *Panel) Render(ctx *sdl.Renderer) {
 	for _, c := range p.components {
 		c.Render(ctx)
 	}

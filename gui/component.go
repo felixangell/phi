@@ -6,7 +6,7 @@ import (
 
 type Component interface {
 	Update()
-	Render(*sdl.Surface)
+	Render(*sdl.Renderer)
 	
 	GetInputHandler() *InputHandler
 	SetInputHandler(h *InputHandler)
