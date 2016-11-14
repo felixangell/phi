@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	PRINT_FPS bool = false
+	PRINT_FPS bool = true
 )
 
 type NateEditor struct {
@@ -101,6 +101,6 @@ func main() {
 			num_frames = 0
 		}
 
-		sdl.Delay(2)
+        sdl.Delay(16);
 	}
 }

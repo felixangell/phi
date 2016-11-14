@@ -93,12 +93,50 @@ func (b *Buffer) processTextInput(t *sdl.TextInputEvent) {
 func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 	switch t.Keysym.Scancode {
 	case sdl.SCANCODE_RETURN:
-		line_len := -b.contents[b.curs.y].Len()
-		b.curs.move(line_len, 1)
-		b.contents = append(b.contents, rope.New(" "))
+		initial_x := b.curs.x
+		prev_line_len := b.contents[b.curs.y].Len()
+
+		var new_rope *rope.Rope
+		if initial_x < prev_line_len && initial_x > 0 {
+			left, right := b.contents[b.curs.y].Split(initial_x)
+			new_rope = right
+			b.contents[b.curs.y] = left
+		} else if initial_x == 0 {
+			b.contents = append(b.contents, new(rope.Rope))			// grow
+			copy(b.contents[b.curs.y + 1:], b.contents[b.curs.y:])	// shift
+			b.contents[b.curs.y] = rope.New(" ")					// set
+			b.curs.move(0, 1)
+			return
+		} else {
+			new_rope = rope.New(" ")
+		}
+
+		b.curs.move(0, 1)
+		for x := 0; x < initial_x; x++ {
+			b.curs.move(-1, 0)
+		}
+		b.contents = append(b.contents, new_rope)
 	case sdl.SCANCODE_BACKSPACE:
 		if b.curs.x > 0 {
 			b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
+			b.curs.move(-1, 0)
+		}
+	case sdl.SCANCODE_RIGHT:
+		curr_line_length := b.contents[b.curs.y].Len()
+		if (b.curs.x >= curr_line_length && b.curs.y < len(b.contents) - 1) {
+			// we're at the end of the line and we have
+			// some lines after, let's wrap around
+			b.curs.move(0, 1)
+			b.curs.move(-curr_line_length, 0)
+		} else if (b.curs.x < b.contents[b.curs.y].Len()) {
+			// we have characters to the right, let's move along
+			b.curs.move(1, 0)
+		}
+	case sdl.SCANCODE_LEFT:
+		if (b.curs.x == 0 && b.curs.y > 0) {
+			b.curs.move(b.contents[b.curs.y - 1].Len(), -1)
+
+		} else if (b.curs.x > 0) {
 			b.curs.move(-1, 0)
 		}
 	}
