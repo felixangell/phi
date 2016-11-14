@@ -46,10 +46,10 @@ type Buffer struct {
 	contents      []*rope.Rope
 	curs          *Cursor
 	input_handler *InputHandler
-	cfg           *cfg.Config
+	cfg           *cfg.TomlConfig
 }
 
-func NewBuffer(conf *cfg.Config) *Buffer {
+func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 	font, err := ttf.OpenFont("./res/firacode.ttf", 24)
 	if err != nil {
 		panic(err)
@@ -179,7 +179,7 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 
 			x_col += 1
 
-			text := renderString(b.font, string(char), gfx.HexColor(0x7a7a7a), b.cfg.Aliased)
+			text := renderString(b.font, string(char), gfx.HexColor(0x7a7a7a), b.cfg.Editor.Aliased)
 			defer text.Free()
 
 			last_w = text.W

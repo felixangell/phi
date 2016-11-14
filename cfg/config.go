@@ -1,11 +1,17 @@
 package cfg
 
-type Config struct {
+type TomlConfig struct {
+	Editor EditorConfig `toml:"editor"`
+}
+
+type EditorConfig struct {
 	Aliased bool
 }
 
-func NewDefaultConfig() *Config {
-	return &Config{
-		Aliased: false,
+func NewDefaultConfig() *TomlConfig {
+	return &TomlConfig{
+		Editor: EditorConfig {
+			Aliased: false,
+		},
 	}
 }

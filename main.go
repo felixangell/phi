@@ -21,10 +21,10 @@ type NateEditor struct {
 	input_handler *gui.InputHandler
 }
 
-func (n *NateEditor) init() {
+func (n *NateEditor) init(cfg *cfg.TomlConfig) {
 	// setup a default panel
 	testPanel := gui.NewPanel(n.input_handler)
-	testPanel.AddComponent(gui.NewBuffer(cfg.NewDefaultConfig()))
+	testPanel.AddComponent(gui.NewBuffer(cfg))
 	n.panels = append(n.panels, testPanel)
 }
 
@@ -65,6 +65,8 @@ func main() {
 		panic(err)
 	}
 
+    config := cfg.Setup()
+
 	window, err := sdl.CreateWindow("Nate Editor",
 		sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
 		1280, 720,
@@ -81,7 +83,7 @@ func main() {
 	defer renderer.Destroy()
 
 	editor := &NateEditor{window: window, renderer: renderer, running: true, input_handler: &gui.InputHandler{}}
-	editor.init()
+	editor.init(&config)
 
 	timer := sdl.GetTicks()
 	num_frames := 0
