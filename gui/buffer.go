@@ -129,6 +129,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			// of the previous line
 			if b.contents[b.curs.y].Len() == 0 {
 				b.curs.move(b.contents[b.curs.y - 1].Len(), -1)
+				// FIXME, delete from the curs.y dont pop!
 				b.contents = b.contents[:len(b.contents) - 1]
 				return
 			}
@@ -138,6 +139,8 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			prev_line_len := b.contents[b.curs.y - 1].Len()
 			b.contents[b.curs.y - 1] = b.contents[b.curs.y - 1].Concat(b.contents[b.curs.y])
 			b.curs.move(prev_line_len, -1)
+
+			// FIXME delete from curs.y, not pop!
 			b.contents = b.contents[:len(b.contents) - 1]
 		}
 	case sdl.SCANCODE_RIGHT:
