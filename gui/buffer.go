@@ -5,7 +5,6 @@ import (
 	"github.com/veandco/go-sdl2/sdl_ttf"
 	"github.com/vinzmay/go-rope"
 	"unicode/utf8"
-	"fmt"
 )
 
 type Cursor struct {
@@ -79,11 +78,13 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 	switch t.Keysym.Scancode {
 	case sdl.SCANCODE_RETURN:
 		line_len := -b.contents[b.curs.y].Len()
-		fmt.Println(line_len, " is the line len bitch")
 		b.curs.move(line_len, 1)
 		b.contents = append(b.contents, rope.New(" "))
 	case sdl.SCANCODE_BACKSPACE:
-		b.curs.move(-1, 0)
+		if (b.curs.x > 0) {
+			b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
+			b.curs.move(-1, 0)
+		}
 	}
 }
 
