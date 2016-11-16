@@ -229,6 +229,10 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 	var y_col int32
 	for _, rope := range b.contents {
 
+		if rope.Len() == 0 {
+			continue
+		}
+
 		var x_col int32
 		for _, char := range rope.String() {
 			switch char {
