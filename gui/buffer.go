@@ -79,9 +79,8 @@ func (b *Buffer) appendLine(val string) {
 }
 
 func (b *Buffer) processTextInput(t *sdl.TextInputEvent) {
-	// how the fuck do we decode a 32 byte array of junk?
-
-	raw_val, size := utf8.DecodeLastRune(t.Text[1:5])
+	// TODO: how the fuck do decode this properly?
+	raw_val, size := utf8.DecodeLastRune(t.Text[:1])
 	if raw_val == utf8.RuneError || size == 0 {
 		return
 	}
