@@ -103,7 +103,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 		} else if initial_x == 0 {
 			b.contents = append(b.contents, new(rope.Rope))			// grow
 			copy(b.contents[b.curs.y + 1:], b.contents[b.curs.y:])	// shift
-			b.contents[b.curs.y] = rope.New(" ")					// set
+			b.contents[b.curs.y] = rope.New(" ")						// set
 			b.curs.move(0, 1)
 			return
 		} else {
@@ -228,7 +228,15 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 
 	var y_col int32
 	for _, rope := range b.contents {
-
+		// this is because if we had the following
+		// text input:
+		//
+		// Foo
+		// _			<-- underscore is a space!
+		// Blah
+		// and we delete that underscore... it causes
+		// a panic because there are no characters in 
+		// the empty string!
 		if rope.Len() == 0 {
 			continue
 		}

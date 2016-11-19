@@ -101,6 +101,6 @@ func main() {
 			num_frames = 0
 		}
 
-        sdl.Delay(16);
+        sdl.Delay(2);
 	}
 }
