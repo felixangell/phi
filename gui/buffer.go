@@ -1,12 +1,15 @@
 package gui
 
 import (
-	"github.com/felixangell/nate/cfg"
 	"github.com/felixangell/nate/gfx"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/sdl_ttf"
 	"github.com/vinzmay/go-rope"
 	"unicode/utf8"
+)
+
+const (
+	TAB_SIZE int32 = 4
 )
 
 type Cursor struct {
@@ -41,15 +44,14 @@ var (
 )
 
 type Buffer struct {
-	x, y          int
+	ComponentLocation
 	font          *ttf.Font
 	contents      []*rope.Rope
 	curs          *Cursor
 	input_handler *InputHandler
-	cfg           *cfg.TomlConfig
 }
 
-func NewBuffer(conf *cfg.TomlConfig) *Buffer {
+func NewBuffer() *Buffer {
 	font, err := ttf.OpenFont("./res/firacode.ttf", 24)
 	if err != nil {
 		panic(err)
@@ -59,11 +61,18 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 		contents: []*rope.Rope{},
 		font:     font,
 		curs:     &Cursor{},
-		cfg:      conf,
 	}
 	buff.appendLine("This is a test.")
 	return buff
 }
+
+func (b *Buffer) Init() {}
+
+func (b *Buffer) GetComponents() []Component {
+	return []Component{}
+}
+
+func (b *Buffer) AddComponent(c Component) {}
 
 func (b *Buffer) SetInputHandler(i *InputHandler) {
 	b.input_handler = i
@@ -182,9 +191,18 @@ func renderString(font *ttf.Font, val string, col sdl.Color, smooth bool) *sdl.S
 	return nil
 }
 
+func (b *Buffer) Translate(x, y int32) {
+	b.x += x
+	b.y += y
+}
+
 func (b *Buffer) Update() {
 	prev_x := b.curs.x
 	prev_y := b.curs.y
+
+	if b.input_handler == nil {
+		panic("fuck")
+	}
 
 	if b.input_handler.Event != nil {
 		switch t := b.input_handler.Event.(type) {
@@ -219,8 +237,8 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 	if should_draw {
 		gfx.SetDrawColorHex(ctx, 0x657B83)
 		ctx.FillRect(&sdl.Rect{
-			(int32(b.curs.rx) + 1) * last_w,
-			int32(b.curs.ry) * last_h,
+			b.x + (int32(b.curs.rx)+1)*last_w,
+			b.y + int32(b.curs.ry)*last_h,
 			last_w,
 			last_h,
 		})
@@ -250,7 +268,7 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 				y_col += 1
 				continue
 			case '\t':
-				x_col += b.cfg.Editor.Tab_Size
+				x_col += TAB_SIZE
 				continue
 			}
 
@@ -267,8 +285,8 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 			defer texture.Destroy()
 
 			ctx.Copy(texture, nil, &sdl.Rect{
-				(x_col * text.W),
-				(y_col * text.H),
+				b.x + (x_col * text.W),
+				b.y + (y_col * text.H),
 				text.W,
 				text.H,
 			})

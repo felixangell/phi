@@ -5,8 +5,18 @@ import (
 )
 
 type Panel struct {
+	ComponentLocation
+
 	components    []Component
 	input_handler *InputHandler
+}
+
+func (p *Panel) Translate(x, y int32) {
+	p.x += x
+	p.y += y
+	for _, c := range p.components {
+		c.Translate(x, y)
+	}
 }
 
 func NewPanel(input *InputHandler) *Panel {
@@ -16,7 +26,14 @@ func NewPanel(input *InputHandler) *Panel {
 	}
 }
 
+func (p *Panel) Init() {}
+
+func (p *Panel) GetComponents() []Component {
+	return p.components
+}
+
 func (p *Panel) AddComponent(c Component) {
+	c.Init()
 	p.components = append(p.components, c)
 	c.SetInputHandler(p.input_handler)
 }

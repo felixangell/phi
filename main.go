@@ -19,18 +19,41 @@ type NateEditor struct {
 	window        *sdl.Window
 	renderer      *sdl.Renderer
 	running       bool
-	panels        []*gui.Panel
+	bufferPanels  []*gui.Panel
 	input_handler *gui.InputHandler
 }
 
+func (n *NateEditor) addBuffer(c gui.Component) {
+	panel := gui.NewPanel(n.input_handler)
+	c.SetInputHandler(n.input_handler)
+	panel.AddComponent(c)
+	n.bufferPanels = append(n.bufferPanels, panel)
+
+	w, _ := n.window.GetSize()
+	bufferWidth := w / len(n.bufferPanels)
+	for i, p := range n.bufferPanels {
+		p.Translate(int32(bufferWidth)*int32(i), 0)
+	}
+}
+
 func (n *NateEditor) init(cfg *cfg.TomlConfig) {
-	// setup a default panel
-	testPanel := gui.NewPanel(n.input_handler)
-	testPanel.AddComponent(gui.NewBuffer(cfg))
-	n.panels = append(n.panels, testPanel)
+	n.addBuffer(gui.NewBuffer())
+	n.addBuffer(gui.NewBuffer())
+
+	/*
+			bufferPanel := gui.NewPanel(n.input_handler)
+		palette := gui.NewCommandPalette()
+		palette.SetInputHandler(n.input_handler)
+		bufferPanel.AddComponent(palette)
+		n.panels = append(n.panels, bufferPanel)
+	*/
 }
 
 func (n *NateEditor) update() {
+	for _, panel := range n.bufferPanels {
+		panel.Update()
+	}
+
 	n.input_handler.Event = nil
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		n.input_handler.Event = event
@@ -43,16 +66,13 @@ func (n *NateEditor) update() {
 		}
 	}
 
-	for _, panel := range n.panels {
-		panel.Update()
-	}
 }
 
 func (n *NateEditor) render() {
 	gfx.SetDrawColorHex(n.renderer, 0xfdf6e3)
 	n.renderer.Clear()
 
-	for _, panel := range n.panels {
+	for _, panel := range n.bufferPanels {
 		panel.Render(n.renderer)
 	}
 
