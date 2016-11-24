@@ -5,13 +5,13 @@ type TomlConfig struct {
 }
 
 type EditorConfig struct {
-	Aliased bool
+	Aliased  bool
 	Tab_Size int32
 }
 
 func NewDefaultConfig() *TomlConfig {
 	return &TomlConfig{
-		Editor: EditorConfig {
+		Editor: EditorConfig{
 			Aliased: false,
 		},
 	}

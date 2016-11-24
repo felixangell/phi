@@ -101,9 +101,9 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			new_rope = right
 			b.contents[b.curs.y] = left
 		} else if initial_x == 0 {
-			b.contents = append(b.contents, new(rope.Rope))			// grow
-			copy(b.contents[b.curs.y + 1:], b.contents[b.curs.y:])	// shift
-			b.contents[b.curs.y] = rope.New(" ")						// set
+			b.contents = append(b.contents, new(rope.Rope))      // grow
+			copy(b.contents[b.curs.y+1:], b.contents[b.curs.y:]) // shift
+			b.contents[b.curs.y] = new(rope.Rope)                // set
 			b.curs.move(0, 1)
 			return
 		} else {
@@ -120,44 +120,44 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
 			b.curs.move(-1, 0)
 		} else if b.curs.x == 0 && b.curs.y > 0 {
-			// start of line, wrap to previous 
+			// start of line, wrap to previous
 			// two cases here:
-			
+
 			// the line_len is zero, in which case
 			// we delete the line and go to the end
 			// of the previous line
 			if b.contents[b.curs.y].Len() == 0 {
-				b.curs.move(b.contents[b.curs.y - 1].Len(), -1)
+				b.curs.move(b.contents[b.curs.y-1].Len(), -1)
 				// FIXME, delete from the curs.y dont pop!
-				b.contents = b.contents[:len(b.contents) - 1]
+				b.contents = b.contents[:len(b.contents)-1]
 				return
 			}
 
 			// or, the line has characters, so we join
 			// that line with the previous line
-			prev_line_len := b.contents[b.curs.y - 1].Len()
-			b.contents[b.curs.y - 1] = b.contents[b.curs.y - 1].Concat(b.contents[b.curs.y])
+			prev_line_len := b.contents[b.curs.y-1].Len()
+			b.contents[b.curs.y-1] = b.contents[b.curs.y-1].Concat(b.contents[b.curs.y])
 			b.curs.move(prev_line_len, -1)
 
 			// FIXME delete from curs.y, not pop!
-			b.contents = b.contents[:len(b.contents) - 1]
+			b.contents = b.contents[:len(b.contents)-1]
 		}
 	case sdl.SCANCODE_RIGHT:
 		curr_line_length := b.contents[b.curs.y].Len()
-		if (b.curs.x >= curr_line_length && b.curs.y < len(b.contents) - 1) {
+		if b.curs.x >= curr_line_length && b.curs.y < len(b.contents)-1 {
 			// we're at the end of the line and we have
 			// some lines after, let's wrap around
 			b.curs.move(0, 1)
 			b.curs.move(-curr_line_length, 0)
-		} else if (b.curs.x < b.contents[b.curs.y].Len()) {
+		} else if b.curs.x < b.contents[b.curs.y].Len() {
 			// we have characters to the right, let's move along
 			b.curs.move(1, 0)
 		}
 	case sdl.SCANCODE_LEFT:
-		if (b.curs.x == 0 && b.curs.y > 0) {
-			b.curs.move(b.contents[b.curs.y - 1].Len(), -1)
+		if b.curs.x == 0 && b.curs.y > 0 {
+			b.curs.move(b.contents[b.curs.y-1].Len(), -1)
 
-		} else if (b.curs.x > 0) {
+		} else if b.curs.x > 0 {
 			b.curs.move(-1, 0)
 		}
 	case sdl.SCANCODE_TAB:
@@ -235,9 +235,10 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 		// _			<-- underscore is a space!
 		// Blah
 		// and we delete that underscore... it causes
-		// a panic because there are no characters in 
+		// a panic because there are no characters in
 		// the empty string!
 		if rope.Len() == 0 {
+			y_col += 1
 			continue
 		}
 
@@ -255,7 +256,7 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 
 			x_col += 1
 
-			text := renderString(b.font, string(char), gfx.HexColor(0x7a7a7a), b.cfg.Editor.Aliased)
+			text := renderString(b.font, string(char), gfx.HexColor(0x7a7a7a), true)
 			defer text.Free()
 
 			last_w = text.W

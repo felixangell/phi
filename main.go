@@ -6,7 +6,9 @@ import (
 	"github.com/felixangell/nate/gfx"
 	"github.com/felixangell/nate/gui"
 	"github.com/veandco/go-sdl2/sdl"
+	img "github.com/veandco/go-sdl2/sdl_image"
 	"github.com/veandco/go-sdl2/sdl_ttf"
+	"runtime"
 )
 
 const (
@@ -65,7 +67,7 @@ func main() {
 		panic(err)
 	}
 
-    config := cfg.Setup()
+	config := cfg.Setup()
 
 	window, err := sdl.CreateWindow("Nate Editor",
 		sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
@@ -75,6 +77,26 @@ func main() {
 		panic(err)
 	}
 	defer window.Destroy()
+
+	{
+		img.Init(img.INIT_PNG)
+		size := "16"
+		switch runtime.GOOS {
+		case "windows":
+			size = "256"
+		case "darwin":
+			size = "512"
+		case "linux":
+			size = "96"
+		default:
+			panic("you runtime is " + runtime.GOOS)
+		}
+		icon, err := img.Load("./res/icons/icon" + size + ".png")
+		if err != nil {
+			panic(err)
+		}
+		window.SetIcon(icon)
+	}
 
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
@@ -101,6 +123,6 @@ func main() {
 			num_frames = 0
 		}
 
-        sdl.Delay(2);
+		sdl.Delay(2)
 	}
 }
