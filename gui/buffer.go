@@ -201,7 +201,7 @@ func (b *Buffer) Update() {
 	prev_y := b.curs.y
 
 	if b.input_handler == nil {
-		panic("fuck")
+		panic("help")
 	}
 
 	if b.input_handler.Event != nil {
