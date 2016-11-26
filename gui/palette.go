@@ -19,6 +19,12 @@ func NewCommandPalette() *CommandPalette {
 	return palette
 }
 
+func (p *CommandPalette) Dispose() {
+	for _, comp := range p.components {
+		comp.Dispose()
+	}
+}
+
 func (p *CommandPalette) Init() {
 	p.buff.SetInputHandler(p.input_handler)
 	p.AddComponent(p.buff)

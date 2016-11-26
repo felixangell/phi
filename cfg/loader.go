@@ -7,6 +7,11 @@ import (
 	"fmt"
 )
 
+var DEFUALT_TOML_CONFIG string = 
+`[config]
+aliased = true
+`
+
 // TODO:
 // - make the $HOME/.nate-editor folder if it doesn't exist
 // - make the $HOME/.nate-editor/config.toml file if it doesn't exist

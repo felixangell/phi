@@ -49,6 +49,12 @@ func (n *NateEditor) init(cfg *cfg.TomlConfig) {
 	*/
 }
 
+func (n *NateEditor) dispose() {
+	for _, buffer := range n.bufferPanels {
+		buffer.Dispose()
+	}
+}
+
 func (n *NateEditor) update() {
 	for _, panel := range n.bufferPanels {
 		panel.Update()
@@ -89,10 +95,18 @@ func main() {
 
 	config := cfg.Setup()
 
-	window, err := sdl.CreateWindow("Nate Editor",
-		sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
-		1280, 720,
-		sdl.WINDOW_SHOWN)
+	windowWidth, windowHeight := 800, 600
+	{
+		// calculate the size of the window
+		// based on the resolution of the monitor
+		// this is the display width
+		var displayMode sdl.DisplayMode
+		sdl.GetDisplayMode(0, 0, &displayMode)
+		windowWidth = int(float32(displayMode.W) / 1.35)
+		windowHeight = windowWidth / 16 * 9
+	}
+
+	window, err := sdl.CreateWindow("Nate Editor", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, windowWidth, windowHeight, sdl.WINDOW_SHOWN)
 	if err != nil {
 		panic(err)
 	}
@@ -130,6 +144,8 @@ func main() {
 	timer := sdl.GetTicks()
 	num_frames := 0
 
+	// TODO(Felix): Limit the framerate on this thing
+	// to the refresh rate of the monitor?
 	for editor.running {
 		editor.update()
 		editor.render()
@@ -145,4 +161,6 @@ func main() {
 
 		sdl.Delay(2)
 	}
+
+	editor.dispose()
 }

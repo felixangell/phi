@@ -26,6 +26,12 @@ func NewPanel(input *InputHandler) *Panel {
 	}
 }
 
+func (p *Panel) Dispose() {
+	for _, comp := range p.components {
+		comp.Dispose()
+	}
+}
+
 func (p *Panel) Init() {}
 
 func (p *Panel) GetComponents() []Component {

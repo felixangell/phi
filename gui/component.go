@@ -10,6 +10,7 @@ type Component interface {
 	Init()
 	Update()
 	Render(*sdl.Renderer)
+	Dispose()
 
 	// gross refactor me pls
 

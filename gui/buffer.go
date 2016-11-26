@@ -66,6 +66,12 @@ func NewBuffer() *Buffer {
 	return buff
 }
 
+func (b *Buffer) Dispose() {
+	for _, texture := range TEXTURE_CACHE {
+		texture.Destroy()
+	}
+}
+
 func (b *Buffer) Init() {}
 
 func (b *Buffer) GetComponents() []Component {
@@ -230,6 +236,7 @@ func (b *Buffer) Update() {
 }
 
 var last_w, last_h int32
+var TEXTURE_CACHE map[rune]*sdl.Texture = map[rune]*sdl.Texture{}
 
 func (b *Buffer) Render(ctx *sdl.Renderer) {
 
@@ -256,6 +263,8 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 		// a panic because there are no characters in
 		// the empty string!
 		if rope.Len() == 0 {
+			// even though the string is empty
+			// we still need to offset it by a line
 			y_col += 1
 			continue
 		}
@@ -280,10 +289,18 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 			last_w = text.W
 			last_h = text.H
 
-			// FIXME very slow
-			texture, _ := ctx.CreateTextureFromSurface(text)
-			defer texture.Destroy()
+			texture, ok := TEXTURE_CACHE[char]
+			if !ok {
+				// can't find it in the cache so we
+				// load and then cache it.
+				texture, _ = ctx.CreateTextureFromSurface(text)			
+				TEXTURE_CACHE[char] = texture
+			}
 
+			// FIXME still kinda slow
+			// we can also cull so that 
+			// we don't render things that aren't
+			// visible outside of the component
 			ctx.Copy(texture, nil, &sdl.Rect{
 				b.x + (x_col * text.W),
 				b.y + (y_col * text.H),
