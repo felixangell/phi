@@ -41,7 +41,7 @@ func (n *NateEditor) init(cfg *cfg.TomlConfig) {
 	n.addBuffer(gui.NewBuffer())
 
 	/*
-			bufferPanel := gui.NewPanel(n.input_handler)
+		bufferPanel := gui.NewPanel(n.input_handler)
 		palette := gui.NewCommandPalette()
 		palette.SetInputHandler(n.input_handler)
 		bufferPanel.AddComponent(palette)
