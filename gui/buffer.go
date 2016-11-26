@@ -169,14 +169,14 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 				return
 			}
 
+			// TODO(Felix): handle all the edge cases here...
+
 			// or, the line has characters, so we join
 			// that line with the previous line
 			prev_line_len := b.contents[b.curs.y-1].Len()
 			b.contents[b.curs.y-1] = b.contents[b.curs.y-1].Concat(b.contents[b.curs.y])
+			b.contents = append(b.contents[:b.curs.y], b.contents[b.curs.y+1:]...)
 			b.curs.move(prev_line_len, -1)
-
-			// FIXME delete from curs.y, not pop!
-			b.contents = b.contents[:len(b.contents)-1]
 		}
 	case sdl.SCANCODE_RIGHT:
 		curr_line_length := b.contents[b.curs.y].Len()
