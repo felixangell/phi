@@ -8,10 +8,6 @@ import (
 	"unicode/utf8"
 )
 
-const (
-	TAB_SIZE int32 = 4
-)
-
 type Cursor struct {
 	x, y   int
 	rx, ry int
@@ -31,12 +27,16 @@ func (c *Cursor) move_render(x, y, rx, ry int) {
 	c.ry += ry
 }
 
-const (
+var (
 	cursor_flash_ms uint32 = 400
 	reset_delay_ms  uint32 = 400
-)
 
-var (
+	// buffer
+	TAB_SIZE int32 = 4
+	HUNGRY_BACKSPACE bool = true
+	TABS_ARE_SPACES bool = true	
+
+	// cursor 
 	should_draw  bool   = false
 	should_flash bool   = true
 	timer        uint32 = 0
@@ -127,13 +127,34 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 
 		b.curs.move(0, 1)
 		for x := 0; x < initial_x; x++ {
+			// TODO(Felix): there's a bug here where
+			// this doesn't account for the rendered x
+			// position when we use tabs as tabs and not spaces
 			b.curs.move(-1, 0)
 		}
 		b.contents = append(b.contents, new_rope)
 	case sdl.SCANCODE_BACKSPACE:
 		if b.curs.x > 0 {
+			offs := -1
+			if !TABS_ARE_SPACES {
+				if b.contents[b.curs.y].Index(b.curs.x) == '\t' {
+					offs = int(-TAB_SIZE)
+				}
+			} else if HUNGRY_BACKSPACE && b.curs.x >= int(TAB_SIZE) && TABS_ARE_SPACES {
+				// why x + 1 here? wtf
+				if b.contents[b.curs.y].Substr((b.curs.x + 1) - int(TAB_SIZE), int(TAB_SIZE)).String() == "    " {
+					// delete {TAB_SIZE} amount of characters
+					// from the cursors x pos
+					for i := 0; i < int(TAB_SIZE); i++ {
+						b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
+						b.curs.move(-1, 0)
+					}
+					break
+				}
+			} 
+
 			b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
-			b.curs.move(-1, 0)
+			b.curs.move_render(-1, 0, offs, 0)				
 		} else if b.curs.x == 0 && b.curs.y > 0 {
 			// start of line, wrap to previous
 			// two cases here:
@@ -176,7 +197,17 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			b.curs.move(-1, 0)
 		}
 	case sdl.SCANCODE_TAB:
-		// TODO
+		if TABS_ARE_SPACES {
+			// make an empty rune array of TAB_SIZE, cast to string
+			// and insert it.
+			b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, "    ")
+			b.curs.move(int(TAB_SIZE), 0)
+		} else {
+			b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string('\t'))
+			// the actual position is + 1, but we make it
+			// move by TAB_SIZE characters on the view.
+			b.curs.move_render(1, 0, int(TAB_SIZE), 0)
+		}
 	}
 }
 
