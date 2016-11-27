@@ -43,7 +43,7 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 		curs:     &Cursor{},
 		cfg:      config,
 	}
-	buff.appendLine("This is a test 世界.")
+	buff.appendLine("hello! مرحبا 世界.")
 	return buff
 }
 
@@ -289,7 +289,7 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 
 			x_col += 1
 
-			text := renderString(b.font, string(char), gfx.HexColor(uint32(char_colour)), true)
+			text := renderString(b.font, string(char), gfx.HexColor(uint32(char_colour)), b.cfg.Editor.Aliased)
 			defer text.Free()
 
 			last_w = text.W
