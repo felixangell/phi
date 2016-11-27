@@ -14,19 +14,10 @@ func NewPanel(input *InputHandler) *Panel {
 	return panel
 }
 
-func (p *Panel) Dispose() {
-	for _, comp := range p.components {
-		comp.Dispose()
-	}
-}
+func (p *Panel) OnDispose() {}
 
-func (p *Panel) Init() {}
+func (p *Panel) OnInit() {}
 
-func (p *Panel) Update() {
-	for _, c := range p.components {
-		c.Update()
-	}
-}
+func (p *Panel) OnUpdate() {}
 
-func (p *Panel) OnRender(ctx *sdl.Renderer) {
-}
+func (p *Panel) OnRender(ctx *sdl.Renderer) {}

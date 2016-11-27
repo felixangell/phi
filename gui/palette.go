@@ -4,33 +4,42 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+type CommandBuffer struct {
+	*Buffer
+}
+
+func (b *CommandBuffer) processActionKey(t *sdl.KeyDownEvent) {
+	switch t.Keysym.Scancode {
+	case sdl.SCANCODE_RETURN:
+		println("dope!")
+		return
+	}
+	b.Buffer.processActionKey(t)
+}
+
 type CommandPalette struct {
 	BaseComponent
-	buff *Buffer
+	buffer *CommandBuffer
 }
 
 func NewCommandPalette() *CommandPalette {
-	palette := &CommandPalette{
-		buff: NewBuffer(nil),
+	palette := &CommandPalette{}
+	palette.buffer = &CommandBuffer{
+		Buffer: NewBuffer(nil),
 	}
+	palette.AddComponent(palette.buffer)
 	return palette
 }
 
-func (p *CommandPalette) Dispose() {
-	for _, comp := range p.components {
-		comp.Dispose()
-	}
+func (p *CommandPalette) OnDispose() {}
+
+func (p *CommandPalette) OnInit() {
 }
 
-func (p *CommandPalette) Init() {
-	p.buff.SetInputHandler(p.inputHandler)
-	p.AddComponent(p.buff)
+func (c *CommandPalette) OnUpdate() {
+
 }
 
-func (c *CommandPalette) Update() {
-	for _, c := range c.components {
-		c.Update()
-	}
-}
+func (c *CommandPalette) OnRender(ctx *sdl.Renderer) {
 
-func (c *CommandPalette) OnRender(ctx *sdl.Renderer) {}
+}

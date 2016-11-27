@@ -49,13 +49,13 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 	return buff
 }
 
-func (b *Buffer) Dispose() {
+func (b *Buffer) OnDispose() {
 	for _, texture := range TEXTURE_CACHE {
 		texture.Destroy()
 	}
 }
 
-func (b *Buffer) Init() {}
+func (b *Buffer) OnInit() {}
 
 func (b *Buffer) appendLine(val string) {
 	b.contents = append(b.contents, rope.New(val))
@@ -246,12 +246,13 @@ func renderString(font *ttf.Font, val string, col sdl.Color, smooth bool) *sdl.S
 	return nil
 }
 
-func (b *Buffer) Update() {
+func (b *Buffer) OnUpdate() {
 	prev_x := b.curs.x
 	prev_y := b.curs.y
 
+	// FIXME handle focus properly
 	if b.inputHandler == nil {
-		panic("help")
+		return
 	}
 
 	if b.inputHandler.Event != nil {

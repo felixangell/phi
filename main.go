@@ -16,78 +16,54 @@ const (
 )
 
 type NateEditor struct {
-	window       *sdl.Window
-	renderer     *sdl.Renderer
-	running      bool
-	bufferPanels []*gui.Panel
-	inputHandler *gui.InputHandler
-}
+	gui.BaseComponent
 
-func (n *NateEditor) addBuffer(c gui.Component) {
-	// work out the size of the buffer and set it
-	// note that we +1 the bufferPanels because
-	// we haven't yet added the panel
-	w, height := n.window.GetSize()
-	bufferWidth := w / (len(n.bufferPanels) + 1)
-	c.Resize(int32(bufferWidth), int32(height))
-
-	// setup and add the panel for the buffer
-	panel := gui.NewPanel(n.inputHandler)
-	c.SetInputHandler(n.inputHandler)
-	panel.AddComponent(c)
-	n.bufferPanels = append(n.bufferPanels, panel)
-
-	// translate all the panels accordingly.
-	for i, p := range n.bufferPanels {
-		p.Translate(int32(bufferWidth)*int32(i), 0)
-	}
+	window   *sdl.Window
+	renderer *sdl.Renderer
+	running  bool
 }
 
 func (n *NateEditor) init(cfg *cfg.TomlConfig) {
-	n.addBuffer(gui.NewBuffer(cfg))
+	w, h := n.window.GetSize()
+	n.AddComponent(gui.NewView(w, h, cfg))
 
-	/*
-		bufferPanel := gui.NewPanel(n.inputHandler)
-		palette := gui.NewCommandPalette()
-		palette.SetInputHandler(n.inputHandler)
-		bufferPanel.AddComponent(palette)
-		n.panels = append(n.panels, bufferPanel)
-	*/
+	palette := gui.NewCommandPalette()
+	palette.Translate(int32(w/2), 20)
+	n.AddComponent(palette)
 }
 
 func (n *NateEditor) dispose() {
-	for _, buffer := range n.bufferPanels {
-		buffer.Dispose()
+	for _, comp := range n.GetComponents() {
+		gui.Dispose(comp)
 	}
 }
 
 func (n *NateEditor) update() {
-	for _, panel := range n.bufferPanels {
-		panel.Update()
-	}
-
-	n.inputHandler.Event = nil
+	n.GetInputHandler().Event = nil
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		n.inputHandler.Event = event
+		n.GetInputHandler().Event = event
 
 		switch event.(type) {
 		case *sdl.QuitEvent:
 			n.running = false
 		case *sdl.TextEditingEvent:
-			n.inputHandler.Event = event
+			n.GetInputHandler().Event = event
 		case *sdl.TextInputEvent:
-			n.inputHandler.Event = event
+			n.GetInputHandler().Event = event
 		}
 	}
 
+	for _, comp := range n.GetComponents() {
+		gui.Update(comp)
+	}
 }
 
 func (n *NateEditor) render() {
 	gfx.SetDrawColorHex(n.renderer, 0xffffff)
 	n.renderer.Clear()
 
-	for _, panel := range n.bufferPanels {
-		gui.Render(panel, n.renderer)
+	for _, component := range n.GetComponents() {
+		gui.Render(component, n.renderer)
 	}
 
 	n.renderer.Present()
@@ -146,7 +122,8 @@ func main() {
 	}
 	defer renderer.Destroy()
 
-	editor := &NateEditor{window: window, renderer: renderer, running: true, inputHandler: &gui.InputHandler{}}
+	editor := &NateEditor{window: window, renderer: renderer, running: true}
+	editor.SetInputHandler(&gui.InputHandler{})
 	editor.init(&config)
 
 	timer := sdl.GetTicks()
