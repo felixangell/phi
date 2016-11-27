@@ -20,9 +20,9 @@ type Component interface {
 }
 
 type BaseComponent struct {
-	x, y          int32
-	components    []Component
-	input_handler *InputHandler
+	x, y         int32
+	components   []Component
+	inputHandler *InputHandler
 }
 
 func Render(c Component, ctx *sdl.Renderer) {
@@ -49,9 +49,9 @@ func (b *BaseComponent) AddComponent(c Component) {
 }
 
 func (b *BaseComponent) SetInputHandler(i *InputHandler) {
-	b.input_handler = i
+	b.inputHandler = i
 }
 
 func (b *BaseComponent) GetInputHandler() *InputHandler {
-	return b.input_handler
+	return b.inputHandler
 }

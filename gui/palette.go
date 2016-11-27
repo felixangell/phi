@@ -23,7 +23,7 @@ func (p *CommandPalette) Dispose() {
 }
 
 func (p *CommandPalette) Init() {
-	p.buff.SetInputHandler(p.input_handler)
+	p.buff.SetInputHandler(p.inputHandler)
 	p.AddComponent(p.buff)
 }
 

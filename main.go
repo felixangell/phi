@@ -16,16 +16,16 @@ const (
 )
 
 type NateEditor struct {
-	window        *sdl.Window
-	renderer      *sdl.Renderer
-	running       bool
-	bufferPanels  []*gui.Panel
-	input_handler *gui.InputHandler
+	window       *sdl.Window
+	renderer     *sdl.Renderer
+	running      bool
+	bufferPanels []*gui.Panel
+	inputHandler *gui.InputHandler
 }
 
 func (n *NateEditor) addBuffer(c gui.Component) {
-	panel := gui.NewPanel(n.input_handler)
-	c.SetInputHandler(n.input_handler)
+	panel := gui.NewPanel(n.inputHandler)
+	c.SetInputHandler(n.inputHandler)
 	panel.AddComponent(c)
 	n.bufferPanels = append(n.bufferPanels, panel)
 
@@ -41,9 +41,9 @@ func (n *NateEditor) init(cfg *cfg.TomlConfig) {
 	n.addBuffer(gui.NewBuffer(cfg))
 
 	/*
-		bufferPanel := gui.NewPanel(n.input_handler)
+		bufferPanel := gui.NewPanel(n.inputHandler)
 		palette := gui.NewCommandPalette()
-		palette.SetInputHandler(n.input_handler)
+		palette.SetInputHandler(n.inputHandler)
 		bufferPanel.AddComponent(palette)
 		n.panels = append(n.panels, bufferPanel)
 	*/
@@ -60,15 +60,15 @@ func (n *NateEditor) update() {
 		panel.Update()
 	}
 
-	n.input_handler.Event = nil
+	n.inputHandler.Event = nil
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		n.input_handler.Event = event
+		n.inputHandler.Event = event
 
 		switch event.(type) {
 		case *sdl.QuitEvent:
 			n.running = false
 		case *sdl.TextInputEvent:
-			n.input_handler.Event = event
+			n.inputHandler.Event = event
 		}
 	}
 
@@ -138,7 +138,7 @@ func main() {
 	}
 	defer renderer.Destroy()
 
-	editor := &NateEditor{window: window, renderer: renderer, running: true, input_handler: &gui.InputHandler{}}
+	editor := &NateEditor{window: window, renderer: renderer, running: true, inputHandler: &gui.InputHandler{}}
 	editor.init(&config)
 
 	timer := sdl.GetTicks()

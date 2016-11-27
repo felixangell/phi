@@ -10,28 +10,11 @@ import (
 	"unicode/utf8"
 )
 
-type Cursor struct {
-	x, y   int
-	rx, ry int
-}
-
-func (c *Cursor) move(x, y int) {
-	c.move_render(x, y, x, y)
-}
-
-// moves the cursors position, and the
-// rendered coordinates by the given amount
-func (c *Cursor) move_render(x, y, rx, ry int) {
-	c.x += x
-	c.y += y
-
-	c.rx += rx
-	c.ry += ry
-}
-
 var (
-	timer       uint32 = 0
-	reset_timer uint32 = 0
+	timer        uint32 = 0
+	reset_timer  uint32 = 0
+	should_draw  bool
+	should_flash bool
 )
 
 type Buffer struct {
@@ -59,7 +42,7 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 		curs:     &Cursor{},
 		cfg:      config,
 	}
-	buff.appendLine("This is a test.")
+	buff.appendLine("This is a test 世界.")
 	return buff
 }
 
@@ -78,12 +61,12 @@ func (b *Buffer) appendLine(val string) {
 
 func (b *Buffer) processTextInput(t *sdl.TextInputEvent) {
 	// TODO: how the fuck do decode this properly?
-	raw_val, size := utf8.DecodeLastRune(t.Text[:1])
-	if raw_val == utf8.RuneError || size == 0 {
+	rawVal, size := utf8.DecodeLastRune(t.Text[:1])
+	if rawVal == utf8.RuneError || size == 0 {
 		return
 	}
 
-	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(raw_val))
+	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(rawVal))
 	b.curs.move(1, 0)
 }
 
@@ -91,12 +74,12 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 	switch t.Keysym.Scancode {
 	case sdl.SCANCODE_RETURN:
 		initial_x := b.curs.x
-		prev_line_len := b.contents[b.curs.y].Len()
+		prevLineLen := b.contents[b.curs.y].Len()
 
-		var new_rope *rope.Rope
-		if initial_x < prev_line_len && initial_x > 0 {
+		var newRope *rope.Rope
+		if initial_x < prevLineLen && initial_x > 0 {
 			left, right := b.contents[b.curs.y].Split(initial_x)
-			new_rope = right
+			newRope = right
 			b.contents[b.curs.y] = left
 		} else if initial_x == 0 {
 			b.contents = append(b.contents, new(rope.Rope))      // grow
@@ -105,7 +88,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			b.curs.move(0, 1)
 			return
 		} else {
-			new_rope = rope.New(" ")
+			newRope = rope.New(" ")
 		}
 
 		b.curs.move(0, 1)
@@ -115,7 +98,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			// position when we use tabs as tabs and not spaces
 			b.curs.move(-1, 0)
 		}
-		b.contents = append(b.contents, new_rope)
+		b.contents = append(b.contents, newRope)
 	case sdl.SCANCODE_BACKSPACE:
 		if b.curs.x > 0 {
 			offs := -1
@@ -142,7 +125,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			}
 
 			b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
-			b.curs.move_render(-1, 0, offs, 0)
+			b.curs.moveRender(-1, 0, offs, 0)
 		} else if b.curs.x == 0 && b.curs.y > 0 {
 			// start of line, wrap to previous
 			// two cases here:
@@ -161,18 +144,18 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 
 			// or, the line has characters, so we join
 			// that line with the previous line
-			prev_line_len := b.contents[b.curs.y-1].Len()
+			prevLineLen := b.contents[b.curs.y-1].Len()
 			b.contents[b.curs.y-1] = b.contents[b.curs.y-1].Concat(b.contents[b.curs.y])
 			b.contents = append(b.contents[:b.curs.y], b.contents[b.curs.y+1:]...)
-			b.curs.move(prev_line_len, -1)
+			b.curs.move(prevLineLen, -1)
 		}
 	case sdl.SCANCODE_RIGHT:
-		curr_line_length := b.contents[b.curs.y].Len()
-		if b.curs.x >= curr_line_length && b.curs.y < len(b.contents)-1 {
+		currLineLength := b.contents[b.curs.y].Len()
+		if b.curs.x >= currLineLength && b.curs.y < len(b.contents)-1 {
 			// we're at the end of the line and we have
 			// some lines after, let's wrap around
 			b.curs.move(0, 1)
-			b.curs.move(-curr_line_length, 0)
+			b.curs.move(-currLineLength, 0)
 		} else if b.curs.x < b.contents[b.curs.y].Len() {
 			// we have characters to the right, let's move along
 			b.curs.move(1, 0)
@@ -194,7 +177,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string('\t'))
 			// the actual position is + 1, but we make it
 			// move by TAB_SIZE characters on the view.
-			b.curs.move_render(1, 0, int(b.cfg.Editor.Tab_Size), 0)
+			b.curs.moveRender(1, 0, int(b.cfg.Editor.Tab_Size), 0)
 		}
 	}
 }
@@ -216,19 +199,16 @@ func renderString(font *ttf.Font, val string, col sdl.Color, smooth bool) *sdl.S
 	return nil
 }
 
-var should_draw bool
-var should_flash bool
-
 func (b *Buffer) Update() {
 	prev_x := b.curs.x
 	prev_y := b.curs.y
 
-	if b.input_handler == nil {
+	if b.inputHandler == nil {
 		panic("help")
 	}
 
-	if b.input_handler.Event != nil {
-		switch t := b.input_handler.Event.(type) {
+	if b.inputHandler.Event != nil {
+		switch t := b.inputHandler.Event.(type) {
 		case *sdl.TextInputEvent:
 			b.processTextInput(t)
 		case *sdl.KeyDownEvent:
