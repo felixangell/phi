@@ -194,6 +194,26 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 		} else if b.curs.x > 0 {
 			b.curs.move(-1, 0)
 		}
+	case sdl.SCANCODE_UP:
+		if b.curs.y > 0 {
+			offs := 0
+			prevLineLen := b.contents[b.curs.y-1].Len()
+			if b.curs.x > prevLineLen {
+				offs = prevLineLen - b.curs.x
+			}
+			// TODO: offset should account for tabs
+			b.curs.move(offs, -1)
+		}
+	case sdl.SCANCODE_DOWN:
+		if b.curs.y < len(b.contents)-1 {
+			offs := 0
+			nextLineLen := b.contents[b.curs.y+1].Len()
+			if b.curs.x > nextLineLen {
+				offs = nextLineLen - b.curs.x
+			}
+			// TODO: offset should account for tabs
+			b.curs.move(offs, 1)
+		}
 	case sdl.SCANCODE_TAB:
 		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
