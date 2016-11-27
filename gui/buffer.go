@@ -119,7 +119,10 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			// position when we use tabs as tabs and not spaces
 			b.curs.move(-1, 0)
 		}
-		b.contents = append(b.contents, newRope)
+
+		b.contents = append(b.contents, nil)
+		copy(b.contents[b.curs.y+1:], b.contents[b.curs.y:])
+		b.contents[b.curs.y] = newRope
 	case sdl.SCANCODE_BACKSPACE:
 		if b.curs.x > 0 {
 			offs := -1
