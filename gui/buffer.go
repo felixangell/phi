@@ -115,8 +115,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 				// and check em
 				tabSize := int(b.cfg.Editor.Tab_Size)
 				lastTabSizeChars := b.contents[b.curs.y].Substr(b.curs.x+1-tabSize, tabSize).String()
-				artificialTab := string(make([]rune, tabSize, ' '))
-				if strings.Compare(lastTabSizeChars, artificialTab) == 0 {
+				if strings.Compare(lastTabSizeChars, b.makeTab()) == 0 {
 					// delete {TAB_SIZE} amount of characters
 					// from the cursors x pos
 					for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {
@@ -174,7 +173,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
 			// and insert it.
-			b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, "    ")
+			b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, b.makeTab())
 			b.curs.move(int(b.cfg.Editor.Tab_Size), 0)
 		} else {
 			b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string('\t'))
@@ -183,6 +182,15 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			b.curs.moveRender(1, 0, int(b.cfg.Editor.Tab_Size), 0)
 		}
 	}
+}
+
+// TODO(Felix) this is really stupid
+func (b *Buffer) makeTab() string {
+	blah := []rune{}
+	for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {
+		blah = append(blah, ' ')
+	}
+	return string(blah)
 }
 
 func renderString(font *ttf.Font, val string, col sdl.Color, smooth bool) *sdl.Surface {
