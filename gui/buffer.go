@@ -155,22 +155,6 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			b.curs.moveRender(-1, 0, offs, 0)
 		} else if b.curs.x == 0 && b.curs.y > 0 {
 			// start of line, wrap to previous
-			// two cases here:
-
-			// the line_len is zero, in which case
-			// we delete the line and go to the end
-			// of the previous line
-			if b.contents[b.curs.y].Len() == 0 {
-				b.curs.move(b.contents[b.curs.y-1].Len(), -1)
-				// FIXME, delete from the curs.y dont pop!
-				b.contents = b.contents[:len(b.contents)-1]
-				return
-			}
-
-			// TODO(Felix): handle all the edge cases here...
-
-			// or, the line has characters, so we join
-			// that line with the previous line
 			prevLineLen := b.contents[b.curs.y-1].Len()
 			b.contents[b.curs.y-1] = b.contents[b.curs.y-1].Concat(b.contents[b.curs.y])
 			b.contents = append(b.contents[:b.curs.y], b.contents[b.curs.y+1:]...)

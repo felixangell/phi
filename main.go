@@ -45,7 +45,6 @@ func (n *NateEditor) addBuffer(c gui.Component) {
 
 func (n *NateEditor) init(cfg *cfg.TomlConfig) {
 	n.addBuffer(gui.NewBuffer(cfg))
-	n.addBuffer(gui.NewBuffer(cfg))
 
 	/*
 		bufferPanel := gui.NewPanel(n.inputHandler)
