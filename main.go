@@ -37,8 +37,8 @@ func (n *NateEditor) addBuffer(c gui.Component) {
 }
 
 func (n *NateEditor) init(cfg *cfg.TomlConfig) {
-	n.addBuffer(gui.NewBuffer())
-	n.addBuffer(gui.NewBuffer())
+	n.addBuffer(gui.NewBuffer(cfg))
+	n.addBuffer(gui.NewBuffer(cfg))
 
 	/*
 		bufferPanel := gui.NewPanel(n.input_handler)
@@ -102,7 +102,7 @@ func main() {
 		// this is the display width
 		var displayMode sdl.DisplayMode
 		sdl.GetDisplayMode(0, 0, &displayMode)
-		windowWidth = int(float32(displayMode.W) / 1.35)
+		windowWidth = int(float32(displayMode.W) / 1.5)
 		windowHeight = windowWidth / 16 * 9
 	}
 
@@ -132,7 +132,7 @@ func main() {
 		window.SetIcon(icon)
 	}
 
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED|sdl.RENDERER_PRESENTVSYNC)
 	if err != nil {
 		panic(err)
 	}
@@ -144,8 +144,6 @@ func main() {
 	timer := sdl.GetTicks()
 	num_frames := 0
 
-	// TODO(Felix): Limit the framerate on this thing
-	// to the refresh rate of the monitor?
 	for editor.running {
 		editor.update()
 		editor.render()
@@ -159,7 +157,7 @@ func main() {
 			num_frames = 0
 		}
 
-		sdl.Delay(2)
+		sdl.Delay(16)
 	}
 
 	editor.dispose()

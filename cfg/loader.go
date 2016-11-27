@@ -1,25 +1,30 @@
 package cfg
 
 import (
-	"os"
-	"io/ioutil"
 	"github.com/BurntSushi/toml"
-	"fmt"
+	"io/ioutil"
+	"os"
 )
 
-var DEFUALT_TOML_CONFIG string = 
-`[config]
+var DEFUALT_TOML_CONFIG string = `[editor]
 aliased = true
+tab_size = 4
+hungry_backspace = true
+tabs_are_spaces = true
+draw_cursor = true
+flash_cursor = false
+cursor_flash_rate = 400
+cursor_reset_delay = 400
 `
 
 // TODO:
 // - make the $HOME/.nate-editor folder if it doesn't exist
 // - make the $HOME/.nate-editor/config.toml file if it doesn't exist
 // - write a default toml file
-// 
+//
 
 const (
-	CONFIG_DIR_PATH = "/.nate-editor/"
+	CONFIG_DIR_PATH  = "/.nate-editor/"
 	CONFIG_TOML_FILE = "config.toml"
 )
 
@@ -57,16 +62,14 @@ func Setup() TomlConfig {
 	}
 
 	configTomlData, err := ioutil.ReadFile(CONFIG_PATH)
-    if err != nil {
-        panic(err)
-    }
+	if err != nil {
+		panic(err)
+	}
 
 	var conf TomlConfig
 	if _, err := toml.Decode(string(configTomlData), &conf); err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Loaded '" + CONFIG_PATH + "'.")
-	fmt.Println(conf)
 	return conf
 }

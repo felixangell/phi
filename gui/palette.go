@@ -14,7 +14,7 @@ type CommandPalette struct {
 
 func NewCommandPalette() *CommandPalette {
 	palette := &CommandPalette{
-		buff: NewBuffer(),
+		buff: NewBuffer(nil),
 	}
 	return palette
 }

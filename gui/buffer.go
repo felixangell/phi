@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"github.com/felixangell/nate/cfg"
 	"github.com/felixangell/nate/gfx"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/sdl_ttf"
@@ -28,19 +29,8 @@ func (c *Cursor) move_render(x, y, rx, ry int) {
 }
 
 var (
-	cursor_flash_ms uint32 = 400
-	reset_delay_ms  uint32 = 400
-
-	// buffer
-	TAB_SIZE int32 = 4
-	HUNGRY_BACKSPACE bool = true
-	TABS_ARE_SPACES bool = true	
-
-	// cursor 
-	should_draw  bool   = false
-	should_flash bool   = true
-	timer        uint32 = 0
-	reset_timer  uint32 = 0
+	timer       uint32 = 0
+	reset_timer uint32 = 0
 )
 
 type Buffer struct {
@@ -49,18 +39,25 @@ type Buffer struct {
 	contents      []*rope.Rope
 	curs          *Cursor
 	input_handler *InputHandler
+	cfg           *cfg.TomlConfig
 }
 
-func NewBuffer() *Buffer {
+func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 	font, err := ttf.OpenFont("./res/firacode.ttf", 24)
 	if err != nil {
 		panic(err)
+	}
+
+	config := conf
+	if config == nil {
+		config = cfg.NewDefaultConfig()
 	}
 
 	buff := &Buffer{
 		contents: []*rope.Rope{},
 		font:     font,
 		curs:     &Cursor{},
+		cfg:      config,
 	}
 	buff.appendLine("This is a test.")
 	return buff
@@ -136,25 +133,25 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 	case sdl.SCANCODE_BACKSPACE:
 		if b.curs.x > 0 {
 			offs := -1
-			if !TABS_ARE_SPACES {
+			if !b.cfg.Editor.Tabs_Are_Spaces {
 				if b.contents[b.curs.y].Index(b.curs.x) == '\t' {
-					offs = int(-TAB_SIZE)
+					offs = int(-b.cfg.Editor.Tab_Size)
 				}
-			} else if HUNGRY_BACKSPACE && b.curs.x >= int(TAB_SIZE) && TABS_ARE_SPACES {
+			} else if b.cfg.Editor.Hungry_Backspace && b.curs.x >= int(b.cfg.Editor.Tab_Size) && b.cfg.Editor.Tabs_Are_Spaces {
 				// why x + 1 here? wtf
-				if b.contents[b.curs.y].Substr((b.curs.x + 1) - int(TAB_SIZE), int(TAB_SIZE)).String() == "    " {
+				if b.contents[b.curs.y].Substr((b.curs.x+1)-int(b.cfg.Editor.Tab_Size), int(b.cfg.Editor.Tab_Size)).String() == "    " {
 					// delete {TAB_SIZE} amount of characters
 					// from the cursors x pos
-					for i := 0; i < int(TAB_SIZE); i++ {
+					for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {
 						b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
 						b.curs.move(-1, 0)
 					}
 					break
 				}
-			} 
+			}
 
 			b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
-			b.curs.move_render(-1, 0, offs, 0)				
+			b.curs.move_render(-1, 0, offs, 0)
 		} else if b.curs.x == 0 && b.curs.y > 0 {
 			// start of line, wrap to previous
 			// two cases here:
@@ -197,16 +194,16 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			b.curs.move(-1, 0)
 		}
 	case sdl.SCANCODE_TAB:
-		if TABS_ARE_SPACES {
+		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
 			// and insert it.
 			b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, "    ")
-			b.curs.move(int(TAB_SIZE), 0)
+			b.curs.move(int(b.cfg.Editor.Tab_Size), 0)
 		} else {
 			b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string('\t'))
 			// the actual position is + 1, but we make it
 			// move by TAB_SIZE characters on the view.
-			b.curs.move_render(1, 0, int(TAB_SIZE), 0)
+			b.curs.move_render(1, 0, int(b.cfg.Editor.Tab_Size), 0)
 		}
 	}
 }
@@ -233,6 +230,9 @@ func (b *Buffer) Translate(x, y int32) {
 	b.y += y
 }
 
+var should_draw bool
+var should_flash bool
+
 func (b *Buffer) Update() {
 	prev_x := b.curs.x
 	prev_y := b.curs.y
@@ -256,11 +256,11 @@ func (b *Buffer) Update() {
 		reset_timer = sdl.GetTicks()
 	}
 
-	if !should_flash && sdl.GetTicks()-reset_timer > reset_delay_ms {
+	if !should_flash && sdl.GetTicks()-reset_timer > b.cfg.Editor.Cursor_Reset_Delay {
 		should_flash = true
 	}
 
-	if sdl.GetTicks()-timer > cursor_flash_ms && should_flash {
+	if sdl.GetTicks()-timer > b.cfg.Editor.Cursor_Flash_Rate && should_flash {
 		timer = sdl.GetTicks()
 		should_draw = !should_draw
 	}
@@ -281,6 +281,9 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 			last_h,
 		})
 	}
+
+	// TODO(Felix): cull this so that
+	// we dont render lines we cant see.
 
 	var y_col int32
 	for _, rope := range b.contents {
@@ -308,13 +311,18 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 				y_col += 1
 				continue
 			case '\t':
-				x_col += TAB_SIZE
+				x_col += b.cfg.Editor.Tab_Size
 				continue
+			}
+
+			char_colour := 0x7a7a7a
+			if b.curs.x == int(x_col) && b.curs.y == int(y_col) {
+				char_colour = 0xff00ff
 			}
 
 			x_col += 1
 
-			text := renderString(b.font, string(char), gfx.HexColor(0x7a7a7a), true)
+			text := renderString(b.font, string(char), gfx.HexColor(uint32(char_colour)), true)
 			defer text.Free()
 
 			last_w = text.W
@@ -324,12 +332,12 @@ func (b *Buffer) Render(ctx *sdl.Renderer) {
 			if !ok {
 				// can't find it in the cache so we
 				// load and then cache it.
-				texture, _ = ctx.CreateTextureFromSurface(text)			
+				texture, _ = ctx.CreateTextureFromSurface(text)
 				TEXTURE_CACHE[char] = texture
 			}
 
 			// FIXME still kinda slow
-			// we can also cull so that 
+			// we can also cull so that
 			// we don't render things that aren't
 			// visible outside of the component
 			ctx.Copy(texture, nil, &sdl.Rect{
