@@ -35,12 +35,11 @@ var (
 )
 
 type Buffer struct {
-	ComponentLocation
-	font          *ttf.Font
-	contents      []*rope.Rope
-	curs          *Cursor
-	input_handler *InputHandler
-	cfg           *cfg.TomlConfig
+	BaseComponent
+	font     *ttf.Font
+	contents []*rope.Rope
+	curs     *Cursor
+	cfg      *cfg.TomlConfig
 }
 
 func NewBuffer(conf *cfg.TomlConfig) *Buffer {
@@ -71,20 +70,6 @@ func (b *Buffer) Dispose() {
 }
 
 func (b *Buffer) Init() {}
-
-func (b *Buffer) GetComponents() []Component {
-	return []Component{}
-}
-
-func (b *Buffer) AddComponent(c Component) {}
-
-func (b *Buffer) SetInputHandler(i *InputHandler) {
-	b.input_handler = i
-}
-
-func (b *Buffer) GetInputHandler() *InputHandler {
-	return b.input_handler
-}
 
 func (b *Buffer) appendLine(val string) {
 	b.contents = append(b.contents, rope.New(val))
@@ -138,12 +123,12 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 				if b.contents[b.curs.y].Index(b.curs.x) == '\t' {
 					offs = int(-b.cfg.Editor.Tab_Size)
 				}
-			} else if b.cfg.Editor.Hungry_Backspace && b.curs.x >= int(b.cfg.Editor.Tab_Size) && b.cfg.Editor.Tabs_Are_Spaces {
+			} else if b.cfg.Editor.Hungry_Backspace && b.curs.x >= int(b.cfg.Editor.Tab_Size) {
 				// FIXME wtf how does Substr even work
 				// cut out the last {TAB_SIZE} amount of characters
 				// and check em
 				tabSize := int(b.cfg.Editor.Tab_Size)
-				lastTabSizeChars := b.contents[b.curs.y].Substr(b.curs.x-tabSize, tabSize).String()
+				lastTabSizeChars := b.contents[b.curs.y].Substr(b.curs.x+1-tabSize, tabSize).String()
 				artificialTab := string(make([]rune, tabSize, ' '))
 				if strings.Compare(lastTabSizeChars, artificialTab) == 0 {
 					// delete {TAB_SIZE} amount of characters
@@ -231,11 +216,6 @@ func renderString(font *ttf.Font, val string, col sdl.Color, smooth bool) *sdl.S
 	return nil
 }
 
-func (b *Buffer) Translate(x, y int32) {
-	b.x += x
-	b.y += y
-}
-
 var should_draw bool
 var should_flash bool
 
@@ -275,7 +255,7 @@ func (b *Buffer) Update() {
 var last_w, last_h int32
 var TEXTURE_CACHE map[rune]*sdl.Texture = map[rune]*sdl.Texture{}
 
-func (b *Buffer) Render(ctx *sdl.Renderer) {
+func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 
 	// render the ol' cursor
 	if should_draw {

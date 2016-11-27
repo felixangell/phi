@@ -79,7 +79,7 @@ func (n *NateEditor) render() {
 	n.renderer.Clear()
 
 	for _, panel := range n.bufferPanels {
-		panel.Render(n.renderer)
+		gui.Render(panel, n.renderer)
 	}
 
 	n.renderer.Present()
