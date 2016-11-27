@@ -24,13 +24,20 @@ type NateEditor struct {
 }
 
 func (n *NateEditor) addBuffer(c gui.Component) {
+	// work out the size of the buffer and set it
+	// note that we +1 the bufferPanels because
+	// we haven't yet added the panel
+	w, height := n.window.GetSize()
+	bufferWidth := w / (len(n.bufferPanels) + 1)
+	c.Resize(int32(bufferWidth), int32(height))
+
+	// setup and add the panel for the buffer
 	panel := gui.NewPanel(n.inputHandler)
 	c.SetInputHandler(n.inputHandler)
 	panel.AddComponent(c)
 	n.bufferPanels = append(n.bufferPanels, panel)
 
-	w, _ := n.window.GetSize()
-	bufferWidth := w / len(n.bufferPanels)
+	// translate all the panels accordingly.
 	for i, p := range n.bufferPanels {
 		p.Translate(int32(bufferWidth)*int32(i), 0)
 	}
@@ -77,7 +84,7 @@ func (n *NateEditor) update() {
 }
 
 func (n *NateEditor) render() {
-	gfx.SetDrawColorHex(n.renderer, 0xfdf6e3)
+	gfx.SetDrawColorHex(n.renderer, 0xffffff)
 	n.renderer.Clear()
 
 	for _, panel := range n.bufferPanels {

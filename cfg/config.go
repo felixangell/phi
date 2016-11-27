@@ -2,22 +2,49 @@ package cfg
 
 type TomlConfig struct {
 	Editor EditorConfig `toml:"editor"`
+	Cursor CursorConfig `toml:"cursor"`
+	Render RenderConfig `toml:"render"`
+	Theme  ThemeConfig  `toml:"theme"`
+}
+
+type CursorConfig struct {
+	Flash_Rate  uint32
+	Reset_Delay uint32
+	Draw        bool
+	Flash       bool
+}
+
+type RenderConfig struct {
+	Aliased bool
+}
+
+// todo make this more extendable...
+// e.g. .nate-editor/themes with TOML
+// themes in them and we can select
+// the default theme in the EditorConfig
+// instead.
+type ThemeConfig struct {
+	Background    string
+	Foreground    string
+	Cursor        string
+	Cursor_Invert string
 }
 
 type EditorConfig struct {
-	Aliased            bool   `toml:"aliased"`
-	Tab_Size           int32  `toml:"tab_size"`
-	Hungry_Backspace   bool   `toml:"hungry_backspace"`
-	Tabs_Are_Spaces    bool   `toml:"tabs_are_spaces"`
-	Draw_Cursor        bool   `toml:"draw_cursor"`
-	Flash_Cursor       bool   `toml:"flash_cursor"`
-	Cursor_Flash_Rate  uint32 `toml:"cursor_flash_rate"`
-	Cursor_Reset_Delay uint32 `toml:"cursor_reset_delay"`
-	Match_Braces       bool   `toml:"match_braces"`
+	Tab_Size         int32
+	Hungry_Backspace bool
+	Tabs_Are_Spaces  bool
+	Match_Braces     bool
 }
 
 func NewDefaultConfig() *TomlConfig {
 	return &TomlConfig{
 		Editor: EditorConfig{},
+		Theme: ThemeConfig{
+			Background:    "0xfdf6e3",
+			Foreground:    "0x7a7a7a",
+			Cursor:        "0x657B83",
+			Cursor_Invert: "0xffffff",
+		},
 	}
 }

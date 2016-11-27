@@ -250,11 +250,11 @@ func (b *Buffer) Update() {
 		reset_timer = sdl.GetTicks()
 	}
 
-	if !should_flash && sdl.GetTicks()-reset_timer > b.cfg.Editor.Cursor_Reset_Delay {
+	if !should_flash && sdl.GetTicks()-reset_timer > b.cfg.Cursor.Reset_Delay {
 		should_flash = true
 	}
 
-	if sdl.GetTicks()-timer > b.cfg.Editor.Cursor_Flash_Rate && (should_flash && b.cfg.Editor.Flash_Cursor) {
+	if sdl.GetTicks()-timer > b.cfg.Cursor.Flash_Rate && (should_flash && b.cfg.Cursor.Flash) {
 		timer = sdl.GetTicks()
 		should_draw = !should_draw
 	}
@@ -264,10 +264,12 @@ func (b *Buffer) Update() {
 var last_w, last_h int32
 
 func (b *Buffer) OnRender(ctx *sdl.Renderer) {
+	gfx.SetDrawColorHexString(ctx, b.cfg.Theme.Background)
+	ctx.FillRect(&sdl.Rect{b.x, b.y, b.w, b.h})
 
 	// render the ol' cursor
-	if should_draw && b.cfg.Editor.Draw_Cursor {
-		gfx.SetDrawColorHex(ctx, 0x657B83)
+	if should_draw && b.cfg.Cursor.Draw {
+		gfx.SetDrawColorHexString(ctx, b.cfg.Theme.Cursor)
 		ctx.FillRect(&sdl.Rect{
 			b.x + (int32(b.curs.rx)+1)*last_w,
 			b.y + int32(b.curs.ry)*last_h,
@@ -313,7 +315,7 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 
 			texture, ok := TEXTURE_CACHE[char]
 			if !ok {
-				text := renderString(b.font, string(char), gfx.HexColor(0x7a7a7a), b.cfg.Editor.Aliased)
+				text := renderString(b.font, string(char), gfx.HexColorString(b.cfg.Theme.Foreground), b.cfg.Render.Aliased)
 				last_w = text.W
 				last_h = text.H
 
@@ -329,7 +331,7 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 			// drawn
 			source, allocated := texture, false
 			if b.curs.x+1 == int(x_col) && b.curs.y == int(y_col) && should_draw {
-				text := renderString(b.font, string(char), gfx.HexColor(0xffffff), b.cfg.Editor.Aliased)
+				text := renderString(b.font, string(char), gfx.HexColorString(b.cfg.Theme.Cursor_Invert), b.cfg.Render.Aliased)
 				last_w = text.W
 				last_h = text.H
 

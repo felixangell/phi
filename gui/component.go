@@ -6,6 +6,7 @@ import (
 
 type Component interface {
 	Translate(x, y int32)
+	Resize(w, h int32)
 
 	Init()
 	Update()
@@ -21,6 +22,7 @@ type Component interface {
 
 type BaseComponent struct {
 	x, y         int32
+	w, h         int32
 	components   []Component
 	inputHandler *InputHandler
 }
@@ -38,6 +40,11 @@ func (b *BaseComponent) Translate(x, y int32) {
 	for _, c := range b.components {
 		c.Translate(x, y)
 	}
+}
+
+func (b *BaseComponent) Resize(w, h int32) {
+	b.w = w
+	b.h = h
 }
 
 func (b *BaseComponent) GetComponents() []Component {
