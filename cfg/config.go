@@ -13,6 +13,7 @@ type EditorConfig struct {
 	Flash_Cursor       bool   `toml:"flash_cursor"`
 	Cursor_Flash_Rate  uint32 `toml:"cursor_flash_rate"`
 	Cursor_Reset_Delay uint32 `toml:"cursor_reset_delay"`
+	Match_Braces       bool   `toml:"match_braces"`
 }
 
 func NewDefaultConfig() *TomlConfig {

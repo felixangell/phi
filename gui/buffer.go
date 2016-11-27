@@ -71,8 +71,26 @@ func (b *Buffer) processTextInput(t *sdl.TextInputEvent) {
 
 	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(rawVal))
 	b.curs.move(1, 0)
+
+	matchingPair := int(rawVal)
+
+	// the offset in the ASCII Table is +2 for { and for [
+	// but its +1 for parenthesis (
+	offset := 2
+
+	switch rawVal {
+	case '(':
+		offset = 1
+		fallthrough
+	case '{':
+		fallthrough
+	case '[':
+		matchingPair += offset
+		b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(rune(matchingPair)))
+	}
 }
 
+// TODO(Felix): refactor me!)
 func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 	switch t.Keysym.Scancode {
 	case sdl.SCANCODE_RETURN:
