@@ -1,19 +1,20 @@
 package gui
 
 import (
+	"strings"
+	"unicode/utf8"
+
 	"github.com/felixangell/nate/cfg"
 	"github.com/felixangell/nate/gfx"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/sdl_ttf"
 	"github.com/vinzmay/go-rope"
-	"strings"
-	"unicode/utf8"
 )
 
 var (
 	timer        uint32 = 0
 	reset_timer  uint32 = 0
-	should_draw  bool
+	should_draw  bool   = true
 	should_flash bool
 )
 
@@ -226,7 +227,7 @@ func (b *Buffer) Update() {
 		should_flash = true
 	}
 
-	if sdl.GetTicks()-timer > b.cfg.Editor.Cursor_Flash_Rate && should_flash {
+	if sdl.GetTicks()-timer > b.cfg.Editor.Cursor_Flash_Rate && (should_flash && b.cfg.Editor.Flash_Cursor) {
 		timer = sdl.GetTicks()
 		should_draw = !should_draw
 	}
@@ -238,7 +239,7 @@ var TEXTURE_CACHE map[rune]*sdl.Texture = map[rune]*sdl.Texture{}
 func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 
 	// render the ol' cursor
-	if should_draw {
+	if should_draw && b.cfg.Editor.Draw_Cursor {
 		gfx.SetDrawColorHex(ctx, 0x657B83)
 		ctx.FillRect(&sdl.Rect{
 			b.x + (int32(b.curs.rx)+1)*last_w,
