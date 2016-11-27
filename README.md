@@ -17,14 +17,31 @@ $ go get github.com/felixangell/nate
 ```
 
 ## configuration
-Right now the configuration files are very much unimplemented. At the moment 
-configuration files are loaded, but they do not actually modify the behaviour
-of the editor, nor are they error checked.
+Configuration files are stored in `$HOME/.nate-editor/config.toml`, here's
+an example, which just so happens to be the defualt configuration:
 
 ```toml
 [editor]
+tab_size = 2
+hungry_backspace = true
+tabs_are_spaces = true
+match_braces = false
+
+[render]
 aliased = true
+
+[theme]
+background = "0xfdf6e3"
+foreground = "0x7a7a7a"
+cursor = "0x657B83"
+cursor_invert = "0xffffff"
+
+[cursor]
+flash_rate = 400
+reset_delay = 400
+draw = true
+flash = true
 ```
 
 # license
-[mit](/LICENSE)
+[MIT License](/LICENSE)
