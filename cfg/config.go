@@ -1,11 +1,33 @@
 package cfg
 
 type TomlConfig struct {
-	Editor EditorConfig `toml:"editor"`
-	Cursor CursorConfig `toml:"cursor"`
-	Render RenderConfig `toml:"render"`
-	Theme  ThemeConfig  `toml:"theme"`
+	Editor EditorConfig
+	Cursor CursorConfig
+	Render RenderConfig
+	Theme  ThemeConfig
 }
+
+var DEFUALT_TOML_CONFIG string = `[editor]
+tab_size = 2
+hungry_backspace = true
+tabs_are_spaces = true
+match_braces = false
+
+[render]
+aliased = true
+
+[theme]
+background = "0xfdf6e3"
+foreground = "0x7a7a7a"
+cursor = "0x657B83"
+cursor_invert = "0xffffff"
+
+[cursor]
+flash_rate = 400
+reset_delay = 400
+draw = true
+flash = true
+`
 
 type CursorConfig struct {
 	Flash_Rate  uint32

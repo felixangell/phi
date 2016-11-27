@@ -6,17 +6,6 @@ import (
 	"os"
 )
 
-var DEFUALT_TOML_CONFIG string = `[editor]
-aliased = true
-tab_size = 4
-hungry_backspace = true
-tabs_are_spaces = true
-draw_cursor = true
-flash_cursor = false
-cursor_flash_rate = 400
-cursor_reset_delay = 400
-`
-
 // TODO:
 // - make the $HOME/.nate-editor folder if it doesn't exist
 // - make the $HOME/.nate-editor/config.toml file if it doesn't exist
