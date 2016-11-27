@@ -99,17 +99,22 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 
 		var newRope *rope.Rope
 		if initial_x < prevLineLen && initial_x > 0 {
+			// we're not at the end of the line, but we're not at
+			// the start, i.e. we're SPLITTING the line
 			left, right := b.contents[b.curs.y].Split(initial_x)
 			newRope = right
 			b.contents[b.curs.y] = left
 		} else if initial_x == 0 {
+			// we're at the start of a line, so we want to
+			// shift the line down and insert an empty line
+			// above it!
 			b.contents = append(b.contents, new(rope.Rope))      // grow
 			copy(b.contents[b.curs.y+1:], b.contents[b.curs.y:]) // shift
 			b.contents[b.curs.y] = new(rope.Rope)                // set
 			b.curs.move(0, 1)
 			return
 		} else {
-			newRope = rope.New(" ")
+			newRope = new(rope.Rope)
 		}
 
 		b.curs.move(0, 1)

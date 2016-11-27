@@ -10,13 +10,11 @@ The editor must:
 * be easy to use 
 
 # building
-You'll need `veandco/sdl2` and `veandco/SDL2_ttf`, as well as `BurntSushi/toml` and `vinzmay/go-rope`. Running
+You'll need `veandco/sdl2` and `veandco/SDL2_ttf`, as well as `BurntSushi/toml` and `vinzmay/go-rope`.
 
 ```bash
 $ go get github.com/felixangell/nate
 ```
-
-Should handle installing dependencies for you.
 
 ## configuration
 Right now the configuration files are very much unimplemented. At the moment 
