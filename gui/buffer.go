@@ -72,6 +72,12 @@ func (b *Buffer) processTextInput(t *sdl.TextInputEvent) {
 	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
 	b.curs.move(1, 0)
 
+	// we don't need to match braces
+	// let's not continue any further
+	if !b.cfg.Editor.Match_Braces {
+		return
+	}
+
 	matchingPair := int(r)
 
 	// the offset in the ASCII Table is +2 for { and for [
@@ -114,6 +120,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			b.curs.move(0, 1)
 			return
 		} else {
+			// we're at the end of a line
 			newRope = new(rope.Rope)
 		}
 
@@ -281,11 +288,16 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 
 	// render the ol' cursor
 	if should_draw && b.cfg.Cursor.Draw {
+		cursorWidth := int32(b.cfg.Cursor.GetCaretWidth())
+		if cursorWidth == -1 {
+			cursorWidth = last_w
+		}
+
 		gfx.SetDrawColorHexString(ctx, b.cfg.Theme.Cursor)
 		ctx.FillRect(&sdl.Rect{
 			b.x + (int32(b.curs.rx)+1)*last_w,
 			b.y + int32(b.curs.ry)*last_h,
-			last_w,
+			cursorWidth,
 			last_h,
 		})
 	}

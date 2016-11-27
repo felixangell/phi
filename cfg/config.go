@@ -1,5 +1,7 @@
 package cfg
 
+import "strconv"
+
 type TomlConfig struct {
 	Editor EditorConfig
 	Cursor CursorConfig
@@ -12,6 +14,7 @@ tab_size = 2
 hungry_backspace = true
 tabs_are_spaces = true
 match_braces = false
+maintain_indentation = true
 
 [render]
 aliased = true
@@ -34,6 +37,18 @@ type CursorConfig struct {
 	Reset_Delay uint32
 	Draw        bool
 	Flash       bool
+	Block_Width string
+}
+
+func (c CursorConfig) GetCaretWidth() int {
+	if c.Block_Width == "block" {
+		return -1
+	}
+	value, err := strconv.ParseInt(c.Block_Width, 10, 32)
+	if err != nil {
+		panic(err)
+	}
+	return int(value)
 }
 
 type RenderConfig struct {
@@ -53,10 +68,11 @@ type ThemeConfig struct {
 }
 
 type EditorConfig struct {
-	Tab_Size         int32
-	Hungry_Backspace bool
-	Tabs_Are_Spaces  bool
-	Match_Braces     bool
+	Tab_Size             int32
+	Hungry_Backspace     bool
+	Tabs_Are_Spaces      bool
+	Match_Braces         bool
+	Maintain_Indentation bool
 }
 
 func NewDefaultConfig() *TomlConfig {
