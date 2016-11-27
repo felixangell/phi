@@ -63,22 +63,22 @@ func (b *Buffer) appendLine(val string) {
 }
 
 func (b *Buffer) processTextInput(t *sdl.TextInputEvent) {
-	// TODO: how the fuck do decode this properly?
-	rawVal, size := utf8.DecodeLastRune(t.Text[:1])
-	if rawVal == utf8.RuneError || size == 0 {
-		return
+	firstRune := t.Text[:4]
+	r, _ := utf8.DecodeRune(firstRune)
+	if r == utf8.RuneError {
+		panic("oh dear!")
 	}
 
-	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(rawVal))
+	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
 	b.curs.move(1, 0)
 
-	matchingPair := int(rawVal)
+	matchingPair := int(r)
 
 	// the offset in the ASCII Table is +2 for { and for [
 	// but its +1 for parenthesis (
 	offset := 2
 
-	switch rawVal {
+	switch r {
 	case '(':
 		offset = 1
 		fallthrough
@@ -128,7 +128,6 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 					offs = int(-b.cfg.Editor.Tab_Size)
 				}
 			} else if b.cfg.Editor.Hungry_Backspace && b.curs.x >= int(b.cfg.Editor.Tab_Size) {
-				// FIXME wtf how does Substr even work
 				// cut out the last {TAB_SIZE} amount of characters
 				// and check em
 				tabSize := int(b.cfg.Editor.Tab_Size)
@@ -325,16 +324,32 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 				text.Free()
 			}
 
-			// FIXME still kinda slow
-			// we can also cull so that
-			// we don't render things that aren't
-			// visible outside of the component
-			ctx.Copy(texture, nil, &sdl.Rect{
+			// set the colour of the currently selected
+			// character to white IF the cursor is being
+			// drawn
+			source, allocated := texture, false
+			if b.curs.x+1 == int(x_col) && b.curs.y == int(y_col) && should_draw {
+				text := renderString(b.font, string(char), gfx.HexColor(0xffffff), b.cfg.Editor.Aliased)
+				last_w = text.W
+				last_h = text.H
+
+				texture, _ = ctx.CreateTextureFromSurface(text)
+				text.Free()
+				source, allocated = texture, true
+			}
+
+			ctx.Copy(source, nil, &sdl.Rect{
 				b.x + (x_col * last_w),
 				b.y + (y_col * last_h),
 				last_w,
 				last_h,
 			})
+
+			// it's not cached so we have to free it
+			// ourselves
+			if allocated {
+				source.Destroy()
+			}
 		}
 
 		y_col += 1

@@ -67,6 +67,8 @@ func (n *NateEditor) update() {
 		switch event.(type) {
 		case *sdl.QuitEvent:
 			n.running = false
+		case *sdl.TextEditingEvent:
+			n.inputHandler.Event = event
 		case *sdl.TextInputEvent:
 			n.inputHandler.Event = event
 		}
