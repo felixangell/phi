@@ -132,7 +132,7 @@ func main() {
 		window.SetIcon(icon)
 	}
 
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED|sdl.RENDERER_PRESENTVSYNC)
+	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
 		panic(err)
 	}
@@ -157,7 +157,7 @@ func main() {
 			num_frames = 0
 		}
 
-		sdl.Delay(16)
+		sdl.Delay(2)
 	}
 
 	editor.dispose()

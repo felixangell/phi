@@ -18,6 +18,8 @@ var (
 	should_flash bool
 )
 
+var TEXTURE_CACHE map[rune]*sdl.Texture = map[rune]*sdl.Texture{}
+
 type Buffer struct {
 	BaseComponent
 	font     *ttf.Font
@@ -43,7 +45,7 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 		curs:     &Cursor{},
 		cfg:      config,
 	}
-	buff.appendLine("hello! مرحبا 世界.")
+	buff.appendLine("hello!")
 	return buff
 }
 
@@ -233,8 +235,8 @@ func (b *Buffer) Update() {
 	}
 }
 
+// dimensions of the last character we rendered
 var last_w, last_h int32
-var TEXTURE_CACHE map[rune]*sdl.Texture = map[rune]*sdl.Texture{}
 
 func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 
@@ -282,25 +284,19 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 				continue
 			}
 
-			char_colour := 0x7a7a7a
-			if b.curs.x == int(x_col) && b.curs.y == int(y_col) {
-				char_colour = 0xff00ff
-			}
-
 			x_col += 1
-
-			text := renderString(b.font, string(char), gfx.HexColor(uint32(char_colour)), b.cfg.Editor.Aliased)
-			defer text.Free()
-
-			last_w = text.W
-			last_h = text.H
 
 			texture, ok := TEXTURE_CACHE[char]
 			if !ok {
+				text := renderString(b.font, string(char), gfx.HexColor(0x7a7a7a), b.cfg.Editor.Aliased)
+				last_w = text.W
+				last_h = text.H
+
 				// can't find it in the cache so we
 				// load and then cache it.
 				texture, _ = ctx.CreateTextureFromSurface(text)
 				TEXTURE_CACHE[char] = texture
+				text.Free()
 			}
 
 			// FIXME still kinda slow
@@ -308,10 +304,10 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 			// we don't render things that aren't
 			// visible outside of the component
 			ctx.Copy(texture, nil, &sdl.Rect{
-				b.x + (x_col * text.W),
-				b.y + (y_col * text.H),
-				text.W,
-				text.H,
+				b.x + (x_col * last_w),
+				b.y + (y_col * last_h),
+				last_w,
+				last_h,
 			})
 		}
 
