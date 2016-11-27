@@ -6,6 +6,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/sdl_ttf"
 	"github.com/vinzmay/go-rope"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -138,8 +139,13 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 					offs = int(-b.cfg.Editor.Tab_Size)
 				}
 			} else if b.cfg.Editor.Hungry_Backspace && b.curs.x >= int(b.cfg.Editor.Tab_Size) && b.cfg.Editor.Tabs_Are_Spaces {
-				// why x + 1 here? wtf
-				if b.contents[b.curs.y].Substr((b.curs.x+1)-int(b.cfg.Editor.Tab_Size), int(b.cfg.Editor.Tab_Size)).String() == "    " {
+				// FIXME wtf how does Substr even work
+				// cut out the last {TAB_SIZE} amount of characters
+				// and check em
+				tabSize := int(b.cfg.Editor.Tab_Size)
+				lastTabSizeChars := b.contents[b.curs.y].Substr(b.curs.x-tabSize, tabSize).String()
+				artificialTab := string(make([]rune, tabSize, ' '))
+				if strings.Compare(lastTabSizeChars, artificialTab) == 0 {
 					// delete {TAB_SIZE} amount of characters
 					// from the cursors x pos
 					for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {

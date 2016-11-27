@@ -50,7 +50,7 @@ func Setup() TomlConfig {
 		defer configFile.Close()
 
 		// write some stuff
-		_, writeErr := configFile.Write([]byte("[config]"))
+		_, writeErr := configFile.Write([]byte(DEFUALT_TOML_CONFIG))
 		if writeErr != nil {
 			panic(writeErr)
 		}
