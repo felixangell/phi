@@ -306,7 +306,7 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 
 		gfx.SetDrawColorHexString(ctx, b.cfg.Theme.Cursor)
 		ctx.FillRect(&sdl.Rect{
-			b.x + (int32(b.curs.rx)+1)*last_w,
+			b.x + (int32(b.curs.rx))*last_w,
 			b.y + int32(b.curs.ry)*last_h,
 			cursorWidth,
 			last_h,
@@ -376,7 +376,7 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 			}
 
 			ctx.Copy(source, nil, &sdl.Rect{
-				b.x + (x_col * last_w),
+				b.x + ((x_col - 1) * last_w),
 				b.y + (y_col * last_h),
 				last_w,
 				last_h,
