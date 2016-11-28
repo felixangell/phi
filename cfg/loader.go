@@ -17,9 +17,12 @@ const (
 	CONFIG_TOML_FILE = "config.toml"
 )
 
+var CONFIG_FULL_PATH string = ""
+
 func Setup() TomlConfig {
 	CONFIG_DIR := os.Getenv("HOME") + CONFIG_DIR_PATH
 	CONFIG_PATH := CONFIG_DIR + CONFIG_TOML_FILE
+	CONFIG_FULL_PATH = CONFIG_PATH
 
 	// if the user doesn't have a /.nate-editor
 	// directory we create it for them.

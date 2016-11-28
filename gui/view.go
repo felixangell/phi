@@ -20,7 +20,6 @@ func NewView(width, height int, conf *cfg.TomlConfig) *View {
 
 func (n *View) OnInit() {
 	n.addBuffer()
-	n.addBuffer()
 }
 
 func (n *View) OnUpdate() {}

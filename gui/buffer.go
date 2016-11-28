@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"io/ioutil"
 	"strings"
 	"unicode/utf8"
 
@@ -39,13 +40,26 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 		config = cfg.NewDefaultConfig()
 	}
 
+	buffContents := []*rope.Rope{}
 	buff := &Buffer{
-		contents: []*rope.Rope{},
+		contents: buffContents,
 		font:     font,
 		curs:     &Cursor{},
 		cfg:      config,
 	}
-	buff.appendLine("hello!")
+
+	{
+		contents, err := ioutil.ReadFile(cfg.CONFIG_FULL_PATH)
+		if err != nil {
+			panic(err)
+		}
+
+		lines := strings.Split(string(contents), "\n")
+		for _, line := range lines {
+			buff.appendLine(line)
+		}
+	}
+
 	return buff
 }
 
@@ -205,6 +219,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			// TODO: offset should account for tabs
 			b.curs.move(offs, 1)
 		}
+		lineIndex++
 	case sdl.SCANCODE_TAB:
 		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
@@ -282,6 +297,7 @@ func (b *Buffer) OnUpdate() {
 
 // dimensions of the last character we rendered
 var last_w, last_h int32
+var lineIndex int = 0
 
 func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 	gfx.SetDrawColorHexString(ctx, b.cfg.Theme.Background)
@@ -313,11 +329,22 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 		})
 	}
 
-	// TODO(Felix): cull this so that
-	// we dont render lines we cant see.
+	source := b.contents
+	if int(last_h) > 0 {
+		// work out how many lines can fit into
+		// the buffer, and set the source to
+		// slice the line buffer accordingly
+		visibleLines := int(b.h) / int(last_h)
+		if len(b.contents) > visibleLines {
+			if lineIndex+visibleLines >= len(b.contents) {
+				lineIndex = len(b.contents) - visibleLines
+			}
+			source = b.contents[lineIndex : lineIndex+visibleLines]
+		}
+	}
 
 	var y_col int32
-	for _, rope := range b.contents {
+	for _, rope := range source {
 		// this is because if we had the following
 		// text input:
 		//
@@ -391,4 +418,5 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 
 		y_col += 1
 	}
+
 }
