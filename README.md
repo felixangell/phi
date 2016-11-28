@@ -1,5 +1,6 @@
 # nate-editor
-Nate is a re-write of an old text-editor I wrote earlier this year.
+Nate is a re-write of an old text-editor I wrote earlier this year. It's
+very buggy, may or may not work on macOS, and is still a work in progress!
 
 # goals
 The editor must:

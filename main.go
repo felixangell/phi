@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"runtime"
+
 	"github.com/felixangell/nate/cfg"
 	"github.com/felixangell/nate/gfx"
 	"github.com/felixangell/nate/gui"
 	"github.com/veandco/go-sdl2/sdl"
 	img "github.com/veandco/go-sdl2/sdl_image"
 	"github.com/veandco/go-sdl2/sdl_ttf"
-	"runtime"
 )
 
 const (

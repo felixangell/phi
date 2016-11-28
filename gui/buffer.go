@@ -219,7 +219,6 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			// TODO: offset should account for tabs
 			b.curs.move(offs, 1)
 		}
-		lineIndex++
 	case sdl.SCANCODE_TAB:
 		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
