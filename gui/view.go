@@ -14,10 +14,12 @@ type View struct {
 func NewView(width, height int, conf *cfg.TomlConfig) *View {
 	view := &View{conf: conf}
 	view.Translate(int32(width), int32(height))
+	view.Resize(int32(width), int32(height))
 	return view
 }
 
 func (n *View) OnInit() {
+	n.addBuffer()
 	n.addBuffer()
 }
 

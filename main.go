@@ -27,9 +27,9 @@ func (n *NateEditor) init(cfg *cfg.TomlConfig) {
 	w, h := n.window.GetSize()
 	n.AddComponent(gui.NewView(w, h, cfg))
 
-	palette := gui.NewCommandPalette()
-	palette.Translate(int32(w/2), 20)
-	n.AddComponent(palette)
+	// palette := gui.NewCommandPalette()
+	// palette.Translate(int32(w/2), 20)
+	// n.AddComponent(palette)
 }
 
 func (n *NateEditor) dispose() {

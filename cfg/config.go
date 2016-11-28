@@ -15,6 +15,7 @@ hungry_backspace = true
 tabs_are_spaces = true
 match_braces = false
 maintain_indentation = true
+highlight_line = true
 
 [render]
 aliased = true
@@ -44,6 +45,10 @@ func (c CursorConfig) GetCaretWidth() int {
 	if c.Block_Width == "block" {
 		return -1
 	}
+	if c.Block_Width == "" {
+		return -1
+	}
+
 	value, err := strconv.ParseInt(c.Block_Width, 10, 32)
 	if err != nil {
 		panic(err)
@@ -73,6 +78,7 @@ type EditorConfig struct {
 	Tabs_Are_Spaces      bool
 	Match_Braces         bool
 	Maintain_Indentation bool
+	Highlight_Line       bool
 }
 
 func NewDefaultConfig() *TomlConfig {

@@ -287,6 +287,16 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 	gfx.SetDrawColorHexString(ctx, b.cfg.Theme.Background)
 	ctx.FillRect(&sdl.Rect{b.x, b.y, b.w, b.h})
 
+	if b.cfg.Editor.Highlight_Line {
+		gfx.SetDrawColorHexString(ctx, "0x001629")
+		ctx.FillRect(&sdl.Rect{
+			b.x,
+			b.y + int32(b.curs.ry)*last_h,
+			b.w,
+			last_h,
+		})
+	}
+
 	// render the ol' cursor
 	if should_draw && b.cfg.Cursor.Draw {
 		cursorWidth := int32(b.cfg.Cursor.GetCaretWidth())
