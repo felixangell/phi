@@ -117,7 +117,12 @@ func main() {
 		window.SetIcon(icon)
 	}
 
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	var mode uint32 = sdl.RENDERER_SOFTWARE
+	if config.Render.Accelerated {
+		mode = sdl.RENDERER_ACCELERATED
+	}
+
+	renderer, err := sdl.CreateRenderer(window, -1, mode)
 	if err != nil {
 		panic(err)
 	}

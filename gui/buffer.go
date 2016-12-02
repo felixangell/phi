@@ -329,7 +329,7 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 	}
 
 	source := b.contents
-	if int(last_h) > 0 {
+	if int(last_h) > 0 && int(b.h) != 0 {
 		// work out how many lines can fit into
 		// the buffer, and set the source to
 		// slice the line buffer accordingly

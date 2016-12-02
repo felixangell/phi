@@ -19,6 +19,7 @@ highlight_line = true
 
 [render]
 aliased = true
+accelerated = true
 
 [theme]
 background = "0xfdf6e3"
@@ -57,7 +58,8 @@ func (c CursorConfig) GetCaretWidth() int {
 }
 
 type RenderConfig struct {
-	Aliased bool
+	Aliased     bool
+	Accelerated bool
 }
 
 // todo make this more extendable...
