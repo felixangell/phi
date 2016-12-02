@@ -1,5 +1,6 @@
+<p align="center"><img src="res/icons/icon96.png"></p>
+
 <h1>nate-editor</h1>
-<img align="left" hspace="10" vspace="6" style="max-width:100%;" src="res/icons/icon96.png">
 Nate is a minimal text editor designed to look pretty, run fast, and be easy
 to configure and use. It's primary function is for editing code. Note that this
 is a re-write of the initial editor that I wrote last year. It's still a work in
