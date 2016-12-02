@@ -3,7 +3,9 @@
 Nate is a minimal text editor designed to look pretty, run fast, and be easy
 to configure and use. It's primary function is for editing code. Note that this
 is a re-write of the initial editor that I wrote last year. It's still a work in
-progress and is very buggy!
+progress and is very buggy! In addition to this, the editor is written as if it's a game,
+so it will probably eat up your battery, run quite slow on a laptop, and probably crash
+quite frequently.
 
 <br>
 
