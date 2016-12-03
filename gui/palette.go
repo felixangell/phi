@@ -8,13 +8,8 @@ type CommandBuffer struct {
 	*Buffer
 }
 
-func (b *CommandBuffer) processActionKey(t *sdl.KeyDownEvent) {
-	switch t.Keysym.Scancode {
-	case sdl.SCANCODE_RETURN:
-		println("dope!")
-		return
-	}
-	b.Buffer.processActionKey(t)
+func (b *CommandBuffer) processActionKey() {
+	b.Buffer.processActionKey()
 }
 
 type CommandPalette struct {

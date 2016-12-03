@@ -35,8 +35,8 @@ flash = true
 `
 
 type CursorConfig struct {
-	Flash_Rate  uint32
-	Reset_Delay uint32
+	Flash_Rate  int64
+	Reset_Delay int64
 	Draw        bool
 	Flash       bool
 	Block_Width string
@@ -75,7 +75,7 @@ type ThemeConfig struct {
 }
 
 type EditorConfig struct {
-	Tab_Size             int32
+	Tab_Size             int
 	Hungry_Backspace     bool
 	Tabs_Are_Spaces      bool
 	Match_Braces         bool

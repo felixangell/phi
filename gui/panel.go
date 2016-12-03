@@ -1,7 +1,7 @@
 package gui
 
 import (
-	"github.com/veandco/go-sdl2/sdl"
+	"github.com/felixangell/strife"
 )
 
 type Panel struct {
@@ -20,4 +20,4 @@ func (p *Panel) OnInit() {}
 
 func (p *Panel) OnUpdate() {}
 
-func (p *Panel) OnRender(ctx *sdl.Renderer) {}
+func (p *Panel) OnRender(ctx *strife.Renderer) {}

@@ -6,35 +6,28 @@ import (
 	"unicode/utf8"
 
 	"github.com/felixangell/nate/cfg"
-	"github.com/felixangell/nate/gfx"
-	"github.com/veandco/go-sdl2/sdl"
-	"github.com/veandco/go-sdl2/sdl_ttf"
+	"github.com/felixangell/strife"
 	"github.com/vinzmay/go-rope"
 )
 
 var (
-	timer        uint32 = 0
-	reset_timer  uint32 = 0
-	should_draw  bool   = true
+	timer        int64 = 0
+	reset_timer  int64 = 0
+	should_draw  bool  = true
 	should_flash bool
 )
 
-var TEXTURE_CACHE map[rune]*sdl.Texture = map[rune]*sdl.Texture{}
+// TODO: allow font setting or whatever
 
 type Buffer struct {
 	BaseComponent
-	font     *ttf.Font
+	font     *strife.Font
 	contents []*rope.Rope
 	curs     *Cursor
 	cfg      *cfg.TomlConfig
 }
 
 func NewBuffer(conf *cfg.TomlConfig) *Buffer {
-	font, err := ttf.OpenFont("./res/firacode.ttf", 24)
-	if err != nil {
-		panic(err)
-	}
-
 	config := conf
 	if config == nil {
 		config = cfg.NewDefaultConfig()
@@ -43,7 +36,6 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 	buffContents := []*rope.Rope{}
 	buff := &Buffer{
 		contents: buffContents,
-		font:     font,
 		curs:     &Cursor{},
 		cfg:      config,
 	}
@@ -64,9 +56,7 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 }
 
 func (b *Buffer) OnDispose() {
-	for _, texture := range TEXTURE_CACHE {
-		texture.Destroy()
-	}
+
 }
 
 func (b *Buffer) OnInit() {}
@@ -76,8 +66,8 @@ func (b *Buffer) appendLine(val string) {
 	b.curs.move(len(val), 0)
 }
 
-func (b *Buffer) processTextInput(t *sdl.TextInputEvent) {
-	firstRune := t.Text[:4]
+func (b *Buffer) processTextInput() {
+	firstRune := []byte{'a'}
 	r, _ := utf8.DecodeRune(firstRune)
 	if r == utf8.RuneError {
 		panic("oh dear!")
@@ -110,10 +100,9 @@ func (b *Buffer) processTextInput(t *sdl.TextInputEvent) {
 	}
 }
 
-// TODO(Felix): refactor me!)
-func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
-	switch t.Keysym.Scancode {
-	case sdl.SCANCODE_RETURN:
+func (b *Buffer) processActionKey() {
+	switch {
+	case 2 == 6:
 		initial_x := b.curs.x
 		prevLineLen := b.contents[b.curs.y].Len()
 
@@ -149,7 +138,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 		b.contents = append(b.contents, nil)
 		copy(b.contents[b.curs.y+1:], b.contents[b.curs.y:])
 		b.contents[b.curs.y] = newRope
-	case sdl.SCANCODE_BACKSPACE:
+	case 2 == 4:
 		if b.curs.x > 0 {
 			offs := -1
 			if !b.cfg.Editor.Tabs_Are_Spaces {
@@ -181,7 +170,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			b.contents = append(b.contents[:b.curs.y], b.contents[b.curs.y+1:]...)
 			b.curs.move(prevLineLen, -1)
 		}
-	case sdl.SCANCODE_RIGHT:
+	case 1 == 1:
 		currLineLength := b.contents[b.curs.y].Len()
 		if b.curs.x >= currLineLength && b.curs.y < len(b.contents)-1 {
 			// we're at the end of the line and we have
@@ -192,14 +181,14 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			// we have characters to the right, let's move along
 			b.curs.move(1, 0)
 		}
-	case sdl.SCANCODE_LEFT:
+	case 1 == 2:
 		if b.curs.x == 0 && b.curs.y > 0 {
 			b.curs.move(b.contents[b.curs.y-1].Len(), -1)
 
 		} else if b.curs.x > 0 {
 			b.curs.move(-1, 0)
 		}
-	case sdl.SCANCODE_UP:
+	case 1 == 3:
 		if b.curs.y > 0 {
 			offs := 0
 			prevLineLen := b.contents[b.curs.y-1].Len()
@@ -209,7 +198,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			// TODO: offset should account for tabs
 			b.curs.move(offs, -1)
 		}
-	case sdl.SCANCODE_DOWN:
+	case 1 == 4:
 		if b.curs.y < len(b.contents)-1 {
 			offs := 0
 			nextLineLen := b.contents[b.curs.y+1].Len()
@@ -219,7 +208,7 @@ func (b *Buffer) processActionKey(t *sdl.KeyDownEvent) {
 			// TODO: offset should account for tabs
 			b.curs.move(offs, 1)
 		}
-	case sdl.SCANCODE_TAB:
+	case 1 == 5:
 		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
 			// and insert it.
@@ -243,23 +232,6 @@ func (b *Buffer) makeTab() string {
 	return string(blah)
 }
 
-func renderString(font *ttf.Font, val string, col sdl.Color, smooth bool) *sdl.Surface {
-	if smooth {
-		text, err := font.RenderUTF8_Blended(val, col)
-		if err != nil {
-			panic(err)
-		}
-		return text
-	} else {
-		text, err := font.RenderUTF8_Solid(val, col)
-		if err != nil {
-			panic(err)
-		}
-		return text
-	}
-	return nil
-}
-
 func (b *Buffer) OnUpdate() {
 	prev_x := b.curs.x
 	prev_y := b.curs.y
@@ -269,63 +241,44 @@ func (b *Buffer) OnUpdate() {
 		return
 	}
 
-	if b.inputHandler.Event != nil {
-		switch t := b.inputHandler.Event.(type) {
-		case *sdl.TextInputEvent:
-			b.processTextInput(t)
-		case *sdl.KeyDownEvent:
-			b.processActionKey(t)
-		}
-	}
-
 	if b.curs.x != prev_x || b.curs.y != prev_y {
 		should_draw = true
 		should_flash = false
-		reset_timer = sdl.GetTicks()
+		reset_timer = strife.CurrentTimeMillis()
 	}
 
-	if !should_flash && sdl.GetTicks()-reset_timer > b.cfg.Cursor.Reset_Delay {
+	if !should_flash && strife.CurrentTimeMillis()-reset_timer > b.cfg.Cursor.Reset_Delay {
 		should_flash = true
 	}
 
-	if sdl.GetTicks()-timer > b.cfg.Cursor.Flash_Rate && (should_flash && b.cfg.Cursor.Flash) {
-		timer = sdl.GetTicks()
+	if strife.CurrentTimeMillis()-timer > b.cfg.Cursor.Flash_Rate && (should_flash && b.cfg.Cursor.Flash) {
+		timer = strife.CurrentTimeMillis()
 		should_draw = !should_draw
 	}
 }
 
 // dimensions of the last character we rendered
-var last_w, last_h int32
+var last_w, last_h int
 var lineIndex int = 0
 
-func (b *Buffer) OnRender(ctx *sdl.Renderer) {
-	gfx.SetDrawColorHexString(ctx, b.cfg.Theme.Background)
-	ctx.FillRect(&sdl.Rect{b.x, b.y, b.w, b.h})
+func (b *Buffer) OnRender(ctx *strife.Renderer) {
+	ctx.SetColor(strife.RGB(255, 0, 255)) // BACKGROUND
+	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
 
 	if b.cfg.Editor.Highlight_Line {
-		gfx.SetDrawColorHexString(ctx, "0x001629")
-		ctx.FillRect(&sdl.Rect{
-			b.x,
-			b.y + int32(b.curs.ry)*last_h,
-			b.w,
-			last_h,
-		})
+		ctx.SetColor(strife.Black) // highlight_line_col?
+		ctx.Rect(b.x, b.y+b.curs.ry*last_h, b.w, last_h, strife.Fill)
 	}
 
 	// render the ol' cursor
 	if should_draw && b.cfg.Cursor.Draw {
-		cursorWidth := int32(b.cfg.Cursor.GetCaretWidth())
+		cursorWidth := b.cfg.Cursor.GetCaretWidth()
 		if cursorWidth == -1 {
 			cursorWidth = last_w
 		}
 
-		gfx.SetDrawColorHexString(ctx, b.cfg.Theme.Cursor)
-		ctx.FillRect(&sdl.Rect{
-			b.x + (int32(b.curs.rx))*last_w,
-			b.y + int32(b.curs.ry)*last_h,
-			cursorWidth,
-			last_h,
-		})
+		ctx.SetColor(strife.Red) // caret colour
+		ctx.Rect(b.x+b.curs.rx*last_w, b.y+b.curs.ry*last_h, cursorWidth, last_h, strife.Fill)
 	}
 
 	source := b.contents
@@ -342,7 +295,7 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 		}
 	}
 
-	var y_col int32
+	var y_col int
 	for _, rope := range source {
 		// this is because if we had the following
 		// text input:
@@ -360,7 +313,7 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 			continue
 		}
 
-		var x_col int32
+		var x_col int
 		for _, char := range rope.String() {
 			switch char {
 			case '\n':
@@ -374,45 +327,16 @@ func (b *Buffer) OnRender(ctx *sdl.Renderer) {
 
 			x_col += 1
 
-			texture, ok := TEXTURE_CACHE[char]
-			if !ok {
-				text := renderString(b.font, string(char), gfx.HexColorString(b.cfg.Theme.Foreground), b.cfg.Render.Aliased)
-				last_w = text.W
-				last_h = text.H
+			ctx.SetColor(strife.Blue)
 
-				// can't find it in the cache so we
-				// load and then cache it.
-				texture, _ = ctx.CreateTextureFromSurface(text)
-				TEXTURE_CACHE[char] = texture
-				text.Free()
+			// if we're currently over a character then set
+			// the font colour to something else
+			if b.curs.x+1 == x_col && b.curs.y == y_col && should_draw {
+				ctx.SetColor(strife.Green)
 			}
 
-			// set the colour of the currently selected
-			// character to white IF the cursor is being
-			// drawn
-			source, allocated := texture, false
-			if b.curs.x+1 == int(x_col) && b.curs.y == int(y_col) && should_draw {
-				text := renderString(b.font, string(char), gfx.HexColorString(b.cfg.Theme.Cursor_Invert), b.cfg.Render.Aliased)
-				last_w = text.W
-				last_h = text.H
-
-				texture, _ = ctx.CreateTextureFromSurface(text)
-				text.Free()
-				source, allocated = texture, true
-			}
-
-			ctx.Copy(source, nil, &sdl.Rect{
-				b.x + ((x_col - 1) * last_w),
-				b.y + (y_col * last_h),
-				last_w,
-				last_h,
-			})
-
-			// it's not cached so we have to free it
-			// ourselves
-			if allocated {
-				source.Destroy()
-			}
+			// foreground colour
+			last_w, last_h = ctx.String(string(char), b.x+((x_col-1)*last_w), b.y+(y_col*last_h))
 		}
 
 		y_col += 1

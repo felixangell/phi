@@ -1,16 +1,16 @@
 package gui
 
 import (
-	"github.com/veandco/go-sdl2/sdl"
+	"github.com/felixangell/strife"
 )
 
 type Component interface {
-	Translate(x, y int32)
-	Resize(w, h int32)
+	Translate(x, y int)
+	Resize(w, h int)
 
 	OnInit()
 	OnUpdate()
-	OnRender(*sdl.Renderer)
+	OnRender(*strife.Renderer)
 	OnDispose()
 
 	AddComponent(c Component)
@@ -21,13 +21,13 @@ type Component interface {
 }
 
 type BaseComponent struct {
-	x, y         int32
-	w, h         int32
+	x, y         int
+	w, h         int
 	components   []Component
 	inputHandler *InputHandler
 }
 
-func (b *BaseComponent) Translate(x, y int32) {
+func (b *BaseComponent) Translate(x, y int) {
 	b.x += x
 	b.y += y
 	for _, c := range b.components {
@@ -35,7 +35,7 @@ func (b *BaseComponent) Translate(x, y int32) {
 	}
 }
 
-func (b *BaseComponent) Resize(w, h int32) {
+func (b *BaseComponent) Resize(w, h int) {
 	b.w = w
 	b.h = h
 }
@@ -65,7 +65,7 @@ func Update(c Component) {
 	}
 }
 
-func Render(c Component, ctx *sdl.Renderer) {
+func Render(c Component, ctx *strife.Renderer) {
 	c.OnRender(ctx)
 	for _, child := range c.GetComponents() {
 		Render(child, ctx)

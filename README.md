@@ -19,11 +19,18 @@ The editor must:
 * be easy to use 
 
 # building
-You'll need `veandco/sdl2` and `veandco/SDL2_ttf`, as well as `BurntSushi/toml` and `vinzmay/go-rope`.
+You'll need Go with the GOPATH, GOBIN, etc. setup, as well as SDL2, SDL2\_image, and SDL2\_ttf. Here's
+an example for Ubuntu:
 
 ```bash
+$ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
 $ go get github.com/felixangell/nate
+$ cd $GOPATH/src/github.com/felixangell/nate
+$ go build
+$ ./nate
 ```
+
+If you're on macOS, you can get these dependencies via. homebrew. If you're on windows; you have my condolences.
 
 ## configuration
 Configuration files are stored in `$HOME/.nate-editor/config.toml`, here's
