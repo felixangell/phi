@@ -10,6 +10,11 @@ quite frequently.
 
 <br>
 
+Here's a screenshot of the editor right now with the default (temporary!) colour schemes
+editing the config file for the editor itself.
+
+<p align="center"><img src="screenshot.png"></p>
+
 # goals
 The editor must:
 
