@@ -22,7 +22,7 @@ type NateEditor struct {
 func (n *NateEditor) init(cfg *cfg.TomlConfig) {
 	n.AddComponent(gui.NewView(800, 600, cfg))
 
-	font, err := strife.LoadFont("./res/firacode.ttf")
+	font, err := strife.LoadFont("./res/firacode.ttf", 14)
 	if err != nil {
 		panic(err)
 	}
@@ -42,29 +42,29 @@ func (n *NateEditor) update() {
 }
 
 func (n *NateEditor) render(ctx *strife.Renderer) {
-	ctx.Clear()
-
 	ctx.SetFont(n.defaultFont)
 
 	for _, child := range n.GetComponents() {
 		gui.Render(child, ctx)
 	}
-
-	ctx.Display()
 }
 
 func main() {
 	config := cfg.Setup()
 
-	windowWidth, windowHeight := 800, 600
-	window, err := strife.CreateRenderWindow(windowWidth, windowHeight, &strife.RenderConfig{
-		Alias:        true,
-		Accelerated:  false,
-		VerticalSync: false,
+	ww, wh := 800, 600
+	window := strife.SetupRenderWindow(ww, wh, strife.DefaultConfig())
+	window.SetTitle("Hello world!")
+	window.SetResizable(true)
+	window.Create()
+
+	window.HandleEvents(func (evt strife.StrifeEvent) {
+		switch evt.(type) {
+		case *strife.CloseEvent:
+			window.Close()
+		}
 	})
-	if err != nil {
-		panic(err)
-	}
+
 
 	{
 		size := "16"
@@ -83,7 +83,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		window.SetIcon(icon)
+		window.SetIconImage(icon)
+		defer icon.Destroy()
 	}
 
 	editor := &NateEditor{running: true}
@@ -92,9 +93,20 @@ func main() {
 	timer := strife.CurrentTimeMillis()
 	num_frames := 0
 
-	for !window.CloseRequested() {
+	for {
+		window.PollEvents()
+		if window.CloseRequested() {
+			break
+		}
+
 		editor.update()
-		editor.render(window.GetRenderContext())
+
+		{
+			ctx := window.GetRenderContext()
+			ctx.Clear()
+			editor.render(ctx)
+			ctx.Display()
+		}
 		num_frames += 1
 
 		if strife.CurrentTimeMillis()-timer > 1000 {
