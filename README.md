@@ -1,7 +1,7 @@
 <p align="center"><img src="res/icons/icon96.png"></p>
 
-<h1>nate-editor</h1>
-Nate is a minimal text editor designed to look pretty, run fast, and be easy
+<h1>phi-editor</h1>
+Phi is a minimal text editor designed to look pretty, run fast, and be easy
 to configure and use. It's primary function is for editing code. Note that this
 is a re-write of the initial editor that I wrote last year. It's still a work in
 progress and is very buggy! In addition to this, the editor is written as if it's a game,
@@ -29,16 +29,16 @@ an example for Ubuntu:
 
 ```bash
 $ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
-$ go get github.com/felixangell/nate
-$ cd $GOPATH/src/github.com/felixangell/nate
+$ go get github.com/felixangell/phi-editor
+$ cd $GOPATH/src/github.com/felixangell/phi-editor
 $ go build
-$ ./nate
+$ ./phi-editor
 ```
 
 If you're on macOS, you can get these dependencies via. homebrew. If you're on windows; you have my condolences.
 
 ## configuration
-Configuration files are stored in `$HOME/.nate-editor/config.toml`, here's
+Configuration files are stored in `$HOME/.phi-editor-editor/config.toml`, here's
 an example, which just so happens to be the defualt configuration:
 
 ```toml
