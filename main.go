@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"runtime"
 
-	"github.com/ark-lang/ark/src/util/log"
 	"github.com/felixangell/nate/cfg"
 	"github.com/felixangell/nate/gui"
 	"github.com/felixangell/strife"
@@ -79,7 +79,7 @@ func main() {
 		case "linux":
 			size = "96"
 		default:
-			log.Error("unrecognized runtime ", runtime.GOOS)
+			log.Println("unrecognized runtime ", runtime.GOOS)
 		}
 
 		icon, err := strife.LoadImage("./res/icons/icon" + size + ".png")
