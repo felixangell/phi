@@ -104,7 +104,7 @@ func (b *Buffer) processActionKey() {
 	// we dont process key input so
 	// these are a bunch of stupid dummy case statements but
 	// the logic for them should work! we just need to handle
-	// key events which hasn't been implemented properly in the 
+	// key events which hasn't been implemented properly in the
 	// strife library yet.
 	switch {
 	case 2 == 6:
