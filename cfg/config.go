@@ -22,10 +22,10 @@ aliased = true
 accelerated = true
 
 [theme]
-background = "0x002649"
-foreground = "0xf2f4f6"
-cursor = "0xf2f4f6"
-cursor_invert = "0xffffff"
+background = 0x002649
+foreground = 0xf2f4f6
+cursor = 0xf2f4f6
+cursor_invert = 0xffffff
 
 [cursor]
 flash_rate = 400
@@ -68,10 +68,10 @@ type RenderConfig struct {
 // the default theme in the EditorConfig
 // instead.
 type ThemeConfig struct {
-	Background    string
-	Foreground    string
-	Cursor        string
-	Cursor_Invert string
+	Background    int32
+	Foreground    int32
+	Cursor        int32
+	Cursor_Invert int32
 }
 
 type EditorConfig struct {
@@ -87,10 +87,10 @@ func NewDefaultConfig() *TomlConfig {
 	return &TomlConfig{
 		Editor: EditorConfig{},
 		Theme: ThemeConfig{
-			Background:    "0x002649",
-			Foreground:    "0xf2f4f6",
-			Cursor:        "0xf2f4f6",
-			Cursor_Invert: "0xffffff",
+			Background:    0x002649,
+			Foreground:    0xf2f4f6,
+			Cursor:        0xf2f4f6,
+			Cursor_Invert: 0xffffff,
 		},
 	}
 }

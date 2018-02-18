@@ -5,7 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/BurntSushi/toml"
+	// fork of BurntSushi with hexadecimal support.
+	"github.com/felixangell/toml"
 )
 
 // TODO:

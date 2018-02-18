@@ -267,7 +267,8 @@ var last_w, last_h int
 var lineIndex int = 0
 
 func (b *Buffer) OnRender(ctx *strife.Renderer) {
-	ctx.SetColor(strife.RGB(255, 0, 255)) // BACKGROUND
+	// BACKGROUND
+	ctx.SetColor(strife.HexRGB(b.cfg.Theme.Background))
 	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
 
 	if b.cfg.Editor.Highlight_Line {
@@ -282,7 +283,7 @@ func (b *Buffer) OnRender(ctx *strife.Renderer) {
 			cursorWidth = last_w
 		}
 
-		ctx.SetColor(strife.Red) // caret colour
+		ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor)) // caret colour
 		ctx.Rect(b.x+b.curs.rx*last_w, b.y+b.curs.ry*last_h, cursorWidth, last_h, strife.Fill)
 	}
 
@@ -332,7 +333,7 @@ func (b *Buffer) OnRender(ctx *strife.Renderer) {
 
 			x_col += 1
 
-			ctx.SetColor(strife.Blue)
+			ctx.SetColor(strife.HexRGB(b.cfg.Theme.Foreground))
 
 			// if we're currently over a character then set
 			// the font colour to something else
@@ -340,7 +341,6 @@ func (b *Buffer) OnRender(ctx *strife.Renderer) {
 				ctx.SetColor(strife.Green)
 			}
 
-			// foreground colour
 			last_w, last_h = ctx.String(string(char), b.x+((x_col-1)*last_w), b.y+(y_col*last_h))
 		}
 
