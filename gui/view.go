@@ -1,7 +1,7 @@
 package gui
 
 import (
-	"github.com/felixangell/nate/cfg"
+	"github.com/felixangell/phi-editor/cfg"
 	"github.com/felixangell/strife"
 )
 

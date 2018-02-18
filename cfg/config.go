@@ -22,9 +22,9 @@ aliased = true
 accelerated = true
 
 [theme]
-background = "0xfdf6e3"
-foreground = "0x7a7a7a"
-cursor = "0x657B83"
+background = "0x002649"
+foreground = "0xf2f4f6"
+cursor = "0xf2f4f6"
 cursor_invert = "0xffffff"
 
 [cursor]
@@ -63,7 +63,7 @@ type RenderConfig struct {
 }
 
 // todo make this more extendable...
-// e.g. .nate-editor/themes with TOML
+// e.g. .phi-editor/themes with TOML
 // themes in them and we can select
 // the default theme in the EditorConfig
 // instead.
@@ -87,9 +87,9 @@ func NewDefaultConfig() *TomlConfig {
 	return &TomlConfig{
 		Editor: EditorConfig{},
 		Theme: ThemeConfig{
-			Background:    "0xfdf6e3",
-			Foreground:    "0x7a7a7a",
-			Cursor:        "0x657B83",
+			Background:    "0x002649",
+			Foreground:    "0xf2f4f6",
+			Cursor:        "0xf2f4f6",
 			Cursor_Invert: "0xffffff",
 		},
 	}

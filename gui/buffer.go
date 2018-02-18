@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/felixangell/nate/cfg"
+	"github.com/felixangell/phi-editor/cfg"
 	"github.com/felixangell/strife"
 	"github.com/vinzmay/go-rope"
 )

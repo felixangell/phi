@@ -5,8 +5,8 @@ import (
 	"log"
 	"runtime"
 
-	"github.com/felixangell/nate/cfg"
-	"github.com/felixangell/nate/gui"
+	"github.com/felixangell/phi-editor/cfg"
+	"github.com/felixangell/phi-editor/gui"
 	"github.com/felixangell/strife"
 )
 
@@ -14,13 +14,13 @@ const (
 	PRINT_FPS bool = true
 )
 
-type NateEditor struct {
+type PhiEditor struct {
 	gui.BaseComponent
 	running     bool
 	defaultFont *strife.Font
 }
 
-func (n *NateEditor) init(cfg *cfg.TomlConfig) {
+func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
 	n.AddComponent(gui.NewView(800, 600, cfg))
 
 	font, err := strife.LoadFont("./res/firacode.ttf", 14)
@@ -30,19 +30,19 @@ func (n *NateEditor) init(cfg *cfg.TomlConfig) {
 	n.defaultFont = font
 }
 
-func (n *NateEditor) dispose() {
+func (n *PhiEditor) dispose() {
 	for _, comp := range n.GetComponents() {
 		gui.Dispose(comp)
 	}
 }
 
-func (n *NateEditor) update() {
+func (n *PhiEditor) update() {
 	for _, comp := range n.GetComponents() {
 		gui.Update(comp)
 	}
 }
 
-func (n *NateEditor) render(ctx *strife.Renderer) {
+func (n *PhiEditor) render(ctx *strife.Renderer) {
 	ctx.Clear()
 	ctx.SetFont(n.defaultFont)
 
@@ -90,7 +90,7 @@ func main() {
 		defer icon.Destroy()
 	}
 
-	editor := &NateEditor{running: true}
+	editor := &PhiEditor{running: true}
 	editor.init(&config)
 
 	timer := strife.CurrentTimeMillis()

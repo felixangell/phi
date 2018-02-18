@@ -1,30 +1,34 @@
 package cfg
 
 import (
-	"github.com/BurntSushi/toml"
 	"io/ioutil"
+	"log"
 	"os"
+
+	"github.com/BurntSushi/toml"
 )
 
 // TODO:
-// - make the $HOME/.nate-editor folder if it doesn't exist
-// - make the $HOME/.nate-editor/config.toml file if it doesn't exist
+// - make the $HOME/.phi-editor folder if it doesn't exist
+// - make the $HOME/.phi-editor/config.toml file if it doesn't exist
 // - write a default toml file
 //
 
 const (
-	CONFIG_DIR_PATH  = "/.nate-editor/"
+	CONFIG_DIR_PATH  = "/.phi-editor/"
 	CONFIG_TOML_FILE = "config.toml"
 )
 
 var CONFIG_FULL_PATH string = ""
 
 func Setup() TomlConfig {
+	log.Println("Setting up Phi Editor")
+
 	CONFIG_DIR := os.Getenv("HOME") + CONFIG_DIR_PATH
 	CONFIG_PATH := CONFIG_DIR + CONFIG_TOML_FILE
 	CONFIG_FULL_PATH = CONFIG_PATH
 
-	// if the user doesn't have a /.nate-editor
+	// if the user doesn't have a /.phi-editor
 	// directory we create it for them.
 	if _, err := os.Stat(CONFIG_DIR); os.IsNotExist(err) {
 		if err := os.Mkdir(CONFIG_DIR, 0775); err != nil {
@@ -33,7 +37,7 @@ func Setup() TomlConfig {
 	}
 
 	// make sure a config.toml file exists in the
-	// nate-editor directory.
+	// phi-editor directory.
 	if _, err := os.Stat(CONFIG_PATH); os.IsNotExist(err) {
 		configFile, fileCreateErr := os.Create(CONFIG_PATH)
 		if fileCreateErr != nil {
