@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/felixangell/phi-editor/cfg"
 	"github.com/felixangell/strife"
@@ -79,19 +78,7 @@ func (b *Buffer) insertRune(r rune) {
 	b.curs.move(1, 0)
 }
 
-func (b *Buffer) processTextInput() bool {
-	if 1 == 1 {
-		b.insertRune(rune(strife.PopKey()))
-		return true
-	}
-
-	firstRune := []byte{'a'}
-	r, _ := utf8.DecodeRune(firstRune)
-	if r == utf8.RuneError {
-		log.Println("oh dear!")
-		return false
-	}
-
+func (b *Buffer) processTextInput(r rune) bool {
 	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
 	b.curs.move(1, 0)
 
@@ -123,9 +110,9 @@ func (b *Buffer) processTextInput() bool {
 
 // processes a key press. returns if there
 // was a key that MODIFIED the buffer.
-func (b *Buffer) processActionKey() bool {
-	switch {
-	case strife.KeyPressed(sdl.K_BACKSPACE):
+func (b *Buffer) processActionKey(key int) bool {
+	switch key {
+	case sdl.K_RETURN:
 		initial_x := b.curs.x
 		prevLineLen := b.contents[b.curs.y].Len()
 
@@ -161,7 +148,8 @@ func (b *Buffer) processActionKey() bool {
 		b.contents = append(b.contents, nil)
 		copy(b.contents[b.curs.y+1:], b.contents[b.curs.y:])
 		b.contents[b.curs.y] = newRope
-	case 2 == 4:
+		return true
+	case sdl.K_BACKSPACE:
 		if b.curs.x > 0 {
 			offs := -1
 			if !b.cfg.Editor.Tabs_Are_Spaces {
@@ -193,7 +181,8 @@ func (b *Buffer) processActionKey() bool {
 			b.contents = append(b.contents[:b.curs.y], b.contents[b.curs.y+1:]...)
 			b.curs.move(prevLineLen, -1)
 		}
-	case 1 == 1:
+		return true
+	case sdl.K_RIGHT:
 		currLineLength := b.contents[b.curs.y].Len()
 		if b.curs.x >= currLineLength && b.curs.y < len(b.contents)-1 {
 			// we're at the end of the line and we have
@@ -204,14 +193,16 @@ func (b *Buffer) processActionKey() bool {
 			// we have characters to the right, let's move along
 			b.curs.move(1, 0)
 		}
-	case 1 == 2:
+		return true
+	case sdl.K_LEFT:
 		if b.curs.x == 0 && b.curs.y > 0 {
 			b.curs.move(b.contents[b.curs.y-1].Len(), -1)
 
 		} else if b.curs.x > 0 {
 			b.curs.move(-1, 0)
 		}
-	case 1 == 3:
+		return true
+	case sdl.K_UP:
 		if b.curs.y > 0 {
 			offs := 0
 			prevLineLen := b.contents[b.curs.y-1].Len()
@@ -221,7 +212,8 @@ func (b *Buffer) processActionKey() bool {
 			// TODO: offset should account for tabs
 			b.curs.move(offs, -1)
 		}
-	case 1 == 4:
+		return true
+	case sdl.K_DOWN:
 		if b.curs.y < len(b.contents)-1 {
 			offs := 0
 			nextLineLen := b.contents[b.curs.y+1].Len()
@@ -231,7 +223,8 @@ func (b *Buffer) processActionKey() bool {
 			// TODO: offset should account for tabs
 			b.curs.move(offs, 1)
 		}
-	case strife.KeyPressed(sdl.K_SPACE):
+		return true
+	case sdl.K_TAB:
 		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
 			// and insert it.
@@ -243,9 +236,10 @@ func (b *Buffer) processActionKey() bool {
 			// move by TAB_SIZE characters on the view.
 			b.curs.moveRender(1, 0, int(b.cfg.Editor.Tab_Size), 0)
 		}
+		return true
 	}
 
-	return true
+	return false
 }
 
 // TODO(Felix) this is really stupid
@@ -262,13 +256,17 @@ func (b *Buffer) OnUpdate() bool {
 	prev_y := b.curs.y
 
 	if strife.PollKeys() {
-		textEntered := b.processTextInput()
-		if textEntered {
+		keyCode := strife.PopKey()
+
+		// try process this key input as an
+		// action first
+		actionPerformed := b.processActionKey(keyCode)
+		if actionPerformed {
 			return true
 		}
 
-		actionPerformed := b.processActionKey()
-		if actionPerformed {
+		textEntered := b.processTextInput(rune(keyCode))
+		if textEntered {
 			return true
 		}
 	}

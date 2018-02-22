@@ -9,7 +9,8 @@ type CommandBuffer struct {
 }
 
 func (b *CommandBuffer) processActionKey() {
-	b.Buffer.processActionKey()
+	// TODO
+	// b.Buffer.processActionKey()
 }
 
 type CommandPalette struct {
