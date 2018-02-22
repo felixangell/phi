@@ -2,11 +2,13 @@ package gui
 
 import (
 	"io/ioutil"
+	"log"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/felixangell/phi-editor/cfg"
 	"github.com/felixangell/strife"
+	"github.com/veandco/go-sdl2/sdl"
 	"github.com/vinzmay/go-rope"
 )
 
@@ -63,14 +65,31 @@ func (b *Buffer) OnInit() {}
 
 func (b *Buffer) appendLine(val string) {
 	b.contents = append(b.contents, rope.New(val))
-	b.curs.move(len(val), 0)
+
+	// because we've added a new line
+	// we have to set the x to the start
+	b.curs.x = 0
 }
 
-func (b *Buffer) processTextInput() {
+func (b *Buffer) insertRune(r rune) {
+	log.Println("Inserting rune ", r, " into current line at ", b.curs.x, ":", b.curs.y)
+	log.Println("Line before insert> ", b.contents[b.curs.y])
+
+	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
+	b.curs.move(1, 0)
+}
+
+func (b *Buffer) processTextInput() bool {
+	if 1 == 1 {
+		b.insertRune(rune(strife.PopKey()))
+		return true
+	}
+
 	firstRune := []byte{'a'}
 	r, _ := utf8.DecodeRune(firstRune)
 	if r == utf8.RuneError {
-		panic("oh dear!")
+		log.Println("oh dear!")
+		return false
 	}
 
 	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
@@ -79,7 +98,7 @@ func (b *Buffer) processTextInput() {
 	// we don't need to match braces
 	// let's not continue any further
 	if !b.cfg.Editor.Match_Braces {
-		return
+		return true
 	}
 
 	matchingPair := int(r)
@@ -98,16 +117,15 @@ func (b *Buffer) processTextInput() {
 		matchingPair += offset
 		b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(rune(matchingPair)))
 	}
+
+	return true
 }
 
-func (b *Buffer) processActionKey() {
-	// we dont process key input so
-	// these are a bunch of stupid dummy case statements but
-	// the logic for them should work! we just need to handle
-	// key events which hasn't been implemented properly in the
-	// strife library yet.
+// processes a key press. returns if there
+// was a key that MODIFIED the buffer.
+func (b *Buffer) processActionKey() bool {
 	switch {
-	case 2 == 6:
+	case strife.KeyPressed(sdl.K_BACKSPACE):
 		initial_x := b.curs.x
 		prevLineLen := b.contents[b.curs.y].Len()
 
@@ -126,7 +144,7 @@ func (b *Buffer) processActionKey() {
 			copy(b.contents[b.curs.y+1:], b.contents[b.curs.y:]) // shift
 			b.contents[b.curs.y] = new(rope.Rope)                // set
 			b.curs.move(0, 1)
-			return
+			return true
 		} else {
 			// we're at the end of a line
 			newRope = new(rope.Rope)
@@ -213,7 +231,7 @@ func (b *Buffer) processActionKey() {
 			// TODO: offset should account for tabs
 			b.curs.move(offs, 1)
 		}
-	case 1 == 5:
+	case strife.KeyPressed(sdl.K_SPACE):
 		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
 			// and insert it.
@@ -226,6 +244,8 @@ func (b *Buffer) processActionKey() {
 			b.curs.moveRender(1, 0, int(b.cfg.Editor.Tab_Size), 0)
 		}
 	}
+
+	return true
 }
 
 // TODO(Felix) this is really stupid
@@ -237,13 +257,25 @@ func (b *Buffer) makeTab() string {
 	return string(blah)
 }
 
-func (b *Buffer) OnUpdate() {
+func (b *Buffer) OnUpdate() bool {
 	prev_x := b.curs.x
 	prev_y := b.curs.y
 
+	if strife.PollKeys() {
+		textEntered := b.processTextInput()
+		if textEntered {
+			return true
+		}
+
+		actionPerformed := b.processActionKey()
+		if actionPerformed {
+			return true
+		}
+	}
+
 	// FIXME handle focus properly
 	if b.inputHandler == nil {
-		return
+		return false
 	}
 
 	if b.curs.x != prev_x || b.curs.y != prev_y {
@@ -260,6 +292,8 @@ func (b *Buffer) OnUpdate() {
 		timer = strife.CurrentTimeMillis()
 		should_draw = !should_draw
 	}
+
+	return false
 }
 
 // dimensions of the last character we rendered

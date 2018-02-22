@@ -21,7 +21,9 @@ func (n *View) OnInit() {
 	n.addBuffer()
 }
 
-func (n *View) OnUpdate() {}
+func (n *View) OnUpdate() bool {
+	return false
+}
 
 func (n *View) OnRender(ctx *strife.Renderer) {}
 

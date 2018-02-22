@@ -18,6 +18,8 @@ func (p *Panel) OnDispose() {}
 
 func (p *Panel) OnInit() {}
 
-func (p *Panel) OnUpdate() {}
+func (p *Panel) OnUpdate() bool {
+	return false
+}
 
 func (p *Panel) OnRender(ctx *strife.Renderer) {}

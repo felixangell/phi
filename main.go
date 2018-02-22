@@ -21,7 +21,7 @@ type PhiEditor struct {
 }
 
 func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
-	n.AddComponent(gui.NewView(800, 600, cfg))
+	n.AddComponent(gui.NewView(1280, 720, cfg))
 
 	font, err := strife.LoadFont("./res/firacode.ttf", 14)
 	if err != nil {
@@ -36,10 +36,15 @@ func (n *PhiEditor) dispose() {
 	}
 }
 
-func (n *PhiEditor) update() {
+func (n *PhiEditor) update() bool {
+	needsRender := false
 	for _, comp := range n.GetComponents() {
-		gui.Update(comp)
+		dirty := gui.Update(comp)
+		if dirty {
+			needsRender = true
+		}
 	}
+	return needsRender
 }
 
 func (n *PhiEditor) render(ctx *strife.Renderer) {
@@ -56,18 +61,20 @@ func (n *PhiEditor) render(ctx *strife.Renderer) {
 func main() {
 	config := cfg.Setup()
 
-	ww, wh := 800, 600
+	ww, wh := 1280, 720
 	window := strife.SetupRenderWindow(ww, wh, strife.DefaultConfig())
 	window.SetTitle("Hello world!")
 	window.SetResizable(true)
-	window.Create()
 
+	editor := &PhiEditor{running: true}
 	window.HandleEvents(func(evt strife.StrifeEvent) {
 		switch evt.(type) {
 		case *strife.CloseEvent:
 			window.Close()
 		}
 	})
+
+	window.Create()
 
 	{
 		size := "16"
@@ -90,7 +97,6 @@ func main() {
 		defer icon.Destroy()
 	}
 
-	editor := &PhiEditor{running: true}
 	editor.init(&config)
 
 	timer := strife.CurrentTimeMillis()
@@ -98,18 +104,18 @@ func main() {
 
 	ctx := window.GetRenderContext()
 
+	editor.render(ctx)
+
 	for {
 		window.PollEvents()
 		if window.CloseRequested() {
 			break
 		}
 
-		editor.update()
-
-		// TODO: we dont have to constantly
-		// render, we can render when we need to
-		// i.e. the cursor moves or something
-		editor.render(ctx)
+		dirty := editor.update()
+		if dirty {
+			editor.render(ctx)
+		}
 
 		num_frames += 1
 

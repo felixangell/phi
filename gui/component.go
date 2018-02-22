@@ -9,7 +9,7 @@ type Component interface {
 	Resize(w, h int)
 
 	OnInit()
-	OnUpdate()
+	OnUpdate() bool
 	OnRender(*strife.Renderer)
 	OnDispose()
 
@@ -58,11 +58,15 @@ func (b *BaseComponent) GetInputHandler() *InputHandler {
 	return b.inputHandler
 }
 
-func Update(c Component) {
-	c.OnUpdate()
+func Update(c Component) bool {
+	needsRender := c.OnUpdate()
 	for _, child := range c.GetComponents() {
-		Update(child)
+		dirty := Update(child)
+		if dirty {
+			needsRender = true
+		}
 	}
+	return needsRender
 }
 
 func Render(c Component, ctx *strife.Renderer) {
