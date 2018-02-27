@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
+	"unicode"
 
 	"github.com/felixangell/phi-editor/cfg"
 	"github.com/felixangell/strife"
@@ -78,7 +79,49 @@ func (b *Buffer) insertRune(r rune) {
 	b.curs.move(1, 0)
 }
 
+// TODO handle EVERYTHING but for now im handling
+// my UK macbook key layout.
+var shiftAlternative = map[rune]rune{
+	'1':  '!',
+	'2':  '@',
+	'3':  '£',
+	'4':  '$',
+	'5':  '%',
+	'6':  '^',
+	'7':  '&',
+	'8':  '*',
+	'9':  '(',
+	'0':  ')',
+	'-':  '_',
+	'=':  '+',
+	'`':  '~',
+	'/':  '?',
+	'.':  '>',
+	',':  '<',
+	'[':  '{',
+	']':  '}',
+	';':  ':',
+	'"':  '\'',
+	'\\': '|',
+	'§':  '±',
+}
+
 func (b *Buffer) processTextInput(r rune) bool {
+	if SHIFT_DOWN {
+		// if it's a letter convert to uppercase
+		if unicode.IsLetter(r) {
+			r = unicode.ToUpper(r)
+		} else {
+
+			// otherwise we have to look in our trusy
+			// shift mapping thing.
+			if val, ok := shiftAlternative[r]; ok {
+				r = val
+			}
+
+		}
+	}
+
 	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
 	b.curs.move(1, 0)
 
@@ -106,6 +149,53 @@ func (b *Buffer) processTextInput(r rune) bool {
 	}
 
 	return true
+}
+
+func (b *Buffer) deletePrev() {
+	if b.curs.x > 0 {
+		offs := -1
+		if !b.cfg.Editor.Tabs_Are_Spaces {
+			if b.contents[b.curs.y].Index(b.curs.x) == '\t' {
+				offs = int(-b.cfg.Editor.Tab_Size)
+			}
+		} else if b.cfg.Editor.Hungry_Backspace && b.curs.x >= int(b.cfg.Editor.Tab_Size) {
+			// cut out the last {TAB_SIZE} amount of characters
+			// and check em
+			tabSize := int(b.cfg.Editor.Tab_Size)
+			lastTabSizeChars := b.contents[b.curs.y].Substr(b.curs.x+1-tabSize, tabSize).String()
+			if strings.Compare(lastTabSizeChars, b.makeTab()) == 0 {
+				// delete {TAB_SIZE} amount of characters
+				// from the cursors x pos
+				for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {
+					b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
+					b.curs.move(-1, 0)
+				}
+				return
+			}
+		}
+
+		b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
+		b.curs.moveRender(-1, 0, offs, 0)
+	} else if b.curs.x == 0 && b.curs.y > 0 {
+		// start of line, wrap to previous
+		prevLineLen := b.contents[b.curs.y-1].Len()
+		b.contents[b.curs.y-1] = b.contents[b.curs.y-1].Concat(b.contents[b.curs.y])
+		b.contents = append(b.contents[:b.curs.y], b.contents[b.curs.y+1:]...)
+		b.curs.move(prevLineLen, -1)
+	}
+}
+
+func (b *Buffer) deleteLine() {
+	// delete so we're at the end
+	// of the previous line
+	if b.curs.x == 0 {
+		b.deletePrev()
+		return
+	}
+
+	for b.curs.x > 0 {
+		b.deletePrev()
+	}
 }
 
 // processes a key press. returns if there
@@ -150,36 +240,10 @@ func (b *Buffer) processActionKey(key int) bool {
 		b.contents[b.curs.y] = newRope
 		return true
 	case sdl.K_BACKSPACE:
-		if b.curs.x > 0 {
-			offs := -1
-			if !b.cfg.Editor.Tabs_Are_Spaces {
-				if b.contents[b.curs.y].Index(b.curs.x) == '\t' {
-					offs = int(-b.cfg.Editor.Tab_Size)
-				}
-			} else if b.cfg.Editor.Hungry_Backspace && b.curs.x >= int(b.cfg.Editor.Tab_Size) {
-				// cut out the last {TAB_SIZE} amount of characters
-				// and check em
-				tabSize := int(b.cfg.Editor.Tab_Size)
-				lastTabSizeChars := b.contents[b.curs.y].Substr(b.curs.x+1-tabSize, tabSize).String()
-				if strings.Compare(lastTabSizeChars, b.makeTab()) == 0 {
-					// delete {TAB_SIZE} amount of characters
-					// from the cursors x pos
-					for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {
-						b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
-						b.curs.move(-1, 0)
-					}
-					break
-				}
-			}
-
-			b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
-			b.curs.moveRender(-1, 0, offs, 0)
-		} else if b.curs.x == 0 && b.curs.y > 0 {
-			// start of line, wrap to previous
-			prevLineLen := b.contents[b.curs.y-1].Len()
-			b.contents[b.curs.y-1] = b.contents[b.curs.y-1].Concat(b.contents[b.curs.y])
-			b.contents = append(b.contents[:b.curs.y], b.contents[b.curs.y+1:]...)
-			b.curs.move(prevLineLen, -1)
+		if SUPER_DOWN {
+			b.deleteLine()
+		} else {
+			b.deletePrev()
 		}
 		return true
 	case sdl.K_RIGHT:
@@ -237,9 +301,40 @@ func (b *Buffer) processActionKey(key int) bool {
 			b.curs.moveRender(1, 0, int(b.cfg.Editor.Tab_Size), 0)
 		}
 		return true
+
+	case sdl.K_LGUI:
+		fallthrough
+	case sdl.K_RGUI:
+		fallthrough
+
+	case sdl.K_LALT:
+		fallthrough
+	case sdl.K_RALT:
+		fallthrough
+
+	case sdl.K_LCTRL:
+		fallthrough
+	case sdl.K_RCTRL:
+		fallthrough
+
+	case sdl.K_LSHIFT:
+		fallthrough
+	case sdl.K_RSHIFT:
+		return b.processShift()
 	}
 
 	return false
+}
+
+var (
+	SHIFT_DOWN   bool = false
+	SUPER_DOWN        = false // cmd on mac, ctrl on windows
+	CONTROL_DOWN      = false // what is this on windows?
+	ALT_DOWN          = false // option on mac
+)
+
+func (b *Buffer) processShift() bool {
+	return true
 }
 
 // TODO(Felix) this is really stupid
@@ -254,6 +349,11 @@ func (b *Buffer) makeTab() string {
 func (b *Buffer) OnUpdate() bool {
 	prev_x := b.curs.x
 	prev_y := b.curs.y
+
+	SHIFT_DOWN = strife.KeyPressed(sdl.K_LSHIFT) || strife.KeyPressed(sdl.K_RSHIFT)
+	SUPER_DOWN = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
+	ALT_DOWN = strife.KeyPressed(sdl.K_LALT) || strife.KeyPressed(sdl.K_RALT)
+	CONTROL_DOWN = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
 
 	if strife.PollKeys() {
 		keyCode := strife.PopKey()
@@ -282,6 +382,7 @@ func (b *Buffer) OnUpdate() bool {
 		reset_timer = strife.CurrentTimeMillis()
 	}
 
+	// fixme to not use CurrentTimeMillis
 	if !should_flash && strife.CurrentTimeMillis()-reset_timer > b.cfg.Cursor.Reset_Delay {
 		should_flash = true
 	}
