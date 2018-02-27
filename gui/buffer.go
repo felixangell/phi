@@ -370,7 +370,7 @@ func (b *Buffer) OnRender(ctx *strife.Renderer) {
 			// if we're currently over a character then set
 			// the font colour to something else
 			if b.curs.x+1 == x_col && b.curs.y == y_col && should_draw {
-				ctx.SetColor(strife.Green)
+				ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor_Invert))
 			}
 
 			last_w, last_h = ctx.String(string(char), b.x+((x_col-1)*last_w), b.y+(y_col*last_h))
