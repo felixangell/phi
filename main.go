@@ -105,15 +105,13 @@ func main() {
 	ctx := window.GetRenderContext()
 
 	editor.render(ctx)
-
 	for {
 		window.PollEvents()
 		if window.CloseRequested() {
 			break
 		}
 
-		dirty := editor.update()
-		if dirty {
+		if editor.update() {
 			editor.render(ctx)
 		}
 
