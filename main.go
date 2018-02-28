@@ -23,7 +23,6 @@ type PhiEditor struct {
 
 func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
 	n.AddComponent(gui.NewView(1280/2, 720, cfg))
-	n.AddComponent(gui.NewView(1280/2, 720, cfg))
 
 	font, err := strife.LoadFont("./res/firacode.ttf", 14)
 	if err != nil {

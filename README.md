@@ -10,8 +10,7 @@ quite frequently.
 
 <br>
 
-Here's a screenshot of the editor right now with the default (temporary!) colour schemes
-editing the config file for the editor itself.
+Here's a screenshot of the editor:
 
 <p align="center"><img src="screenshot.png"></p>
 
