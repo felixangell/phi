@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	// fork of BurntSushi with hexadecimal support.
 	"github.com/felixangell/toml"
@@ -21,6 +22,37 @@ const (
 )
 
 var CONFIG_FULL_PATH string = ""
+
+// TODO we only had double key combos
+// e.g. cmd+s. we want to handle things
+// like cmd+alt+s
+type shortcutRegister struct {
+	Supers map[string]string
+}
+
+var Shortcuts = &shortcutRegister{
+	Supers: map[string]string{},
+}
+
+func configureAndValidate(conf TomlConfig) {
+	{
+		log.Println("Configuring keyboard shortcuts")
+
+		// keyboard commands
+		for commandName, cmd := range conf.Commands {
+			shortcut := cmd.Shortcut
+			vals := strings.Split(shortcut, "+")
+
+			// TODO handle conflicts
+
+			switch vals[0] {
+			case "super":
+				Shortcuts.Supers[vals[1]] = commandName
+				break
+			}
+		}
+	}
+}
 
 func Setup() TomlConfig {
 	log.Println("Setting up Phi Editor")
@@ -68,5 +100,6 @@ func Setup() TomlConfig {
 		panic(err)
 	}
 
+	configureAndValidate(conf)
 	return conf
 }

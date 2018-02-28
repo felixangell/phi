@@ -106,11 +106,6 @@ var shiftAlternative = map[rune]rune{
 	'§':  '±',
 }
 
-var shortcuts = map[rune]func(*Buffer) bool{
-	's': Save,
-	'd': DeleteLine,
-}
-
 func (b *Buffer) processTextInput(r rune) bool {
 	if CAPS_LOCK {
 		if unicode.IsLetter(r) {
@@ -119,8 +114,11 @@ func (b *Buffer) processTextInput(r rune) bool {
 	}
 
 	if SUPER_DOWN {
-		if proc, ok := shortcuts[unicode.ToLower(r)]; ok {
-			return proc(b)
+		actionName, actionExists := cfg.Shortcuts.Supers[string(unicode.ToLower(r))]
+		if actionExists {
+			if proc, ok := actions[actionName]; ok {
+				return proc(b)
+			}
 		}
 	}
 
@@ -166,6 +164,10 @@ func (b *Buffer) processTextInput(r rune) bool {
 	}
 
 	return true
+}
+
+func remove(slice []*rope.Rope, s int) []*rope.Rope {
+	return append(slice[:s], slice[s+1:]...)
 }
 
 func (b *Buffer) deletePrev() {

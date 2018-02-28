@@ -1,12 +1,14 @@
 package cfg
 
 import "strconv"
+import "log"
 
 type TomlConfig struct {
-	Editor EditorConfig
-	Cursor CursorConfig
-	Render RenderConfig
-	Theme  ThemeConfig
+	Editor   EditorConfig
+	Cursor   CursorConfig
+	Render   RenderConfig
+	Theme    ThemeConfig
+	Commands map[string]Command
 }
 
 var DEFUALT_TOML_CONFIG string = `[editor]
@@ -32,7 +34,18 @@ flash_rate = 400
 reset_delay = 400
 draw = true
 flash = true
+
+[commands]
+[commands.save]
+shortcut = "super+s"
+
+[commands.delete_line]
+shortcut = "super+d"
 `
+
+type Command struct {
+	Shortcut string
+}
 
 type CursorConfig struct {
 	Flash_Rate  int64
@@ -84,6 +97,7 @@ type EditorConfig struct {
 }
 
 func NewDefaultConfig() *TomlConfig {
+	log.Println("Loading default configuration... this should never happen")
 	return &TomlConfig{
 		Editor: EditorConfig{},
 		Theme: ThemeConfig{
