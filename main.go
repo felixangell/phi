@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"runtime"
+	"time"
 
 	"github.com/felixangell/phi-editor/cfg"
 	"github.com/felixangell/phi-editor/gui"
@@ -21,7 +22,8 @@ type PhiEditor struct {
 }
 
 func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
-	n.AddComponent(gui.NewView(1280, 720, cfg))
+	n.AddComponent(gui.NewView(1280/2, 720, cfg))
+	n.AddComponent(gui.NewView(1280/2, 720, cfg))
 
 	font, err := strife.LoadFont("./res/firacode.ttf", 14)
 	if err != nil {
@@ -48,14 +50,11 @@ func (n *PhiEditor) update() bool {
 }
 
 func (n *PhiEditor) render(ctx *strife.Renderer) {
-	ctx.Clear()
 	ctx.SetFont(n.defaultFont)
 
 	for _, child := range n.GetComponents() {
 		gui.Render(child, ctx)
 	}
-
-	ctx.Display()
 }
 
 func main() {
@@ -100,11 +99,15 @@ func main() {
 	editor.init(&config)
 
 	timer := strife.CurrentTimeMillis()
-	num_frames := 0
+	frames, updates := 0, 0
+	fps, ups := frames, updates
 
 	ctx := window.GetRenderContext()
 
+	ctx.Clear()
 	editor.render(ctx)
+	ctx.Display()
+
 	for {
 		window.PollEvents()
 		if window.CloseRequested() {
@@ -112,17 +115,29 @@ func main() {
 		}
 
 		if editor.update() {
+			ctx.Clear()
 			editor.render(ctx)
-		}
 
-		num_frames += 1
+			// this is only printed on each
+			// render...
+			ctx.SetColor(strife.White)
+			ctx.String(fmt.Sprintf("fps: %d, ups %d", fps, ups), ww-256, wh-128)
+
+			ctx.Display()
+			frames += 1
+		}
+		updates += 1
 
 		if strife.CurrentTimeMillis()-timer > 1000 {
 			timer = strife.CurrentTimeMillis()
-			if PRINT_FPS {
-				fmt.Println("frames: ", num_frames)
-			}
-			num_frames = 0
+			fps, ups = frames, updates
+			frames, updates = 0, 0
+		}
+
+		if config.Render.Throttle_Cpu_Usage {
+			// todo put in the config how long
+			// we sleep for!
+			time.Sleep(16)
 		}
 	}
 

@@ -12,7 +12,7 @@ type TomlConfig struct {
 }
 
 var DEFUALT_TOML_CONFIG string = `[editor]
-tab_size = 2
+tab_size = 4
 hungry_backspace = true
 tabs_are_spaces = true
 match_braces = false
@@ -22,12 +22,13 @@ highlight_line = true
 [render]
 aliased = true
 accelerated = true
+throttle_cpu_usage = true
 
 [theme]
 background = 0x002649
 foreground = 0xf2f4f6
 cursor = 0xf2f4f6
-cursor_invert = 0xffffff
+cursor_invert = 0x000000
 
 [cursor]
 flash_rate = 400
@@ -71,8 +72,9 @@ func (c CursorConfig) GetCaretWidth() int {
 }
 
 type RenderConfig struct {
-	Aliased     bool
-	Accelerated bool
+	Aliased            bool
+	Accelerated        bool
+	Throttle_Cpu_Usage bool
 }
 
 // todo make this more extendable...
