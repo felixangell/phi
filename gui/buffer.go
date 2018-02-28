@@ -106,10 +106,21 @@ var shiftAlternative = map[rune]rune{
 	'§':  '±',
 }
 
+var shortcuts = map[rune]func(*Buffer) bool{
+	's': Save,
+	'd': DeleteLine,
+}
+
 func (b *Buffer) processTextInput(r rune) bool {
 	if CAPS_LOCK {
 		if unicode.IsLetter(r) {
 			r = unicode.ToUpper(r)
+		}
+	}
+
+	if SUPER_DOWN {
+		if proc, ok := shortcuts[unicode.ToLower(r)]; ok {
+			return proc(b)
 		}
 	}
 
@@ -191,7 +202,7 @@ func (b *Buffer) deletePrev() {
 	}
 }
 
-func (b *Buffer) deleteLine() {
+func (b *Buffer) deleteBeforeCursor() {
 	// delete so we're at the end
 	// of the previous line
 	if b.curs.x == 0 {
@@ -256,7 +267,7 @@ func (b *Buffer) processActionKey(key int) bool {
 		return true
 	case sdl.K_BACKSPACE:
 		if SUPER_DOWN {
-			b.deleteLine()
+			b.deleteBeforeCursor()
 		} else {
 			b.deletePrev()
 		}
