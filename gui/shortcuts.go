@@ -26,11 +26,19 @@ func Save(b *Buffer) bool {
 		buffer.WriteString(line.String())
 	}
 
+	// TODO:
+	// - files probably dont have to be entirely
+	//   re-saved all the time!
+	// - we can probably stream this somehow?
+	// - multi threaded?
+	// - lots of checks to do here: does the file exist/not exist
+	//   handle the errors... etc.
+
 	err := ioutil.WriteFile(b.filePath, buffer.Bytes(), 0775)
 	if err != nil {
 		log.Println(err.Error())
 	}
-	log.Println("Wrote file '", b.filePath, "' to disk")
+	log.Println("Wrote file '" + b.filePath + "' to disk")
 	return false
 }
 

@@ -249,6 +249,29 @@ func (b *Buffer) deleteBeforeCursor() {
 	}
 }
 
+func (b *Buffer) moveLeft() {
+	if b.curs.x == 0 && b.curs.y > 0 {
+		b.curs.move(b.contents[b.curs.y-1].Len(), -1)
+
+	} else if b.curs.x > 0 {
+		b.curs.move(-1, 0)
+	}
+}
+
+func (b *Buffer) moveRight() {
+	currLineLength := b.contents[b.curs.y].Len()
+
+	if b.curs.x >= currLineLength && b.curs.y < len(b.contents)-1 {
+		// we're at the end of the line and we have
+		// some lines after, let's wrap around
+		b.curs.move(0, 1)
+		b.curs.move(-currLineLength, 0)
+	} else if b.curs.x < b.contents[b.curs.y].Len() {
+		// we have characters to the right, let's move along
+		b.curs.move(1, 0)
+	}
+}
+
 // processes a key press. returns if there
 // was a key that MODIFIED the buffer.
 func (b *Buffer) processActionKey(key int) bool {
@@ -316,15 +339,25 @@ func (b *Buffer) processActionKey(key int) bool {
 			return true
 		}
 
-		if b.curs.x >= currLineLength && b.curs.y < len(b.contents)-1 {
-			// we're at the end of the line and we have
-			// some lines after, let's wrap around
-			b.curs.move(0, 1)
-			b.curs.move(-currLineLength, 0)
-		} else if b.curs.x < b.contents[b.curs.y].Len() {
-			// we have characters to the right, let's move along
-			b.curs.move(1, 0)
+		// FIXME this is weird!
+		if ALT_DOWN {
+			currLine := b.contents[b.curs.y]
+
+			var i int
+			for i = b.curs.x + 1; i < currLine.Len(); i++ {
+				curr := currLine.Index(i)
+				if curr <= ' ' || curr == '_' {
+					break
+				}
+			}
+
+			for j := 0; j < i; j++ {
+				b.moveRight()
+			}
+			return true
 		}
+
+		b.moveRight()
 		return true
 	case sdl.K_LEFT:
 		if SUPER_DOWN {
@@ -334,12 +367,29 @@ func (b *Buffer) processActionKey(key int) bool {
 			b.curs.gotoStart()
 		}
 
-		if b.curs.x == 0 && b.curs.y > 0 {
-			b.curs.move(b.contents[b.curs.y-1].Len(), -1)
+		if ALT_DOWN {
+			currLine := b.contents[b.curs.y]
 
-		} else if b.curs.x > 0 {
-			b.curs.move(-1, 0)
+			i := b.curs.x
+			for i > 0 {
+				currChar := currLine.Index(i)
+				// TODO is a seperator thing?
+				if currChar <= ' ' || currChar == '_' {
+					// move over one more?
+					i = i - 1
+					break
+				}
+				i = i - 1
+			}
+
+			start := b.curs.x
+			for j := 0; j < start-i; j++ {
+				b.moveLeft()
+			}
+			return true
 		}
+
+		b.moveLeft()
 		return true
 	case sdl.K_UP:
 		if SUPER_DOWN {
