@@ -1,9 +1,36 @@
 package gui
 
-import "log"
+import (
+	"bytes"
+	"io/ioutil"
+	"log"
+)
+
+// NOTE: all shortcuts return a bool
+// this is whether or not they have
+// modified the buffer
+// if the buffer is modified it will be
+// re-rendered.
 
 func Save(b *Buffer) bool {
-	log.Println("Save: unimplemented!")
+
+	var buffer bytes.Buffer
+	for idx, line := range b.contents {
+		if idx > 0 {
+			// TODO: this avoids a trailing newline
+			// if we handle it like this? but if we have
+			// say enforce_newline_at_eof or something we
+			// might want to do this all the time
+			buffer.WriteRune('\n')
+		}
+		buffer.WriteString(line.String())
+	}
+
+	err := ioutil.WriteFile(b.filePath, buffer.Bytes(), 0775)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	log.Println("Wrote file '", b.filePath, "' to disk")
 	return false
 }
 

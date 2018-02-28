@@ -4,12 +4,13 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
+	"time"
 	"unicode"
 
+	"github.com/felixangell/go-rope"
 	"github.com/felixangell/phi-editor/cfg"
 	"github.com/felixangell/strife"
 	"github.com/veandco/go-sdl2/sdl"
-	"github.com/vinzmay/go-rope"
 )
 
 var (
@@ -27,6 +28,7 @@ type Buffer struct {
 	contents []*rope.Rope
 	curs     *Cursor
 	cfg      *cfg.TomlConfig
+	filePath string
 }
 
 func NewBuffer(conf *cfg.TomlConfig) *Buffer {
@@ -40,25 +42,31 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 		contents: buffContents,
 		curs:     &Cursor{},
 		cfg:      config,
+		filePath: "/tmp/phi_file_" + time.Now().String(), // TODO make this a randomly chosen temp file
 	}
 
-	{
-		contents, err := ioutil.ReadFile(cfg.CONFIG_FULL_PATH)
-		if err != nil {
-			panic(err)
-		}
-
-		lines := strings.Split(string(contents), "\n")
-		for _, line := range lines {
-			buff.appendLine(line)
-		}
-	}
+	buff.OpenFile(cfg.CONFIG_FULL_PATH)
 
 	return buff
 }
 
-func (b *Buffer) OnDispose() {
+func (b *Buffer) OpenFile(filePath string) {
+	b.filePath = filePath
 
+	contents, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		panic(err)
+	}
+
+	lines := strings.Split(string(contents), "\n")
+	for _, line := range lines {
+		b.appendLine(line)
+	}
+}
+
+func (b *Buffer) OnDispose() {
+	// hm!
+	// os.Remove(b.fileHandle)
 }
 
 func (b *Buffer) OnInit() {}
@@ -168,7 +176,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 		return true
 	}
 
-	// TODO: shall we match single quotes and double quotes too?1
+	// TODO: shall we match single quotes and double quotes too?
 
 	matchingPair := int(r)
 
