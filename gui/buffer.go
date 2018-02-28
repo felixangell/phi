@@ -137,6 +137,28 @@ func (b *Buffer) processTextInput(r rune) bool {
 		}
 	}
 
+	// NOTE: we have to do this AFTER we map the
+	// shift combo for the value!
+	// this will not insert a ), }, or ] if there
+	// is one to the right of us... basically
+	// this escapes out of a closing bracket
+	// rather than inserting a new one IF we are inside
+	// brackets.
+	if b.cfg.Editor.Match_Braces {
+		if r == ')' || r == '}' || r == ']' {
+			currLine := b.contents[b.curs.y]
+			if b.curs.x < currLine.Len() {
+				curr := currLine.Index(b.curs.x + 1)
+				if curr == r {
+					b.curs.move(1, 0)
+					return true
+				} else {
+					log.Print("no it's ", curr)
+				}
+			}
+		}
+	}
+
 	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
 	b.curs.move(1, 0)
 
@@ -145,6 +167,8 @@ func (b *Buffer) processTextInput(r rune) bool {
 	if !b.cfg.Editor.Match_Braces {
 		return true
 	}
+
+	// TODO: shall we match single quotes and double quotes too?1
 
 	matchingPair := int(r)
 
