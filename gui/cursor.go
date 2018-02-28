@@ -5,6 +5,12 @@ type Cursor struct {
 	rx, ry int
 }
 
+func (c *Cursor) gotoStart() {
+	for c.x > 1 {
+		c.move(-1, 0)
+	}
+}
+
 func (c *Cursor) move(x, y int) {
 	c.moveRender(x, y, x, y)
 }

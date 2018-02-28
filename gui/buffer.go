@@ -107,6 +107,12 @@ var shiftAlternative = map[rune]rune{
 }
 
 func (b *Buffer) processTextInput(r rune) bool {
+	if CAPS_LOCK {
+		if unicode.IsLetter(r) {
+			r = unicode.ToUpper(r)
+		}
+	}
+
 	if SHIFT_DOWN {
 		// if it's a letter convert to uppercase
 		if unicode.IsLetter(r) {
@@ -202,7 +208,16 @@ func (b *Buffer) deleteLine() {
 // was a key that MODIFIED the buffer.
 func (b *Buffer) processActionKey(key int) bool {
 	switch key {
+	case sdl.K_CAPSLOCK:
+		CAPS_LOCK = !CAPS_LOCK
+		return true
 	case sdl.K_RETURN:
+		if SUPER_DOWN {
+			// in sublime this goes
+			// into the next block
+			// nicely indented!
+		}
+
 		initial_x := b.curs.x
 		prevLineLen := b.contents[b.curs.y].Len()
 
@@ -248,6 +263,14 @@ func (b *Buffer) processActionKey(key int) bool {
 		return true
 	case sdl.K_RIGHT:
 		currLineLength := b.contents[b.curs.y].Len()
+
+		if SUPER_DOWN {
+			for b.curs.x < currLineLength {
+				b.curs.move(1, 0)
+			}
+			return true
+		}
+
 		if b.curs.x >= currLineLength && b.curs.y < len(b.contents)-1 {
 			// we're at the end of the line and we have
 			// some lines after, let's wrap around
@@ -259,6 +282,13 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 		return true
 	case sdl.K_LEFT:
+		if SUPER_DOWN {
+			// TODO go to the nearest \t
+			// if no \t (i.e. start of line) go to
+			// the start of the line!
+			b.curs.gotoStart()
+		}
+
 		if b.curs.x == 0 && b.curs.y > 0 {
 			b.curs.move(b.contents[b.curs.y-1].Len(), -1)
 
@@ -267,6 +297,17 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 		return true
 	case sdl.K_UP:
+		if SUPER_DOWN {
+			// go to the start of the file
+		}
+
+		// as well as normally moving
+		// upwards, this moves the cursor
+		// to the start of the line
+		if ALT_DOWN {
+			b.curs.gotoStart()
+		}
+
 		if b.curs.y > 0 {
 			offs := 0
 			prevLineLen := b.contents[b.curs.y-1].Len()
@@ -278,6 +319,20 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 		return true
 	case sdl.K_DOWN:
+		if SUPER_DOWN {
+			// go to the end of the file
+		}
+
+		// FIXME this doesnt work properly
+		if ALT_DOWN {
+			currLineLength := b.contents[b.curs.y].Len()
+			// in sublime this goes to the end
+			// of every line
+			for b.curs.x < currLineLength {
+				b.curs.move(1, 0)
+			}
+		}
+
 		if b.curs.y < len(b.contents)-1 {
 			offs := 0
 			nextLineLen := b.contents[b.curs.y+1].Len()
@@ -320,7 +375,7 @@ func (b *Buffer) processActionKey(key int) bool {
 	case sdl.K_LSHIFT:
 		fallthrough
 	case sdl.K_RSHIFT:
-		return b.processShift()
+		return true
 	}
 
 	return false
@@ -331,11 +386,8 @@ var (
 	SUPER_DOWN        = false // cmd on mac, ctrl on windows
 	CONTROL_DOWN      = false // what is this on windows?
 	ALT_DOWN          = false // option on mac
+	CAPS_LOCK         = false
 )
-
-func (b *Buffer) processShift() bool {
-	return true
-}
 
 // TODO(Felix) this is really stupid
 func (b *Buffer) makeTab() string {
