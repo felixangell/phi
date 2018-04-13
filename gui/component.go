@@ -5,6 +5,7 @@ import (
 )
 
 type Component interface {
+	SetPosition(x, y int)
 	Translate(x, y int)
 	Resize(w, h int)
 
@@ -27,6 +28,14 @@ type BaseComponent struct {
 	inputHandler *InputHandler
 }
 
+func (b *BaseComponent) SetPosition(x, y int) {
+	b.x = x
+	b.y = y
+	for _, c := range b.components {
+		c.SetPosition(x, y)
+	}
+}
+
 func (b *BaseComponent) Translate(x, y int) {
 	b.x += x
 	b.y += y
@@ -38,6 +47,9 @@ func (b *BaseComponent) Translate(x, y int) {
 func (b *BaseComponent) Resize(w, h int) {
 	b.w = w
 	b.h = h
+	for _, c := range b.components {
+		c.Resize(w, h)
+	}
 }
 
 func (b *BaseComponent) GetComponents() []Component {

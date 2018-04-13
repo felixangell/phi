@@ -1,8 +1,6 @@
 package gui
 
 import (
-	"os"
-
 	"github.com/felixangell/phi-editor/cfg"
 	"github.com/felixangell/strife"
 )
@@ -20,7 +18,6 @@ func NewView(width, height int, conf *cfg.TomlConfig) *View {
 }
 
 func (n *View) OnInit() {
-	n.addBuffer()
 }
 
 func (n *View) OnUpdate() bool {
@@ -31,21 +28,19 @@ func (n *View) OnRender(ctx *strife.Renderer) {}
 
 func (n *View) OnDispose() {}
 
-func (n *View) addBuffer() {
+func (n *View) AddBuffer() *Buffer {
 	c := NewBuffer(n.conf)
-
-	args := os.Args
-	if len(args) > 1 {
-		c.OpenFile(args[1])
-	} else {
-		c.OpenFile(cfg.CONFIG_FULL_PATH)
-	}
 
 	// work out the size of the buffer and set it
 	// note that we +1 the components because
 	// we haven't yet added the panel
-	bufferWidth := n.w / (len(n.components) + 1)
-	c.Resize(bufferWidth, n.h)
+	var bufferWidth int
+	numComponents := len(n.components) + 1
+	if numComponents > 0 {
+		bufferWidth = int(float32(n.w) / float32(numComponents))
+	} else {
+		bufferWidth = n.w
+	}
 
 	// setup and add the panel for the buffer
 	panel := NewPanel(n.inputHandler)
@@ -55,6 +50,9 @@ func (n *View) addBuffer() {
 
 	// translate all the components accordingly.
 	for i, p := range n.components {
-		p.Translate(bufferWidth*i, 0)
+		p.Resize(bufferWidth, n.h)
+		p.SetPosition(bufferWidth*i, 0)
 	}
+
+	return c
 }

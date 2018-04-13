@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"runtime"
 	"time"
 
@@ -22,7 +23,16 @@ type PhiEditor struct {
 }
 
 func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
-	n.AddComponent(gui.NewView(1280/2, 720, cfg))
+	mainView := gui.NewView(1280, 720, cfg)
+
+	args := os.Args
+	if len(args) > 1 {
+		for _, arg := range args[1:] {
+			mainView.AddBuffer().OpenFile(arg)
+		}
+	}
+
+	n.AddComponent(mainView)
 
 	font, err := strife.LoadFont("./res/firacode.ttf", 20)
 	if err != nil {
