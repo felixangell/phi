@@ -36,10 +36,10 @@ var Shortcuts = &shortcutRegister{
 	Controls: map[string]string{},
 }
 
-func configureAndValidate(conf TomlConfig) {
+func configureAndValidate(conf *TomlConfig) {
+	// config & validate the keyboard shortcuts
+	log.Println("Configuring keyboard shortcuts")
 	{
-		log.Println("Configuring keyboard shortcuts")
-
 		// keyboard commands
 		for commandName, cmd := range conf.Commands {
 			shortcut := cmd.Shortcut
@@ -52,6 +52,27 @@ func configureAndValidate(conf TomlConfig) {
 				Shortcuts.Supers[vals[1]] = commandName
 			case "ctrl":
 				Shortcuts.Controls[vals[1]] = commandName
+			}
+		}
+	}
+
+	log.Println("Syntax Highlighting")
+	{
+		conf.associations = map[string]string{}
+
+		for lang, extSet := range conf.Associations {
+			log.Println(lang, "=>", extSet.Extensions)
+
+			for _, ext := range extSet.Extensions {
+				log.Println("registering", ext, "as", lang)
+				conf.associations[ext] = lang
+			}
+		}
+
+		for name, conf := range conf.Syntax {
+			log.Println(name + ":")
+			for name, val := range conf {
+				log.Println(name, val)
 			}
 		}
 	}
@@ -103,6 +124,6 @@ func Setup() TomlConfig {
 		panic(err)
 	}
 
-	configureAndValidate(conf)
+	configureAndValidate(&conf)
 	return conf
 }

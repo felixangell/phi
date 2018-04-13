@@ -1,6 +1,7 @@
 package cfg
 
 import (
+	"errors"
 	"log"
 	"runtime"
 	"strconv"
@@ -8,11 +9,32 @@ import (
 )
 
 type TomlConfig struct {
-	Editor   EditorConfig
-	Cursor   CursorConfig
-	Render   RenderConfig
-	Theme    ThemeConfig
-	Commands map[string]Command
+	Editor       EditorConfig                         `toml:"editor"`
+	Cursor       CursorConfig                         `toml:"cursor"`
+	Render       RenderConfig                         `toml:"render"`
+	Theme        ThemeConfig                          `toml:"theme"`
+	Associations map[string]FileAssociations          `toml:"file_associations"`
+	Commands     map[string]Command                   `toml:"commands"`
+	Syntax       map[string]map[string]SyntaxCriteria `toml:"syntax"`
+
+	// this maps ext => language
+	// when we have file associations from
+	// the Associations field we take
+	// each extension and put them here
+	// pointing it to the language.
+	// basically the reverse/opposite
+	associations map[string]string
+}
+
+func (t *TomlConfig) GetLanguageFromExt(ext string) (string, error) {
+	if val, ok := t.associations[ext]; ok {
+		return val, nil
+	}
+	return "", errors.New("no language for extension '" + ext + "'")
+}
+
+type FileAssociations struct {
+	Extensions []string
 }
 
 var DEFUALT_TOML_CONFIG string = getDefaultConfig()
@@ -29,6 +51,11 @@ func getDefaultConfig() string {
 
 	// fallback is a windows config.
 	return DEFAULT_WINDOWS_TOML_CONFIG
+}
+
+type SyntaxCriteria struct {
+	Colour int      `toml:"colouring"`
+	Match  []string `toml:"match"`
 }
 
 type Command struct {

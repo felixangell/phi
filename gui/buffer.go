@@ -3,6 +3,7 @@ package gui
 import (
 	"io/ioutil"
 	"log"
+	"path"
 	"strings"
 	"time"
 	"unicode"
@@ -38,6 +39,8 @@ type Buffer struct {
 	cfg      *cfg.TomlConfig
 	cam      *camera
 	filePath string
+
+	languageInfo string
 }
 
 func NewBuffer(conf *cfg.TomlConfig, parent *View, index int) *Buffer {
@@ -62,6 +65,17 @@ func NewBuffer(conf *cfg.TomlConfig, parent *View, index int) *Buffer {
 
 func (b *Buffer) OpenFile(filePath string) {
 	b.filePath = filePath
+
+	log.Println("Opening file ", filePath)
+
+	ext := path.Ext(filePath)
+	lang, err := b.cfg.GetLanguageFromExt(ext)
+	if err != nil {
+		log.Println(err.Error())
+	} else {
+		log.Println("- this file is a ", lang, " language program")
+		b.languageInfo = lang
+	}
 
 	contents, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -717,8 +731,42 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			continue
 		}
 
+		source := []rune(rope.String())
+
+		// char index => colour
+		matches := map[int]int{}
+
+		subjects := [][]string{}
+		colours := []int{}
+
+		stuff := b.cfg.Syntax[b.languageInfo]
+		for _, criteria := range stuff {
+			colours = append(colours, criteria.Colour)
+			subj := criteria.Match
+			subjects = append(subjects, subj)
+		}
+
+		// HOLY SLOW BATMAN
+		for idx, _ := range source {
+			for syntaxIndex, syntax := range subjects {
+				for _, subject := range syntax {
+					if idx+len(subject) > len(source) {
+						continue
+					}
+
+					a := source[idx : idx+len(subject)]
+					if strings.Compare(string(a), subject) == 0 {
+						for i := 0; i < len(subject); i++ {
+							matches[i+idx] = colours[syntaxIndex]
+						}
+						idx += len(subject)
+					}
+				}
+			}
+		}
+
 		var x_col int
-		for _, char := range rope.String() {
+		for idx, char := range source {
 			switch char {
 			case '\n':
 				x_col = 0
@@ -738,6 +786,9 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			// ONLY SET THE COLOUR IF WE HAVE FOCUS ALSO!
 			if b.HasFocus && b.curs.x+1 == x_col && b.curs.y == y_col && should_draw {
 				ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor_Invert))
+			}
+			if col, ok := matches[idx]; ok {
+				ctx.SetColor(strife.HexRGB(int32(col)))
 			}
 
 			last_w, last_h = ctx.String(string(char), (rx + ((x_col - 1) * last_w)), (ry + (y_col * last_h)))
