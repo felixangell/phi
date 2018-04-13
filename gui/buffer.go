@@ -452,6 +452,20 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 		return true
 
+	case sdl.K_END:
+		currLine := b.contents[b.curs.y]
+		if b.curs.x < currLine.Len() {
+			distToMove := currLine.Len() - b.curs.x
+			b.curs.move(distToMove, 0)
+		}
+		return true
+
+	case sdl.K_HOME:
+		if b.curs.x > 0 {
+			b.curs.move(-b.curs.x, 0)
+		}
+		return true
+
 	case sdl.K_LGUI:
 		fallthrough
 	case sdl.K_RGUI:
