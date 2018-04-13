@@ -27,11 +27,13 @@ var CONFIG_FULL_PATH string = ""
 // e.g. cmd+s. we want to handle things
 // like cmd+alt+s
 type shortcutRegister struct {
-	Supers map[string]string
+	Supers   map[string]string
+	Controls map[string]string
 }
 
 var Shortcuts = &shortcutRegister{
-	Supers: map[string]string{},
+	Supers:   map[string]string{},
+	Controls: map[string]string{},
 }
 
 func configureAndValidate(conf TomlConfig) {
@@ -48,7 +50,8 @@ func configureAndValidate(conf TomlConfig) {
 			switch vals[0] {
 			case "super":
 				Shortcuts.Supers[vals[1]] = commandName
-				break
+			case "ctrl":
+				Shortcuts.Controls[vals[1]] = commandName
 			}
 		}
 	}

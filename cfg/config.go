@@ -1,7 +1,11 @@
 package cfg
 
-import "strconv"
-import "log"
+import (
+	"log"
+	"runtime"
+	"strconv"
+	"strings"
+)
 
 type TomlConfig struct {
 	Editor   EditorConfig
@@ -11,38 +15,21 @@ type TomlConfig struct {
 	Commands map[string]Command
 }
 
-var DEFUALT_TOML_CONFIG string = `[editor]
-tab_size = 4
-hungry_backspace = true
-tabs_are_spaces = true
-match_braces = false
-maintain_indentation = true
-highlight_line = true
+var DEFUALT_TOML_CONFIG string = getDefaultConfig()
 
-[render]
-aliased = true
-accelerated = true
-throttle_cpu_usage = true
+func getDefaultConfig() string {
+	switch strings.ToLower(runtime.GOOS) {
+	case "windows":
+		return DEFAULT_WINDOWS_TOML_CONFIG
+	case "linux":
+		return DEFAULT_LINUX_TOML_CONFIG
+	case "darwin":
+		return DEFAULT_MAC_TOML_CONFIG
+	}
 
-[theme]
-background = 0x002649
-foreground = 0xf2f4f6
-cursor = 0xf2f4f6
-cursor_invert = 0x000000
-
-[cursor]
-flash_rate = 400
-reset_delay = 400
-draw = true
-flash = true
-
-[commands]
-[commands.save]
-shortcut = "super+s"
-
-[commands.delete_line]
-shortcut = "super+d"
-`
+	// fallback is a windows config.
+	return DEFAULT_WINDOWS_TOML_CONFIG
+}
 
 type Command struct {
 	Shortcut string

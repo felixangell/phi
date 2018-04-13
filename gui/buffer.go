@@ -128,6 +128,15 @@ func (b *Buffer) processTextInput(r rune) bool {
 		}
 	}
 
+	if CONTROL_DOWN {
+		actionName, actionExists := cfg.Shortcuts.Controls[string(unicode.ToLower(r))]
+		if actionExists {
+			if proc, ok := actions[actionName]; ok {
+				return proc(b)
+			}
+		}
+	}
+
 	if SUPER_DOWN {
 		actionName, actionExists := cfg.Shortcuts.Supers[string(unicode.ToLower(r))]
 		if actionExists {
