@@ -22,12 +22,18 @@ var (
 
 // TODO: allow font setting or whatever
 
+type camera struct {
+	x int
+	y int
+}
+
 type Buffer struct {
 	BaseComponent
 	font     *strife.Font
 	contents []*rope.Rope
 	curs     *Cursor
 	cfg      *cfg.TomlConfig
+	cam      *camera
 	filePath string
 }
 
@@ -43,6 +49,7 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 		curs:     &Cursor{},
 		cfg:      config,
 		filePath: "/tmp/phi_file_" + time.Now().String(), // TODO make this a randomly chosen temp file
+		cam:      &camera{0, 0},
 	}
 
 	buff.OpenFile(cfg.CONFIG_FULL_PATH)
@@ -277,6 +284,39 @@ func (b *Buffer) moveRight() {
 	}
 }
 
+func (b *Buffer) moveUp() {
+	if b.curs.x > 0 {
+		b.curs.move(0, -1)
+	}
+}
+
+func (b *Buffer) moveDown() {
+	if b.curs.x < len(b.contents) {
+		b.curs.move(0, 1)
+	}
+}
+
+func (b *Buffer) scrollUp() {
+	// TODO move the cursor down 45 lines
+	// IF the buffer exceeds the window size.
+	lineScrollAmount := 10
+	b.cam.y -= lineScrollAmount * last_h
+	for i := 0; i < lineScrollAmount; i++ {
+		b.moveUp()
+	}
+}
+
+func (b *Buffer) scrollDown() {
+	// TODO move the cursor down 45 lines
+	// IF the buffer exceeds the window size.
+	lineScrollAmount := 10
+
+	b.cam.y += lineScrollAmount * last_h
+	for i := 0; i < lineScrollAmount; i++ {
+		b.moveDown()
+	}
+}
+
 // processes a key press. returns if there
 // was a key that MODIFIED the buffer.
 func (b *Buffer) processActionKey(key int) bool {
@@ -471,6 +511,14 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 		return true
 
+	case sdl.K_PAGEUP:
+		b.scrollUp()
+		return true
+
+	case sdl.K_PAGEDOWN:
+		b.scrollDown()
+		return true
+
 	case sdl.K_DELETE:
 		b.deleteNext()
 		return true
@@ -569,14 +617,14 @@ func (b *Buffer) OnUpdate() bool {
 var last_w, last_h int
 var lineIndex int = 0
 
-func (b *Buffer) OnRender(ctx *strife.Renderer) {
+func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	// BACKGROUND
 	ctx.SetColor(strife.HexRGB(b.cfg.Theme.Background))
-	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
+	ctx.Rect(rx, ry, b.w, b.h, strife.Fill)
 
 	if b.cfg.Editor.Highlight_Line {
 		ctx.SetColor(strife.Black) // highlight_line_col?
-		ctx.Rect(b.x, b.y+b.curs.ry*last_h, b.w, last_h, strife.Fill)
+		ctx.Rect(rx, (ry + b.curs.ry*last_h), b.w, last_h, strife.Fill)
 	}
 
 	// render the ol' cursor
@@ -587,7 +635,7 @@ func (b *Buffer) OnRender(ctx *strife.Renderer) {
 		}
 
 		ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor)) // caret colour
-		ctx.Rect(b.x+b.curs.rx*last_w, b.y+b.curs.ry*last_h, cursorWidth, last_h, strife.Fill)
+		ctx.Rect((rx + b.curs.rx*last_w), (ry + b.curs.ry*last_h), cursorWidth, last_h, strife.Fill)
 	}
 
 	source := b.contents
@@ -644,10 +692,13 @@ func (b *Buffer) OnRender(ctx *strife.Renderer) {
 				ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor_Invert))
 			}
 
-			last_w, last_h = ctx.String(string(char), b.x+((x_col-1)*last_w), b.y+(y_col*last_h))
+			last_w, last_h = ctx.String(string(char), (rx + ((x_col - 1) * last_w)), (ry + (y_col * last_h)))
 		}
 
 		y_col += 1
 	}
+}
 
+func (b *Buffer) OnRender(ctx *strife.Renderer) {
+	b.renderAt(ctx, b.x-b.cam.x, b.y-b.cam.y)
 }
