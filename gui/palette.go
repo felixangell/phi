@@ -21,7 +21,7 @@ type CommandPalette struct {
 func NewCommandPalette() *CommandPalette {
 	palette := &CommandPalette{}
 	palette.buffer = &CommandBuffer{
-		Buffer: NewBuffer(nil),
+		Buffer: NewBuffer(nil, nil, 0),
 	}
 	palette.AddComponent(palette.buffer)
 	return palette

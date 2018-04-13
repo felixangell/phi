@@ -29,6 +29,8 @@ type camera struct {
 
 type Buffer struct {
 	BaseComponent
+	index    int
+	parent   *View
 	font     *strife.Font
 	contents []*rope.Rope
 	curs     *Cursor
@@ -37,7 +39,7 @@ type Buffer struct {
 	filePath string
 }
 
-func NewBuffer(conf *cfg.TomlConfig) *Buffer {
+func NewBuffer(conf *cfg.TomlConfig, parent *View, index int) *Buffer {
 	config := conf
 	if config == nil {
 		config = cfg.NewDefaultConfig()
@@ -45,6 +47,8 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 
 	buffContents := []*rope.Rope{}
 	buff := &Buffer{
+		index:    index,
+		parent:   parent,
 		contents: buffContents,
 		curs:     &Cursor{},
 		cfg:      config,
@@ -120,6 +124,13 @@ var shiftAlternative = map[rune]rune{
 }
 
 func (b *Buffer) processTextInput(r rune) bool {
+	if ALT_DOWN && r == '\t' {
+		// nop, we dont want to
+		// insert tabs when we
+		// alt tab out of view of this app
+		return true
+	}
+
 	if CAPS_LOCK {
 		if unicode.IsLetter(r) {
 			r = unicode.ToUpper(r)
@@ -132,6 +143,8 @@ func (b *Buffer) processTextInput(r rune) bool {
 			if proc, ok := actions[actionName]; ok {
 				return proc(b)
 			}
+		} else {
+			log.Println("warning, unimplemented shortcut ctrl+", unicode.ToLower(r), actionName)
 		}
 	}
 
@@ -141,6 +154,8 @@ func (b *Buffer) processTextInput(r rune) bool {
 			if proc, ok := actions[actionName]; ok {
 				return proc(b)
 			}
+		} else {
+			log.Println("warning, unimplemented shortcut ctrl+", unicode.ToLower(r), actionName)
 		}
 	}
 
@@ -307,7 +322,7 @@ func (b *Buffer) scrollUp() {
 	// TODO move the cursor down 45 lines
 	// IF the buffer exceeds the window size.
 	lineScrollAmount := 10
-	b.cam.y -= lineScrollAmount * last_h
+	b.cam.y -= lineScrollAmount
 	for i := 0; i < lineScrollAmount; i++ {
 		b.moveUp()
 	}
@@ -318,7 +333,7 @@ func (b *Buffer) scrollDown() {
 	// IF the buffer exceeds the window size.
 	lineScrollAmount := 10
 
-	b.cam.y += lineScrollAmount * last_h
+	b.cam.y += lineScrollAmount
 	for i := 0; i < lineScrollAmount; i++ {
 		b.moveDown()
 	}
@@ -480,6 +495,8 @@ func (b *Buffer) processActionKey(key int) bool {
 			}
 		}
 
+		log.Println(b.curs.y, " .. ", b.curs.y-b.cam.y)
+
 		if b.curs.y < len(b.contents)-1 {
 			offs := 0
 			nextLineLen := b.contents[b.curs.y+1].Len()
@@ -622,12 +639,11 @@ func (b *Buffer) OnUpdate() bool {
 
 // dimensions of the last character we rendered
 var last_w, last_h int
-var lineIndex int = 0
 
 func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	// BACKGROUND
 	ctx.SetColor(strife.HexRGB(b.cfg.Theme.Background))
-	ctx.Rect(rx, ry, b.w, b.h, strife.Fill)
+	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
 
 	if b.cfg.Editor.Highlight_Line {
 		ctx.SetColor(strife.Black) // highlight_line_col?
@@ -646,16 +662,16 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	}
 
 	source := b.contents
+
+	// last_h > 0 means we have done
+	// a render.
 	if int(last_h) > 0 && int(b.h) != 0 {
 		// work out how many lines can fit into
 		// the buffer, and set the source to
 		// slice the line buffer accordingly
 		visibleLines := int(b.h) / int(last_h)
 		if len(b.contents) > visibleLines {
-			if lineIndex+visibleLines >= len(b.contents) {
-				lineIndex = len(b.contents) - visibleLines
-			}
-			source = b.contents[lineIndex : lineIndex+visibleLines]
+			// nop
 		}
 	}
 
@@ -707,5 +723,5 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 }
 
 func (b *Buffer) OnRender(ctx *strife.Renderer) {
-	b.renderAt(ctx, b.x-b.cam.x, b.y-b.cam.y)
+	b.renderAt(ctx, b.x-(b.cam.x*last_w), b.y-(b.cam.y*last_h))
 }

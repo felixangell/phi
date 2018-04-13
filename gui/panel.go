@@ -1,7 +1,7 @@
 package gui
 
 import (
-	"github.com/felixangell/strife"
+    "github.com/felixangell/strife"
 )
 
 type Panel struct {
@@ -9,7 +9,7 @@ type Panel struct {
 }
 
 func NewPanel(input *InputHandler) *Panel {
-	panel := &Panel{}
+    panel := &Panel{}
 	panel.SetInputHandler(input)
 	return panel
 }
