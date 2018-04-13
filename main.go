@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"runtime"
@@ -27,9 +28,20 @@ func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
 
 	args := os.Args
 	if len(args) > 1 {
+		// TODO check these are files
+		// that actually exist here?
 		for _, arg := range args[1:] {
 			mainView.AddBuffer().OpenFile(arg)
 		}
+	} else {
+		// we have no args, open up a scratch file
+		tempFile, err := ioutil.TempFile("/var/tmp/", "phi-editor-")
+		if err != nil {
+			log.Println("Failed to create temp file", err.Error())
+			os.Exit(1)
+		}
+
+		mainView.AddBuffer().OpenFile(tempFile.Name())
 	}
 
 	n.AddComponent(mainView)
