@@ -12,6 +12,7 @@ highlight_line = true
 aliased = true
 accelerated = true
 throttle_cpu_usage = true
+always_render = false
 
 [theme]
 background = 0x002649

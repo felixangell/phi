@@ -9,6 +9,8 @@ func CloseBuffer(b *Buffer) bool {
 		return false
 	}
 
+	// remove focus
+	b.HasFocus = false
 	b.parent.DeleteComponent(b.index)
 
 	// we need to re-calculate the sizes of everything
@@ -25,8 +27,16 @@ func CloseBuffer(b *Buffer) bool {
 		bufferWidth = b.parent.w
 	}
 
+	// TODO track buffer visit history on a stack
+	// when we remove a buffer we pop it from the stack
+	// then we can focus on the top of the stack instead.
+	// for now let's just focus on the most recently
+	// added buffer
+
 	// translate all the components accordingly.
 	i := 0
+
+	var lastBuffer *Buffer
 	for _, p := range b.parent.components {
 		if p == nil {
 			continue
@@ -36,7 +46,9 @@ func CloseBuffer(b *Buffer) bool {
 		p.SetPosition(bufferWidth*i, 0)
 
 		i = i + 1
+		lastBuffer = p.(*Buffer)
 	}
+	lastBuffer.HasFocus = true
 
 	return true
 }

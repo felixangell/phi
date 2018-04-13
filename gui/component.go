@@ -100,7 +100,6 @@ func Update(c Component) bool {
 		if child == nil {
 			continue
 		}
-
 		dirty := Update(child)
 		if dirty {
 			needsRender = true

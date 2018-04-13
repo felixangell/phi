@@ -62,6 +62,7 @@ type RenderConfig struct {
 	Aliased            bool
 	Accelerated        bool
 	Throttle_Cpu_Usage bool
+	Always_Render      bool
 }
 
 // todo make this more extendable...

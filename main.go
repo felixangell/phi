@@ -62,7 +62,7 @@ func (n *PhiEditor) dispose() {
 func (n *PhiEditor) update() bool {
 	needsRender := false
 	for _, comp := range n.GetComponents() {
-		dirty := gui.Update(comp)
+		dirty := comp.OnUpdate()
 		if dirty {
 			needsRender = true
 		}
@@ -135,7 +135,7 @@ func main() {
 			break
 		}
 
-		if editor.update() {
+		if editor.update() || config.Render.Always_Render {
 			ctx.Clear()
 			editor.render(ctx)
 

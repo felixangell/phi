@@ -7,7 +7,8 @@ import (
 
 type View struct {
 	BaseComponent
-	conf *cfg.TomlConfig
+	conf        *cfg.TomlConfig
+	focusedBuff int
 }
 
 func NewView(width, height int, conf *cfg.TomlConfig) *View {
@@ -17,10 +18,40 @@ func NewView(width, height int, conf *cfg.TomlConfig) *View {
 	return view
 }
 
+func sign(dir int) int {
+	if dir > 0 {
+		return 1
+	} else if dir < 0 {
+		return -1
+	}
+	return 0
+}
+
+func (n *View) ChangeFocus(dir int) {
+	// remove focus from the curr buffer.
+	if buf := n.components[n.focusedBuff].(*Buffer); buf != nil {
+		buf.HasFocus = false
+	}
+
+	newIndex := n.focusedBuff + sign(dir)
+	if newIndex >= n.NumComponents() {
+		newIndex = 0
+	} else if newIndex < 0 {
+		newIndex = n.NumComponents() - 1
+	}
+
+	if buff := n.components[newIndex]; buff != nil {
+		n.focusedBuff = newIndex
+	}
+}
+
 func (n *View) OnInit() {
 }
 
 func (n *View) OnUpdate() bool {
+	if buff := n.components[n.focusedBuff]; buff != nil {
+		return Update(buff)
+	}
 	return false
 }
 
@@ -47,12 +78,8 @@ func (n *View) AddBuffer() *Buffer {
 		bufferWidth = n.w
 	}
 
-	// setup and add the panel for the buffer
-	panel := NewPanel(n.inputHandler)
-	c.SetInputHandler(n.inputHandler)
-
-	panel.AddComponent(c)
-	n.AddComponent(panel)
+	n.AddComponent(c)
+	n.focusedBuff = c.index
 
 	// translate all the components accordingly.
 	for i, p := range n.components {

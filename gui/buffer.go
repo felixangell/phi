@@ -29,6 +29,7 @@ type camera struct {
 
 type Buffer struct {
 	BaseComponent
+	HasFocus bool
 	index    int
 	parent   *View
 	font     *strife.Font
@@ -307,15 +308,37 @@ func (b *Buffer) moveRight() {
 }
 
 func (b *Buffer) moveUp() {
-	if b.curs.x > 0 {
+	if b.curs.y > 0 {
 		b.curs.move(0, -1)
 	}
 }
 
 func (b *Buffer) moveDown() {
-	if b.curs.x < len(b.contents) {
+	if b.curs.y < len(b.contents) {
 		b.curs.move(0, 1)
 	}
+}
+
+func (b *Buffer) swapLineUp() bool {
+	if b.curs.y > 0 {
+		currLine := b.contents[b.curs.y]
+		prevLine := b.contents[b.curs.y-1]
+		b.contents[b.curs.y-1] = currLine
+		b.contents[b.curs.y] = prevLine
+		b.moveUp()
+	}
+	return true
+}
+
+func (b *Buffer) swapLineDown() bool {
+	if b.curs.y < len(b.contents) {
+		currLine := b.contents[b.curs.y]
+		nextLine := b.contents[b.curs.y+1]
+		b.contents[b.curs.y+1] = currLine
+		b.contents[b.curs.y] = nextLine
+		b.moveDown()
+	}
+	return true
 }
 
 func (b *Buffer) scrollUp() {
@@ -399,6 +422,11 @@ func (b *Buffer) processActionKey(key int) bool {
 	case sdl.K_RIGHT:
 		currLineLength := b.contents[b.curs.y].Len()
 
+		if CONTROL_DOWN && b.parent != nil {
+			b.parent.ChangeFocus(1)
+			return true
+		}
+
 		if SUPER_DOWN {
 			for b.curs.x < currLineLength {
 				b.curs.move(1, 0)
@@ -427,6 +455,11 @@ func (b *Buffer) processActionKey(key int) bool {
 		b.moveRight()
 		return true
 	case sdl.K_LEFT:
+		if CONTROL_DOWN && b.parent != nil {
+			b.parent.ChangeFocus(-1)
+			return true
+		}
+
 		if SUPER_DOWN {
 			// TODO go to the nearest \t
 			// if no \t (i.e. start of line) go to
@@ -459,15 +492,12 @@ func (b *Buffer) processActionKey(key int) bool {
 		b.moveLeft()
 		return true
 	case sdl.K_UP:
-		if SUPER_DOWN {
-			// go to the start of the file
+		if ALT_DOWN {
+			return b.swapLineUp()
 		}
 
-		// as well as normally moving
-		// upwards, this moves the cursor
-		// to the start of the line
-		if ALT_DOWN {
-			b.curs.gotoStart()
+		if SUPER_DOWN {
+			// go to the start of the file
 		}
 
 		if b.curs.y > 0 {
@@ -481,21 +511,13 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 		return true
 	case sdl.K_DOWN:
+		if ALT_DOWN {
+			return b.swapLineDown()
+		}
+
 		if SUPER_DOWN {
 			// go to the end of the file
 		}
-
-		// FIXME this doesnt work properly
-		if ALT_DOWN {
-			currLineLength := b.contents[b.curs.y].Len()
-			// in sublime this goes to the end
-			// of every line
-			for b.curs.x < currLineLength {
-				b.curs.move(1, 0)
-			}
-		}
-
-		log.Println(b.curs.y, " .. ", b.curs.y-b.cam.y)
 
 		if b.curs.y < len(b.contents)-1 {
 			offs := 0
@@ -589,6 +611,8 @@ func (b *Buffer) makeTab() string {
 }
 
 func (b *Buffer) OnUpdate() bool {
+	b.HasFocus = true
+
 	prev_x := b.curs.x
 	prev_y := b.curs.y
 
@@ -645,13 +669,13 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	ctx.SetColor(strife.HexRGB(b.cfg.Theme.Background))
 	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
 
-	if b.cfg.Editor.Highlight_Line {
+	if b.cfg.Editor.Highlight_Line && b.HasFocus {
 		ctx.SetColor(strife.Black) // highlight_line_col?
 		ctx.Rect(rx, (ry + b.curs.ry*last_h), b.w, last_h, strife.Fill)
 	}
 
 	// render the ol' cursor
-	if should_draw && b.cfg.Cursor.Draw {
+	if should_draw && b.cfg.Cursor.Draw && b.HasFocus {
 		cursorWidth := b.cfg.Cursor.GetCaretWidth()
 		if cursorWidth == -1 {
 			cursorWidth = last_w
@@ -711,7 +735,8 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 			// if we're currently over a character then set
 			// the font colour to something else
-			if b.curs.x+1 == x_col && b.curs.y == y_col && should_draw {
+			// ONLY SET THE COLOUR IF WE HAVE FOCUS ALSO!
+			if b.HasFocus && b.curs.x+1 == x_col && b.curs.y == y_col && should_draw {
 				ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor_Invert))
 			}
 
