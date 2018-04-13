@@ -202,6 +202,11 @@ func remove(slice []*rope.Rope, s int) []*rope.Rope {
 	return append(slice[:s], slice[s+1:]...)
 }
 
+func (b *Buffer) deleteNext() {
+	b.moveRight()
+	b.deletePrev()
+}
+
 func (b *Buffer) deletePrev() {
 	if b.curs.x > 0 {
 		offs := -1
@@ -464,6 +469,10 @@ func (b *Buffer) processActionKey(key int) bool {
 		if b.curs.x > 0 {
 			b.curs.move(-b.curs.x, 0)
 		}
+		return true
+
+	case sdl.K_DELETE:
+		b.deleteNext()
 		return true
 
 	case sdl.K_LGUI:
