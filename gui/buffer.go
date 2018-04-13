@@ -52,8 +52,6 @@ func NewBuffer(conf *cfg.TomlConfig) *Buffer {
 		cam:      &camera{0, 0},
 	}
 
-	buff.OpenFile(cfg.CONFIG_FULL_PATH)
-
 	return buff
 }
 

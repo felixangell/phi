@@ -1,6 +1,8 @@
 package gui
 
 import (
+	"os"
+
 	"github.com/felixangell/phi-editor/cfg"
 	"github.com/felixangell/strife"
 )
@@ -31,6 +33,13 @@ func (n *View) OnDispose() {}
 
 func (n *View) addBuffer() {
 	c := NewBuffer(n.conf)
+
+	args := os.Args
+	if len(args) > 1 {
+		c.OpenFile(args[1])
+	} else {
+		c.OpenFile(cfg.CONFIG_FULL_PATH)
+	}
 
 	// work out the size of the buffer and set it
 	// note that we +1 the components because
