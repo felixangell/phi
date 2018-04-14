@@ -27,7 +27,8 @@ colouring = 0xf0a400
 match = [
 	"type", "import", "package", "func", "struct",
 	"append", "delete", "make", "for", "if", "while",
-	"switch", "select", "chan",
+	"switch", "select", "chan", "else", "var", "const",
+	"iota"
 ]
 
 [syntax.go.type]
