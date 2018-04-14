@@ -12,7 +12,54 @@ highlight_line = true
 aliased = true
 accelerated = true
 throttle_cpu_usage = true
-always_render = false
+always_render = true
+
+[file_associations]
+[file_associations.c]
+extensions = [".c", ".h", ".cc"]
+
+[file_associations.go]
+extensions = [".go"]
+
+[syntax.go]
+[syntax.go.keyword]
+colouring = 0xf0a400
+match = [
+	"type", "import", "package", "func", "struct",
+	"append", "delete", "make"
+]
+
+[syntax.go.type]
+colouring = 0xf8f273
+match = [
+	"int", "string", "uint",
+	"int8", "int16", "int32", "int64",
+	"uint8", "uint16", "uint32", "uint64",
+	"rune", "byte", "float32", "float64"
+]
+
+[syntax.go.symbol]
+colouring = 0xf0a400
+match = [
+	"=", ":", ";", "*", "&", "+", "-", "/", "%",
+	"^", "#", "!", "@", "<", ">", ".", ","	
+]
+
+[syntax.c]
+[syntax.c.type]
+colouring = 0xff0000
+match = [
+	"int", "char", "bool", "float", "double", "void",
+	"uint8_t", "uint16_t", "uint32_t", "uint64_t",
+	"int8_t", "int16_t", "int32_t", "int64_t"
+]
+
+[syntax.c.keyword]
+colouring = 0xff00ff
+match = [
+	"for", "break", "if", "else", "continue", "return",
+	"goto", "static", "extern", "const", "typedef",
+]
 
 [theme]
 background = 0x002649
@@ -29,6 +76,9 @@ flash = true
 [commands]
 [commands.save]
 shortcut = "ctrl+s"
+
+[commands.close_buffer]
+shortcut = "ctrl+w"
 
 [commands.delete_line]
 shortcut = "ctrl+d"
