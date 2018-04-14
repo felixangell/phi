@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 	"unicode"
@@ -736,30 +737,41 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		// char index => colour
 		matches := map[int]int{}
 
-		subjects := [][]string{}
+		subjects := []cfg.SyntaxCriteria{}
 		colours := []int{}
 
 		stuff := b.cfg.Syntax[b.languageInfo]
 		for _, criteria := range stuff {
 			colours = append(colours, criteria.Colour)
-			subj := criteria.Match
-			subjects = append(subjects, subj)
+			subjects = append(subjects, criteria)
 		}
 
 		// HOLY SLOW BATMAN
 		for idx, _ := range source {
 			for syntaxIndex, syntax := range subjects {
-				for _, subject := range syntax {
-					if idx+len(subject) > len(source) {
-						continue
-					}
-
-					a := source[idx : idx+len(subject)]
-					if strings.Compare(string(a), subject) == 0 {
-						for i := 0; i < len(subject); i++ {
-							matches[i+idx] = colours[syntaxIndex]
+				if syntax.Pattern != "" {
+					a := source[idx:]
+					match, _ := regexp.MatchString(syntax.Pattern, string(a))
+					if match {
+						for i := 0; i < len(string(a)); i++ {
+							matches[i] = colours[syntaxIndex]
 						}
-						idx += len(subject)
+					}
+				} else {
+					for _, subject := range syntax.Match {
+						if idx+len(subject) > len(source) {
+							continue
+						}
+						a := source[idx : idx+len(subject)]
+						if strings.Compare(string(a), subject) == 0 {
+							for i := 0; i < len(subject); i++ {
+								if _, ok := matches[i+idx]; ok {
+									continue
+								}
+								matches[i+idx] = colours[syntaxIndex]
+							}
+							idx += len(subject)
+						}
 					}
 				}
 			}

@@ -54,8 +54,9 @@ func getDefaultConfig() string {
 }
 
 type SyntaxCriteria struct {
-	Colour int      `toml:"colouring"`
-	Match  []string `toml:"match"`
+	Colour  int      `toml:"colouring"`
+	Match   []string `toml:"match"`
+	Pattern string   `toml:"pattern"`
 }
 
 type Command struct {

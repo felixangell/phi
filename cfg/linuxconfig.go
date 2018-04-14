@@ -38,6 +38,10 @@ match = [
 	"rune", "byte", "float32", "float64"
 ]
 
+[syntax.go.comment]
+colouring = 0xff00ff
+pattern = "[\/]+.*"
+
 [syntax.go.symbol]
 colouring = 0xf0a400
 match = [
