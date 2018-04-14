@@ -26,7 +26,8 @@ extensions = [".go"]
 colouring = 0xf0a400
 match = [
 	"type", "import", "package", "func", "struct",
-	"append", "delete", "make"
+	"append", "delete", "make", "for", "if", "while",
+	"switch", "select", "chan",
 ]
 
 [syntax.go.type]
