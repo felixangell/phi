@@ -370,13 +370,15 @@ func (b *Buffer) scrollUp() {
 }
 
 func (b *Buffer) scrollDown() {
-	// TODO move the cursor down 45 lines
-	// IF the buffer exceeds the window size.
-	lineScrollAmount := 10
+	if b.cam.y < len(b.contents) {
+		// TODO move the cursor down 45 lines
+		// IF the buffer exceeds the window size.
+		lineScrollAmount := 10
 
-	b.cam.y += lineScrollAmount
-	for i := 0; i < lineScrollAmount; i++ {
-		b.moveDown()
+		b.cam.y += lineScrollAmount
+		for i := 0; i < lineScrollAmount; i++ {
+			b.moveDown()
+		}
 	}
 }
 
