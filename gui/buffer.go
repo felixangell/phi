@@ -5,6 +5,7 @@ import (
 	"log"
 	"path"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 	"unicode"
@@ -139,12 +140,45 @@ var shiftAlternative = map[rune]rune{
 	'§':  '±',
 }
 
+var altAlternative = map[rune]rune{
+	'1':  '¡',
+	'2':  '€',
+	'3':  '#',
+	'4':  '¢',
+	'5':  '∞',
+	'6':  '§',
+	'7':  '¶',
+	'8':  '•',
+	'9':  'ª',
+	'0':  'º',
+	'-':  '–',
+	'=':  '≠',
+	'`':  '`',
+	'/':  '÷',
+	'.':  '≥',
+	',':  '≤',
+	'[':  '“',
+	']':  '‘',
+	';':  '…',
+	'\'': 'æ',
+	'\\': '«',
+}
+
 func (b *Buffer) processTextInput(r rune) bool {
 	if ALT_DOWN && r == '\t' {
 		// nop, we dont want to
 		// insert tabs when we
 		// alt tab out of view of this app
 		return true
+	}
+
+	// only do the alt alternatives on mac osx
+	// todo change this so it's not checking on every
+	// input
+	if runtime.GOOS == "darwin" && ALT_DOWN {
+		if val, ok := altAlternative[r]; ok {
+			r = val
+		}
 	}
 
 	if CAPS_LOCK {
