@@ -28,7 +28,7 @@ match = [
 	"type", "import", "package", "func", "struct",
 	"append", "delete", "make", "for", "if", "while",
 	"switch", "select", "chan", "else", "var", "const",
-	"iota"
+	"iota", "case"
 ]
 
 [syntax.go.type]
@@ -41,8 +41,8 @@ match = [
 ]
 
 [syntax.go.comment]
-colouring = 0xff00ff
-pattern = "[\/]+.*"
+colouring = 0x4b79fc
+pattern = "[\\/]+.*"
 
 [syntax.go.symbol]
 colouring = 0xf0a400
