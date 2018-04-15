@@ -786,7 +786,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 						if strings.Compare(string(a), subject) == 0 {
 							for i := 0; i < len(subject); i++ {
 								if _, ok := matches[i+idx]; ok {
-									continue
+									break
 								}
 								matches[i+idx] = colours[syntaxIndex]
 							}

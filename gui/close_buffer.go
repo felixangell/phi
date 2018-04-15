@@ -48,7 +48,10 @@ func CloseBuffer(b *Buffer) bool {
 		i = i + 1
 		lastBuffer = p.(*Buffer)
 	}
-	lastBuffer.HasFocus = true
+
+	if lastBuffer != nil {
+		lastBuffer.HasFocus = true
+	}
 
 	return true
 }
