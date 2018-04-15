@@ -686,7 +686,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 	if b.cfg.Editor.Highlight_Line && b.HasFocus {
 		ctx.SetColor(strife.Black) // highlight_line_col?
-		ctx.Rect(rx, (ry + b.curs.ry*last_h), b.w, last_h, strife.Fill)
+		ctx.Rect(rx, (ry+b.curs.ry*last_h)-(b.cam.y*last_h), b.w, last_h, strife.Fill)
 	}
 
 	// render the ol' cursor
@@ -697,25 +697,28 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		}
 
 		ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor)) // caret colour
-		ctx.Rect((rx + b.curs.rx*last_w), (ry + b.curs.ry*last_h), cursorWidth, last_h, strife.Fill)
+		ctx.Rect((rx+b.curs.rx*last_w)-(b.cam.x*last_w), (ry+b.curs.ry*last_h)-(b.cam.y*last_h), cursorWidth, last_h, strife.Fill)
 	}
 
-	source := b.contents
+	var visibleLines int = 50
 
 	// last_h > 0 means we have done
 	// a render.
 	if int(last_h) > 0 && int(b.h) != 0 {
-		// work out how many lines can fit into
-		// the buffer, and set the source to
-		// slice the line buffer accordingly
-		visibleLines := int(b.h) / int(last_h)
-		if len(b.contents) > visibleLines {
-			// nop
-		}
+		// render an extra three lines just
+		// so we dont cut anything off if its
+		// not evenly divisible
+		visibleLines = (int(b.h) / int(last_h)) + 3
+	}
+
+	start := b.cam.y
+	upper := b.cam.y + visibleLines
+	if upper > len(b.contents) {
+		upper = len(b.contents)
 	}
 
 	var y_col int
-	for _, rope := range source {
+	for _, rope := range b.contents[start:upper] {
 		// this is because if we had the following
 		// text input:
 		//
@@ -732,7 +735,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			continue
 		}
 
-		source := []rune(rope.String())
+		currLine := []rune(rope.String())
 
 		// char index => colour
 		matches := map[int]int{}
@@ -747,10 +750,10 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		}
 
 		// HOLY SLOW BATMAN
-		for idx, _ := range source {
+		for idx, _ := range currLine {
 			for syntaxIndex, syntax := range subjects {
 				if syntax.Pattern != "" {
-					a := source[idx:]
+					a := currLine[idx:]
 					match, _ := regexp.MatchString(syntax.Pattern, string(a))
 					if match {
 						for i := 0; i < len(string(a)); i++ {
@@ -759,10 +762,10 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 					}
 				} else {
 					for _, subject := range syntax.Match {
-						if idx+len(subject) > len(source) {
+						if idx+len(subject) > len(currLine) {
 							continue
 						}
-						a := source[idx : idx+len(subject)]
+						a := currLine[idx : idx+len(subject)]
 						if strings.Compare(string(a), subject) == 0 {
 							for i := 0; i < len(subject); i++ {
 								if _, ok := matches[i+idx]; ok {
@@ -778,7 +781,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		}
 
 		var x_col int
-		for idx, char := range source {
+		for idx, char := range currLine {
 			switch char {
 			case '\n':
 				x_col = 0
@@ -811,5 +814,5 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 }
 
 func (b *Buffer) OnRender(ctx *strife.Renderer) {
-	b.renderAt(ctx, b.x-(b.cam.x*last_w), b.y-(b.cam.y*last_h))
+	b.renderAt(ctx, b.x, b.y)
 }
