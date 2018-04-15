@@ -727,6 +727,12 @@ func (b *Buffer) OnUpdate() bool {
 	return false
 }
 
+type syntaxRuneInfo struct {
+	background int
+	foreground int
+	length     int
+}
+
 // dimensions of the last character we rendered
 var last_w, last_h int
 
@@ -789,7 +795,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		currLine := []rune(rope.String())
 
 		// char index => colour
-		matches := map[int]int{}
+		matches := map[int]syntaxRuneInfo{}
 
 		subjects := []cfg.SyntaxCriteria{}
 		colours := []int{}
@@ -803,33 +809,48 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		// HOLY SLOW BATMAN
 		for idx, _ := range currLine {
 			for syntaxIndex, syntax := range subjects {
+
+				// we have a regex pattern
 				if syntax.Pattern != "" {
-					a := currLine[idx:]
-					match, _ := regexp.MatchString(syntax.Pattern, string(a))
+
+					// FIXME this is also very slow!
+					// we could easily compile all of these
+					// regular expressions when we load the
+					// syntax highlighter.
+					a := string(currLine[idx:])
+					match, _ := regexp.MatchString(syntax.Pattern, a)
 					if match {
-						for i := 0; i < len(string(a)); i++ {
-							matches[i] = colours[syntaxIndex]
-						}
-					}
-				} else {
-					for _, subject := range syntax.Match {
-						if idx+len(subject) > len(currLine) {
+						// for some reason this affects the whole line
+						if _, ok := matches[idx]; !ok {
+							matches[idx] = syntaxRuneInfo{colours[syntaxIndex], -1, len(a)}
 							continue
 						}
-						a := currLine[idx : idx+len(subject)]
-						if strings.Compare(string(a), subject) == 0 {
-							for i := 0; i < len(subject); i++ {
-								if _, ok := matches[i+idx]; ok {
-									break
-								}
-								matches[i+idx] = colours[syntaxIndex]
+					}
+
+				} else {
+
+					for _, subject := range syntax.Match {
+						if idx+len(subject)+1 > len(currLine) {
+							continue
+						}
+						a := currLine[idx : idx+len(subject)+1]
+
+						// we only want to match words. so we check that it has a space
+						// before or after the subject word.
+						if strings.Compare(string(a), subject+" ") == 0 || strings.Compare(string(a), " "+subject) == 0 {
+							if _, ok := matches[idx]; !ok {
+								matches[idx] = syntaxRuneInfo{colours[syntaxIndex], -1, len(string(a))}
+								break
 							}
 							idx += len(subject)
 						}
 					}
+
 				}
 			}
 		}
+
+		colorStack := []int{}
 
 		var x_col int
 		for idx, char := range currLine {
@@ -853,10 +874,18 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			if b.HasFocus && b.curs.x+1 == x_col && b.curs.y == y_col && should_draw {
 				ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor_Invert))
 			}
-			if col, ok := matches[idx]; ok {
-				ctx.SetColor(strife.HexRGB(int32(col)))
+
+			if info, ok := matches[idx]; ok {
+				for i := 0; i < info.length; i++ {
+					colorStack = append(colorStack, info.background)
+				}
 			}
 
+			if len(colorStack) > 0 {
+				var a int32
+				a, colorStack = int32(colorStack[len(colorStack)-1]), colorStack[:len(colorStack)-1]
+				ctx.SetColor(strife.HexRGB(a))
+			}
 			last_w, last_h = ctx.String(string(char), (rx + ((x_col - 1) * last_w)), (ry + (y_col * last_h)))
 		}
 
