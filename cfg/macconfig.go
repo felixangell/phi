@@ -7,13 +7,26 @@ tabs_are_spaces = true
 match_braces = false
 maintain_indentation = true
 highlight_line = true
+font_face = "Courier New Bold"
+font_size = 20
 
 [render]
 aliased = true
 accelerated = true
 throttle_cpu_usage = true
-always_render = false
+always_render = true
 
+[theme]
+background = 0x002649
+foreground = 0xf2f4f6
+cursor = 0xf2f4f6
+cursor_invert = 0x000000
+
+[cursor]
+flash_rate = 400
+reset_delay = 400
+draw = true
+flash = true
 
 [file_associations]
 [file_associations.c]
@@ -29,7 +42,7 @@ match = [
 	"type", "import", "package", "func", "struct",
 	"append", "delete", "make", "for", "if", "while",
 	"switch", "select", "chan", "else", "var", "const",
-	"iota"
+	"iota", "case"
 ]
 
 [syntax.go.type]
@@ -42,8 +55,8 @@ match = [
 ]
 
 [syntax.go.comment]
-colouring = 0xff00ff
-pattern = "[\/]+.*"
+colouring = 0x4b79fc
+pattern = "[\\/]+.*"
 
 [syntax.go.symbol]
 colouring = 0xf0a400
@@ -68,18 +81,6 @@ match = [
 	"goto", "static", "extern", "const", "typedef",
 ]
 
-[theme]
-background = 0x002649
-foreground = 0xf2f4f6
-cursor = 0xf2f4f6
-cursor_invert = 0x000000
-
-[cursor]
-flash_rate = 400
-reset_delay = 400
-draw = true
-flash = true
-
 [commands]
 [commands.save]
 shortcut = "super+s"
@@ -88,5 +89,4 @@ shortcut = "super+s"
 shortcut = "super+w"
 
 [commands.delete_line]
-shortcut = "super+d"
-`
+shortcut = "super+d"`

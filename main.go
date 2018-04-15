@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"runtime"
 	"time"
 
@@ -21,6 +22,12 @@ type PhiEditor struct {
 	gui.BaseComponent
 	running     bool
 	defaultFont *strife.Font
+}
+
+func (n *PhiEditor) handleEvent(evt strife.StrifeEvent) {
+	for _, comp := range n.GetComponents() {
+		gui.HandleEvent(comp, evt)
+	}
 }
 
 func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
@@ -46,7 +53,22 @@ func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
 
 	n.AddComponent(mainView)
 
-	font, err := strife.LoadFont("./res/firacode.ttf", 20)
+	// TODO put me somewhere else:
+	// also improve the font loading code
+	var fontFolder string
+
+	switch runtime.GOOS {
+	case "windows":
+		fontFolder = path.Join(os.Getenv("%WINDIR%"), "fonts")
+	case "darwin":
+		fontFolder = "/Library/Fonts/"
+	case "linux":
+		fontFolder = "/usr/share/fonts/"
+	}
+
+	fontPath := path.Join(fontFolder, cfg.Editor.Font_Face) + ".ttf"
+
+	font, err := strife.LoadFont(fontPath, cfg.Editor.Font_Size)
 	if err != nil {
 		panic(err)
 	}
@@ -91,6 +113,8 @@ func main() {
 		switch evt.(type) {
 		case *strife.CloseEvent:
 			window.Close()
+		default:
+			editor.handleEvent(evt)
 		}
 	})
 
@@ -111,10 +135,11 @@ func main() {
 
 		icon, err := strife.LoadImage("./res/icons/icon" + size + ".png")
 		if err != nil {
-			panic(err)
+			log.Println("Failed to load icon ", err.Error())
+		} else {
+			window.SetIconImage(icon)
+			defer icon.Destroy()
 		}
-		window.SetIconImage(icon)
-		defer icon.Destroy()
 	}
 
 	editor.init(&config)

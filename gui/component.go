@@ -18,6 +18,8 @@ type Component interface {
 	AddComponent(c Component)
 	GetComponents() []Component
 
+	HandleEvent(evt strife.StrifeEvent)
+
 	GetInputHandler() *InputHandler
 	SetInputHandler(h *InputHandler)
 }
@@ -28,6 +30,10 @@ type BaseComponent struct {
 	components    []Component
 	numComponents int
 	inputHandler  *InputHandler
+}
+
+func (b *BaseComponent) HandleEvent(evt strife.StrifeEvent) {
+	// NOP
 }
 
 func (b *BaseComponent) DeleteComponent(index int) {

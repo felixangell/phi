@@ -357,13 +357,16 @@ func (b *Buffer) swapLineDown() bool {
 }
 
 func (b *Buffer) scrollUp() {
-	// TODO move the cursor down 45 lines
-	// IF the buffer exceeds the window size.
-	lineScrollAmount := 10
-	b.cam.y -= lineScrollAmount
-	for i := 0; i < lineScrollAmount; i++ {
-		b.moveUp()
+	if b.cam.y > 0 {
+		// TODO move the cursor down 45 lines
+		// IF the buffer exceeds the window size.
+		lineScrollAmount := 10
+		b.cam.y -= lineScrollAmount
+		for i := 0; i < lineScrollAmount; i++ {
+			b.moveUp()
+		}
 	}
+
 }
 
 func (b *Buffer) scrollDown() {
@@ -623,6 +626,18 @@ func (b *Buffer) makeTab() string {
 		blah = append(blah, ' ')
 	}
 	return string(blah)
+}
+
+func (b *Buffer) HandleEvent(evt strife.StrifeEvent) {
+	switch event := evt.(type) {
+	case *strife.MouseWheelEvent:
+		if event.Y > 0 {
+			b.scrollDown()
+		}
+		if event.Y < 0 {
+			b.scrollUp()
+		}
+	}
 }
 
 func (b *Buffer) OnUpdate() bool {

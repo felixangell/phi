@@ -112,6 +112,8 @@ type EditorConfig struct {
 	Match_Braces         bool
 	Maintain_Indentation bool
 	Highlight_Line       bool
+	Font_Face            string
+	Font_Size            int
 }
 
 func NewDefaultConfig() *TomlConfig {

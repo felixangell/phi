@@ -12,8 +12,7 @@ highlight_line = true
 aliased = true
 accelerated = true
 throttle_cpu_usage = true
-always_render = false
-
+always_render = true
 
 [file_associations]
 [file_associations.c]
@@ -29,7 +28,7 @@ match = [
 	"type", "import", "package", "func", "struct",
 	"append", "delete", "make", "for", "if", "while",
 	"switch", "select", "chan", "else", "var", "const",
-	"iota"
+	"iota", "case"
 ]
 
 [syntax.go.type]
@@ -42,8 +41,8 @@ match = [
 ]
 
 [syntax.go.comment]
-colouring = 0xff00ff
-pattern = "[\/]+.*"
+colouring = 0x4b79fc
+pattern = "[\\/]+.*"
 
 [syntax.go.symbol]
 colouring = 0xf0a400
@@ -88,5 +87,4 @@ shortcut = "ctrl+s"
 shortcut = "ctrl+w"
 
 [commands.delete_line]
-shortcut = "ctrl+d"
-`
+shortcut = "ctrl+d"`
