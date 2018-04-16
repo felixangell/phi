@@ -3,6 +3,7 @@ package gui
 import (
 	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"regexp"
 	"runtime"
@@ -77,6 +78,15 @@ func (b *Buffer) OpenFile(filePath string) {
 	} else {
 		log.Println("- this file is a ", lang, " language program")
 		b.languageInfo = lang
+	}
+
+	// if the file doesn't exist, try to create it before reading it
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		if f, err = os.Create(filePath); err != nil {
+			panic(err)
+		} else {
+			f.Close()
+		}
 	}
 
 	contents, err := ioutil.ReadFile(filePath)
