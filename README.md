@@ -36,7 +36,17 @@ $ go build
 $ ./phi-editor
 ```
 
-If you're on macOS, you can get these dependencies via. homebrew. If you're on windows; you have my condolences.
+If you're on macOS, you can do something like this, using homebrew:
+
+```bash
+$ brew install sdl2 sdl2_image sdl2_ttf
+$ go get github.com/felixangell/phi-editor
+$ cd $GOPATH/src/github.com/felixangell/phi-editor
+$ go build
+$ ./phi-editor
+```
+
+If you're on windows, you have my condolences.
 
 ## configuration
 Configuration files are stored in `$HOME/.phi-editor-editor/config.toml`. Note that 
