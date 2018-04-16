@@ -82,7 +82,8 @@ func (b *Buffer) OpenFile(filePath string) {
 
 	// if the file doesn't exist, try to create it before reading it
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		if f, err = os.Create(filePath); err != nil {
+		f, err := os.Create(filePath)
+		if err != nil {
 			panic(err)
 		} else {
 			f.Close()
