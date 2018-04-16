@@ -51,6 +51,12 @@ func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
 		mainView.AddBuffer().OpenFile(tempFile.Name())
 	}
 
+	{
+		palette := gui.NewCommandPalette(cfg)
+		palette.Resize(1280/3, 72)
+		// mainView.AddComponent(palette)
+	}
+
 	n.AddComponent(mainView)
 
 	// TODO put me somewhere else:

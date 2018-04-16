@@ -1,6 +1,8 @@
 package gui
 
 func CloseBuffer(b *Buffer) bool {
+	// FIXME
+
 	// no parent. this can happen sometimes
 	// for example if we're trying to close
 	// a buffer illegal, e.g. a palette has

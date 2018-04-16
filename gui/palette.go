@@ -1,41 +1,38 @@
 package gui
 
 import (
-	"github.com/veandco/go-sdl2/sdl"
+	"github.com/felixangell/phi-editor/cfg"
+	"github.com/felixangell/strife"
 )
-
-type CommandBuffer struct {
-	*Buffer
-}
-
-func (b *CommandBuffer) processActionKey() {
-	// TODO
-	// b.Buffer.processActionKey()
-}
 
 type CommandPalette struct {
 	BaseComponent
-	buffer *CommandBuffer
+	buff *Buffer
 }
 
-func NewCommandPalette() *CommandPalette {
-	palette := &CommandPalette{}
-	palette.buffer = &CommandBuffer{
-		Buffer: NewBuffer(nil, nil, 0),
+func NewCommandPalette(conf *cfg.TomlConfig) *CommandPalette {
+	palette := &CommandPalette{
+		buff: NewBuffer(conf, nil, 0),
 	}
-	palette.AddComponent(palette.buffer)
+	palette.buff.HasFocus = true
 	return palette
 }
 
-func (p *CommandPalette) OnDispose() {}
-
-func (p *CommandPalette) OnInit() {
-}
-
-func (c *CommandPalette) OnUpdate() {
+func (b *CommandPalette) OnInit() {
 
 }
 
-func (c *CommandPalette) OnRender(ctx *sdl.Renderer) {
+func (b *CommandPalette) OnUpdate() bool {
+	return b.buff.OnUpdate()
+}
+
+func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
+	ctx.SetColor(strife.Red)
+	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
+
+	b.buff.OnRender(ctx)
+}
+
+func (b *CommandPalette) OnDispose() {
 
 }

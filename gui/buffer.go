@@ -689,7 +689,9 @@ func (b *Buffer) HandleEvent(evt strife.StrifeEvent) {
 }
 
 func (b *Buffer) OnUpdate() bool {
-	b.HasFocus = true
+	if !b.HasFocus {
+		return false
+	}
 
 	prev_x := b.curs.x
 	prev_y := b.curs.y
