@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -747,6 +748,9 @@ type syntaxRuneInfo struct {
 // dimensions of the last character we rendered
 var last_w, last_h int
 
+// editor x and y offsets
+var ex, ey = 0, 0
+
 func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	// BACKGROUND
 	ctx.SetColor(strife.HexRGB(b.cfg.Theme.Background))
@@ -754,7 +758,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 	if b.cfg.Editor.Highlight_Line && b.HasFocus {
 		ctx.SetColor(strife.Black) // highlight_line_col?
-		ctx.Rect(rx, (ry+b.curs.ry*last_h)-(b.cam.y*last_h), b.w, last_h, strife.Fill)
+		ctx.Rect(ex+rx, ey+(ry+b.curs.ry*last_h)-(b.cam.y*last_h), b.w, last_h, strife.Fill)
 	}
 
 	// render the ol' cursor
@@ -765,7 +769,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		}
 
 		ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor)) // caret colour
-		ctx.Rect((rx+b.curs.rx*last_w)-(b.cam.x*last_w), (ry+b.curs.ry*last_h)-(b.cam.y*last_h), cursorWidth, last_h, strife.Fill)
+		ctx.Rect(ex+(rx+b.curs.rx*last_w)-(b.cam.x*last_w), (ry+b.curs.ry*last_h)-(b.cam.y*last_h), cursorWidth, last_h, strife.Fill)
 	}
 
 	var visibleLines int = 50
@@ -785,24 +789,10 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		upper = len(b.contents)
 	}
 
-	var y_col int
-	for _, rope := range b.contents[start:upper] {
-		// this is because if we had the following
-		// text input:
-		//
-		// Foo
-		// _			<-- underscore is a space!
-		// Blah
-		// and we delete that underscore... it causes
-		// a panic because there are no characters in
-		// the empty string!
-		if rope.Len() == 0 {
-			// even though the string is empty
-			// we still need to offset it by a line
-			y_col += 1
-			continue
-		}
+	numLines := len(b.contents)
 
+	var y_col int
+	for lineNum, rope := range b.contents[start:upper] {
 		currLine := []rune(rope.String())
 
 		// char index => colour
@@ -897,7 +887,22 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 				a, colorStack = int32(colorStack[len(colorStack)-1]), colorStack[:len(colorStack)-1]
 				ctx.SetColor(strife.HexRGB(a))
 			}
-			last_w, last_h = ctx.String(string(char), (rx + ((x_col - 1) * last_w)), (ry + (y_col * last_h)))
+			last_w, last_h = ctx.String(string(char), ex+(rx+((x_col-1)*last_w)), (ry + (y_col * last_h)))
+		}
+
+		{
+			gutterPadPx := 10
+			numLinesWidth := len(string(numLines)) + 1
+			gutterWidth := last_w*numLinesWidth + (gutterPadPx * 2)
+
+			// render the line numbers
+			ctx.SetColor(strife.HexRGB(b.cfg.Theme.Background))
+			ctx.Rect(rx, (ry + (y_col * last_h)), gutterWidth, b.h, strife.Fill)
+
+			ctx.SetColor(strife.HexRGB(b.cfg.Theme.Foreground))
+			ctx.String(fmt.Sprintf("%*d", numLinesWidth, start+lineNum), rx+gutterPadPx, (ry + (y_col * last_h)))
+
+			ex = gutterWidth
 		}
 
 		y_col += 1
