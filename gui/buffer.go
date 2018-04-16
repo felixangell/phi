@@ -368,6 +368,16 @@ func (b *Buffer) moveRight() {
 	}
 }
 
+func (b *Buffer) moveToEndOfLine() {
+	lineLen := b.contents[b.curs.y].Len()
+	if b.curs.x > lineLen {
+		distToMove := b.curs.x - lineLen
+		for i := 0; i < distToMove; i++ {
+			b.moveLeft()
+		}
+	}
+}
+
 func (b *Buffer) moveUp() {
 	if b.curs.y > 0 {
 		b.curs.move(0, -1)
@@ -753,6 +763,8 @@ var last_w, last_h int
 // editor x and y offsets
 var ex, ey = 0, 0
 
+var compiledRegex = map[string]*regexp.Regexp{}
+
 func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	// BACKGROUND
 	ctx.SetColor(strife.HexRGB(b.cfg.Theme.Background))
@@ -800,52 +812,67 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		// char index => colour
 		matches := map[int]syntaxRuneInfo{}
 
-		subjects := []cfg.SyntaxCriteria{}
-		colours := []int{}
-
 		stuff := b.cfg.Syntax[b.languageInfo]
+
+		subjects := make([]cfg.SyntaxCriteria, len(stuff))
+		colours := make([]int, len(stuff))
+
+		idx := 0
 		for _, criteria := range stuff {
-			colours = append(colours, criteria.Colour)
-			subjects = append(subjects, criteria)
+			colours[idx] = criteria.Colour
+			subjects[idx] = criteria
+			idx++
 		}
 
 		// HOLY SLOW BATMAN
-		for idx, _ := range currLine {
+		for charIndex := 0; charIndex < len(currLine); charIndex++ {
 			for syntaxIndex, syntax := range subjects {
 
-				// we have a regex pattern
 				if syntax.Pattern != "" {
+					// we have a regex pattern
 
 					// FIXME this is also very slow!
 					// we could easily compile all of these
 					// regular expressions when we load the
 					// syntax highlighter.
-					a := string(currLine[idx:])
-					match, _ := regexp.MatchString(syntax.Pattern, a)
-					if match {
+					a := string(currLine[charIndex:])
+
+					// no need to compile the same regex
+					// pattern multiple times.
+					regex, ok := compiledRegex[syntax.Pattern]
+					if !ok {
+						var err error
+						regex, err = regexp.Compile(syntax.Pattern)
+						if err != nil {
+							log.Println(err.Error())
+						}
+					}
+
+					matched := regex.FindString(a)
+					if matched != "" && len(matched) > 0 {
 						// for some reason this affects the whole line
-						if _, ok := matches[idx]; !ok {
-							matches[idx] = syntaxRuneInfo{colours[syntaxIndex], -1, len(a)}
-							continue
+						if _, ok := matches[charIndex]; !ok {
+							matches[charIndex] = syntaxRuneInfo{colours[syntaxIndex], -1, len(matched)}
+							charIndex = charIndex + len(matched)
 						}
 					}
 
 				} else {
 
 					for _, subject := range syntax.Match {
-						if idx+len(subject)+1 > len(currLine) {
+						if charIndex+len(subject)+1 > len(currLine) {
 							continue
 						}
-						a := currLine[idx : idx+len(subject)+1]
+						a := currLine[charIndex : charIndex+len(subject)+1]
 
 						// we only want to match words. so we check that it has a space
 						// before or after the subject word.
 						if strings.Compare(string(a), subject+" ") == 0 || strings.Compare(string(a), " "+subject) == 0 {
-							if _, ok := matches[idx]; !ok {
-								matches[idx] = syntaxRuneInfo{colours[syntaxIndex], -1, len(string(a))}
+							if _, ok := matches[charIndex]; !ok {
+								matches[charIndex] = syntaxRuneInfo{colours[syntaxIndex], -1, len(string(a))}
 								break
 							}
-							idx += len(subject)
+							charIndex += len(subject)
 						}
 					}
 

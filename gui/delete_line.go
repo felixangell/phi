@@ -2,10 +2,10 @@ package gui
 
 import rope "github.com/felixangell/go-rope"
 
-// FIXME
 func DeleteLine(b *Buffer) bool {
 	if b.curs.y == 0 {
 		b.contents[b.curs.y] = new(rope.Rope)
+		b.moveToEndOfLine()
 		return false
 	}
 
@@ -18,6 +18,7 @@ func DeleteLine(b *Buffer) bool {
 
 	if b.curs.y >= len(b.contents) {
 		b.moveUp()
+		b.moveToEndOfLine()
 		return false
 	}
 
