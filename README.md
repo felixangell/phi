@@ -41,7 +41,10 @@ If you're on macOS, you can get these dependencies via. homebrew. If you're on w
 ## configuration
 Configuration files are stored in `$HOME/.phi-editor-editor/config.toml`. Note that 
 this directory is created on first startup by the editor, as well as the configuration
-file below is pre-loaded:
+files in the 'cfg/' directory are pre-loaded dependening on platform: see 'cfg/linuxconfig.go', for example.
+
+Below is a (non-exhaustive) configuration file to give you an
+idea of what the config files are like:
 
 ```toml
 [editor]
@@ -56,6 +59,7 @@ highlight_line = true
 aliased = true
 accelerated = true
 throttle_cpu_usage = true
+always_render = true
 
 [theme]
 background = 0x002649
