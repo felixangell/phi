@@ -7,6 +7,7 @@ tabs_are_spaces = true
 match_braces = false
 maintain_indentation = true
 highlight_line = true
+show_line_numbers = true
 
 [render]
 aliased = true

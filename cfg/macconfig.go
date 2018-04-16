@@ -9,6 +9,7 @@ maintain_indentation = true
 highlight_line = true
 font_face = "Courier New Bold"
 font_size = 20
+show_line_numbers = true
 
 [render]
 aliased = true

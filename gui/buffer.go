@@ -890,7 +890,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			last_w, last_h = ctx.String(string(char), ex+(rx+((x_col-1)*last_w)), (ry + (y_col * last_h)))
 		}
 
-		{
+		if b.cfg.Editor.Show_Line_Numbers {
 			gutterPadPx := 10
 			numLinesWidth := len(string(numLines)) + 1
 			gutterWidth := last_w*numLinesWidth + (gutterPadPx * 2)

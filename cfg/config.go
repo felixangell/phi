@@ -114,6 +114,7 @@ type EditorConfig struct {
 	Highlight_Line       bool
 	Font_Face            string
 	Font_Size            int
+	Show_Line_Numbers    bool
 }
 
 func NewDefaultConfig() *TomlConfig {
