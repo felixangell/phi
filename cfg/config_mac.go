@@ -1,6 +1,8 @@
+// +build darwin
+
 package cfg
 
-var DEFAULT_MAC_TOML_CONFIG string = `[editor]
+var DEFUALT_TOML_CONFIG = `[editor]
 tab_size = 4
 hungry_backspace = true
 tabs_are_spaces = true
