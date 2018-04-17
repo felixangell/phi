@@ -7,6 +7,8 @@ tabs_are_spaces = true
 match_braces = false
 maintain_indentation = true
 highlight_line = true
+font_face = "Courier New"
+font_size = 20
 show_line_numbers = true
 
 [render]
@@ -43,7 +45,7 @@ match = [
 
 [syntax.go.comment]
 colouring = 0x4b79fc
-pattern = "[\\/]+.*"
+pattern = '//.*'
 
 [syntax.go.symbol]
 colouring = 0xf0a400
@@ -53,6 +55,7 @@ match = [
 ]
 
 [syntax.c]
+
 [syntax.c.type]
 colouring = 0xff0000
 match = [
@@ -67,6 +70,18 @@ match = [
 	"for", "break", "if", "else", "continue", "return",
 	"goto", "static", "extern", "const", "typedef",
 ]
+
+[syntax.c.string_literal]
+colouring = 0xff0000
+pattern = "\"([^\\\"]|\\.)*\""
+
+[syntax.c.directive]
+colouring = 0xf0a400
+pattern = "^\\s*#\\s*include\\s+(?:<[^>]*>|\"[^\"]*\")\\s*"
+
+[syntax.c.comment]
+colouring = 0x4b79fc
+pattern = '//.*'
 
 [theme]
 background = 0x002649

@@ -7,7 +7,7 @@ tabs_are_spaces = true
 match_braces = false
 maintain_indentation = true
 highlight_line = true
-font_face = "Courier New Bold"
+font_face = "Courier New"
 font_size = 20
 show_line_numbers = true
 
@@ -16,18 +16,6 @@ aliased = true
 accelerated = true
 throttle_cpu_usage = true
 always_render = true
-
-[theme]
-background = 0x002649
-foreground = 0xf2f4f6
-cursor = 0xf2f4f6
-cursor_invert = 0x000000
-
-[cursor]
-flash_rate = 400
-reset_delay = 400
-draw = true
-flash = true
 
 [file_associations]
 [file_associations.c]
@@ -57,7 +45,7 @@ match = [
 
 [syntax.go.comment]
 colouring = 0x4b79fc
-pattern = "[\\/]+.*"
+pattern = '//.*'
 
 [syntax.go.symbol]
 colouring = 0xf0a400
@@ -67,6 +55,7 @@ match = [
 ]
 
 [syntax.c]
+
 [syntax.c.type]
 colouring = 0xff0000
 match = [
@@ -82,6 +71,30 @@ match = [
 	"goto", "static", "extern", "const", "typedef",
 ]
 
+[syntax.c.string_literal]
+colouring = 0xff0000
+pattern = "\"([^\\\"]|\\.)*\""
+
+[syntax.c.directive]
+colouring = 0xf0a400
+pattern = "^\\s*#\\s*include\\s+(?:<[^>]*>|\"[^\"]*\")\\s*"
+
+[syntax.c.comment]
+colouring = 0x4b79fc
+pattern = '//.*'
+
+[theme]
+background = 0x002649
+foreground = 0xf2f4f6
+cursor = 0xf2f4f6
+cursor_invert = 0x000000
+
+[cursor]
+flash_rate = 400
+reset_delay = 400
+draw = true
+flash = true
+
 [commands]
 [commands.save]
 shortcut = "super+s"
@@ -90,4 +103,5 @@ shortcut = "super+s"
 shortcut = "super+w"
 
 [commands.delete_line]
-shortcut = "super+d"`
+shortcut = "super+d"
+`
