@@ -755,6 +755,78 @@ var ex, ey = 0, 0
 
 var compiledRegex = map[string]*regexp.Regexp{}
 
+func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
+	matches := map[int]syntaxRuneInfo{}
+
+	subjects := make([]cfg.SyntaxCriteria, len(b.languageInfo.Syntax))
+	colours := make([]int, len(b.languageInfo.Syntax))
+
+	idx := 0
+	for _, criteria := range b.languageInfo.Syntax {
+		colours[idx] = criteria.Colour
+		subjects[idx] = criteria
+		idx++
+	}
+
+	// HOLY SLOW BATMAN
+	for charIndex := 0; charIndex < len(currLine); charIndex++ {
+		for syntaxIndex, syntax := range subjects {
+
+			if syntax.Pattern != "" {
+				// we have a regex pattern
+
+				// FIXME this is also very slow!
+				// we could easily compile all of these
+				// regular expressions when we load the
+				// syntax highlighter.
+				a := string(currLine[charIndex:])
+
+				// no need to compile the same regex
+				// pattern multiple times.
+				regex, ok := compiledRegex[syntax.Pattern]
+				if !ok {
+					var err error
+					regex, err = regexp.Compile(syntax.Pattern)
+					if err != nil {
+						log.Println(err.Error())
+					}
+				}
+
+				matched := regex.FindStringIndex(a)
+				if matched != nil {
+					if _, ok := matches[charIndex]; !ok {
+						matchedStrLen := (matched[1] - matched[0])
+						matches[charIndex+matched[0]] = syntaxRuneInfo{colours[syntaxIndex], -1, matchedStrLen}
+						charIndex = charIndex + matchedStrLen
+					}
+				}
+
+			} else {
+
+				for _, subject := range syntax.Match {
+					if charIndex+len(subject)+1 > len(currLine) {
+						continue
+					}
+					a := currLine[charIndex : charIndex+len(subject)+1]
+
+					// we only want to match words. so we check that it has a space
+					// before or after the subject word.
+					if strings.Compare(string(a), subject+" ") == 0 || strings.Compare(string(a), " "+subject) == 0 {
+						if _, ok := matches[charIndex]; !ok {
+							matches[charIndex] = syntaxRuneInfo{colours[syntaxIndex], -1, len(string(a))}
+							break
+						}
+						charIndex += len(subject)
+					}
+				}
+
+			}
+		}
+	}
+
+	return matches
+}
+
 func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	// BACKGROUND
 	ctx.SetColor(strife.HexRGB(b.cfg.Theme.Background))
@@ -803,72 +875,9 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		currLine := []rune(rope.String())
 
 		// char index => colour
-		matches := map[int]syntaxRuneInfo{}
-
-		subjects := make([]cfg.SyntaxCriteria, len(b.languageInfo.Syntax))
-		colours := make([]int, len(b.languageInfo.Syntax))
-
-		idx := 0
-		for _, criteria := range b.languageInfo.Syntax {
-			colours[idx] = criteria.Colour
-			subjects[idx] = criteria
-			idx++
-		}
-
-		// HOLY SLOW BATMAN
-		for charIndex := 0; charIndex < len(currLine); charIndex++ {
-			for syntaxIndex, syntax := range subjects {
-
-				if syntax.Pattern != "" {
-					// we have a regex pattern
-
-					// FIXME this is also very slow!
-					// we could easily compile all of these
-					// regular expressions when we load the
-					// syntax highlighter.
-					a := string(currLine[charIndex:])
-
-					// no need to compile the same regex
-					// pattern multiple times.
-					regex, ok := compiledRegex[syntax.Pattern]
-					if !ok {
-						var err error
-						regex, err = regexp.Compile(syntax.Pattern)
-						if err != nil {
-							log.Println(err.Error())
-						}
-					}
-
-					matched := regex.FindStringIndex(a)
-					if matched != nil {
-						if _, ok := matches[charIndex]; !ok {
-							matchedStrLen := (matched[1] - matched[0])
-							matches[charIndex+matched[0]] = syntaxRuneInfo{colours[syntaxIndex], -1, matchedStrLen}
-							charIndex = charIndex + matchedStrLen
-						}
-					}
-
-				} else {
-
-					for _, subject := range syntax.Match {
-						if charIndex+len(subject)+1 > len(currLine) {
-							continue
-						}
-						a := currLine[charIndex : charIndex+len(subject)+1]
-
-						// we only want to match words. so we check that it has a space
-						// before or after the subject word.
-						if strings.Compare(string(a), subject+" ") == 0 || strings.Compare(string(a), " "+subject) == 0 {
-							if _, ok := matches[charIndex]; !ok {
-								matches[charIndex] = syntaxRuneInfo{colours[syntaxIndex], -1, len(string(a))}
-								break
-							}
-							charIndex += len(subject)
-						}
-					}
-
-				}
-			}
+		var matches map[int]syntaxRuneInfo
+		if b.languageInfo != nil {
+			matches = b.syntaxHighlightLine(string(currLine))
 		}
 
 		colorStack := []int{}

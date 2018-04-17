@@ -65,10 +65,11 @@ func (c CursorConfig) GetCaretWidth() int {
 }
 
 type RenderConfig struct {
-	Aliased            bool
-	Accelerated        bool
-	Throttle_Cpu_Usage bool
-	Always_Render      bool
+	Aliased             bool
+	Accelerated         bool
+	Throttle_Cpu_Usage  bool
+	Always_Render       bool
+	Syntax_Highlighting bool
 }
 
 // todo make this more extendable...
