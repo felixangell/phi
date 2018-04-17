@@ -7,7 +7,7 @@ tabs_are_spaces = true
 match_braces = false
 maintain_indentation = true
 highlight_line = true
-font_face = "Courier New"
+font_face = "truetype/freefont/FreeMono"
 font_size = 20
 show_line_numbers = true
 
@@ -43,6 +43,10 @@ match = [
 	"rune", "byte", "float32", "float64"
 ]
 
+[syntax.go.string_literal]
+colouring = 0x4b79fc
+pattern = "\"([^\\\"]|\\.)*\""
+
 [syntax.go.comment]
 colouring = 0x4b79fc
 pattern = '//.*'
@@ -57,7 +61,7 @@ match = [
 [syntax.c]
 
 [syntax.c.type]
-colouring = 0xff0000
+colouring = 0xf8f273
 match = [
 	"int", "char", "bool", "float", "double", "void",
 	"uint8_t", "uint16_t", "uint32_t", "uint64_t",
@@ -65,14 +69,14 @@ match = [
 ]
 
 [syntax.c.keyword]
-colouring = 0xff00ff
+colouring = 0xf0a400
 match = [
 	"for", "break", "if", "else", "continue", "return",
 	"goto", "static", "extern", "const", "typedef",
 ]
 
 [syntax.c.string_literal]
-colouring = 0xff0000
+colouring = 0x4b79fc
 pattern = "\"([^\\\"]|\\.)*\""
 
 [syntax.c.directive]
