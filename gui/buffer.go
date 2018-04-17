@@ -34,17 +34,16 @@ type camera struct {
 
 type Buffer struct {
 	BaseComponent
-	HasFocus bool
-	index    int
-	parent   *View
-	font     *strife.Font
-	contents []*rope.Rope
-	curs     *Cursor
-	cfg      *cfg.TomlConfig
-	cam      *camera
-	filePath string
-
-	languageInfo string
+	HasFocus     bool
+	index        int
+	parent       *View
+	font         *strife.Font
+	contents     []*rope.Rope
+	curs         *Cursor
+	cfg          *cfg.TomlConfig
+	cam          *camera
+	filePath     string
+	languageInfo *cfg.LanguageSyntaxConfig
 }
 
 func NewBuffer(conf *cfg.TomlConfig, parent *View, index int) *Buffer {
@@ -73,12 +72,11 @@ func (b *Buffer) OpenFile(filePath string) {
 	log.Println("Opening file ", filePath)
 
 	ext := path.Ext(filePath)
-	lang, err := b.cfg.GetLanguageFromExt(ext)
+
+	var err error
+	b.languageInfo, err = b.cfg.GetSyntaxConfig(ext)
 	if err != nil {
 		log.Println(err.Error())
-	} else {
-		log.Println("- this file is a ", lang, " language program")
-		b.languageInfo = lang
 	}
 
 	// if the file doesn't exist, try to create it before reading it
@@ -807,13 +805,11 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		// char index => colour
 		matches := map[int]syntaxRuneInfo{}
 
-		stuff := b.cfg.Syntax[b.languageInfo]
-
-		subjects := make([]cfg.SyntaxCriteria, len(stuff))
-		colours := make([]int, len(stuff))
+		subjects := make([]cfg.SyntaxCriteria, len(b.languageInfo.Syntax))
+		colours := make([]int, len(b.languageInfo.Syntax))
 
 		idx := 0
-		for _, criteria := range stuff {
+		for _, criteria := range b.languageInfo.Syntax {
 			colours[idx] = criteria.Colour
 			subjects[idx] = criteria
 			idx++

@@ -24,6 +24,19 @@ The editor must:
 * look pretty; and finally
 * be easy to use
 
+# reporting bugs/troubleshooting
+Note the editor is still unstable. Please report any bugs you find so I can
+squash them! It is appreciated if you skim the issue handler to make sure
+you aren't reporting duplicate bugs.
+
+## before filing an issue
+Just to make sure it's an issue with the editor currently and not due to a 
+broken change, please:
+
+* make sure the repository is up to date
+* make sure all the dependencies are updated, especially "github.com/felixangell/strife"
+* try removing the ~/.phi-config folder manually and letting the editor re-load it
+
 # building
 You'll need Go with the GOPATH, GOBIN, etc. setup, as well as SDL2, SDL2\_image, and SDL2\_ttf. Here's
 an example for Ubuntu:
