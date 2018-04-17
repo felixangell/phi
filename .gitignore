@@ -1,4 +1,7 @@
 tests/
 phi-editor
 fmt.sh
+.idea/
+vendor/
+.DS_Store
 
