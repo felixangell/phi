@@ -26,6 +26,9 @@ extensions = [".c", ".h", ".cc"]
 [file_associations.go]
 extensions = [".go"]
 
+[file_associations.md]
+extensions = [".md"]
+
 [theme]
 background = 0x002649
 foreground = 0xf2f4f6

@@ -83,4 +83,12 @@ match = [
 	"=", ":", ";", "*", "&", "+", "-", "/", "%",
 	"^", "#", "!", "@", "<", ">", ".", ","	
 ]`)
+
+	RegisterSyntax("md", `[syntax.md]
+[syntax.header]
+colouring = 0xff00ff
+pattern = '(?m)^#{1,6}.*'
+`)
+
+	// your syntax here!
 }
