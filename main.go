@@ -42,7 +42,7 @@ func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
 		}
 	} else {
 		// we have no args, open up a scratch file
-		tempFile, err := ioutil.TempFile("/var/tmp/", "phi-editor-")
+		tempFile, err := ioutil.TempFile("", "phi-editor-")
 		if err != nil {
 			log.Println("Failed to create temp file", err.Error())
 			os.Exit(1)
