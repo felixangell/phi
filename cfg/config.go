@@ -9,28 +9,24 @@ import (
 )
 
 type TomlConfig struct {
-	Editor       EditorConfig                         `toml:"editor"`
-	Cursor       CursorConfig                         `toml:"cursor"`
-	Render       RenderConfig                         `toml:"render"`
-	Theme        ThemeConfig                          `toml:"theme"`
-	Associations map[string]FileAssociations          `toml:"file_associations"`
-	Commands     map[string]Command                   `toml:"commands"`
-	Syntax       map[string]map[string]SyntaxCriteria `toml:"syntax"`
+	Editor       EditorConfig                `toml:"editor"`
+	Cursor       CursorConfig                `toml:"cursor"`
+	Render       RenderConfig                `toml:"render"`
+	Theme        ThemeConfig                 `toml:"theme"`
+	Associations map[string]FileAssociations `toml:"file_associations"`
+	Commands     map[string]Command          `toml:"commands"`
 
-	// this maps ext => language
-	// when we have file associations from
-	// the Associations field we take
-	// each extension and put them here
-	// pointing it to the language.
-	// basically the reverse/opposite
-	associations map[string]string
+	associations map[string]*LanguageSyntaxConfig
 }
 
-func (t *TomlConfig) GetLanguageFromExt(ext string) (string, error) {
+// GetSyntaxConfig returns a pointer to the parsed
+// syntax language file for the given file extension
+// e.g. what syntax def we need for a .cpp file or a .h file
+func (t *TomlConfig) GetSyntaxConfig(ext string) (*LanguageSyntaxConfig, error) {
 	if val, ok := t.associations[ext]; ok {
 		return val, nil
 	}
-	return "", errors.New("no language for extension '" + ext + "'")
+	return nil, errors.New("no language for extension '" + ext + "'")
 }
 
 type FileAssociations struct {
