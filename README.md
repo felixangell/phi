@@ -2,7 +2,7 @@
 
 <h1>phi-editor</h1>
 Phi is a minimal text editor designed to look pretty, run fast, and be easy
-to configure and use. It's primary function is for editing code. 
+to configure and use. It's primary function is for editing code.
 
 Note that this is a work in progress and is very buggy! The editor is written as if it's a game,
 so it will probably **eat up your battery**, as well as **run possibly quite slow** - especially
@@ -22,7 +22,7 @@ The editor must:
 * run fast;
 * load and edit large files with ease;
 * look pretty; and finally
-* be easy to use 
+* be easy to use
 
 # building
 You'll need Go with the GOPATH, GOBIN, etc. setup, as well as SDL2, SDL2\_image, and SDL2\_ttf. Here's
@@ -49,7 +49,7 @@ $ ./phi-editor
 If you're on windows, you have my condolences.
 
 ## configuration
-Configuration files are stored in `$HOME/.phi-editor-editor/config.toml`. Note that 
+Configuration files are stored in `$HOME/.phi-editor/config.toml`. Note that
 this directory is created on first startup by the editor, as well as the configuration
 files in the 'cfg/' directory are pre-loaded dependening on platform: see 'cfg/linuxconfig.go', for example.
 

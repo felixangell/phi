@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	// fork of BurntSushi with hexadecimal support.
@@ -81,8 +83,12 @@ func configureAndValidate(conf *TomlConfig) {
 func Setup() TomlConfig {
 	log.Println("Setting up Phi Editor")
 
-	CONFIG_DIR := os.Getenv("HOME") + CONFIG_DIR_PATH
-	CONFIG_PATH := CONFIG_DIR + CONFIG_TOML_FILE
+	home := os.Getenv("HOME")
+	if runtime.GOOS == "windows" {
+		home = os.Getenv("USERPROFILE")
+	}
+	CONFIG_DIR := filepath.Join(home, CONFIG_DIR_PATH)
+	CONFIG_PATH := filepath.Join(CONFIG_DIR, CONFIG_TOML_FILE)
 	CONFIG_FULL_PATH = CONFIG_PATH
 
 	// if the user doesn't have a /.phi-editor
