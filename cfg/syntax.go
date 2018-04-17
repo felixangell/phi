@@ -13,13 +13,15 @@ func RegisterSyntax(name string, s string) {
 }
 
 func init() {
+	// C LANGUAGE SYNTAX HIGHLIGHTING
+
 	RegisterSyntax("c", `[syntax.c]
 [syntax.type]
 colouring = 0xf8f273
 match = [
 	"int", "char", "bool", "float", "double", "void",
 	"uint8_t", "uint16_t", "uint32_t", "uint64_t",
-	"int8_t", "int16_t", "int32_t", "int64_t"
+	"int8_t", "int16_t", "int32_t", "int64_t", "const"
 ]
 
 [syntax.keyword]
@@ -27,6 +29,9 @@ colouring = 0xf0a400
 match = [
 	"for", "break", "if", "else", "continue", "return",
 	"goto", "static", "extern", "const", "typedef",
+	"struct", "union", "register", "enum", 
+	"do", "static", "sizeof", "volatile", "unsigned",
+	"switch", "case", "goto", "default"
 ]
 
 [syntax.string_literal]
@@ -41,34 +46,38 @@ pattern = "^\\s*#\\s*include\\s+(?:<[^>]*>|\"[^\"]*\")\\s*"
 colouring = 0x4b79fc
 pattern = '//.*'`)
 
+	// GO LANGUAGE SYNTAX HIGHLIGHTING
+
 	RegisterSyntax("go", `[syntax.go]
-[syntax.go.keyword]
+[syntax.keyword]
 colouring = 0xf0a400
 match = [
-	"type", "import", "package", "func", "struct",
-	"append", "delete", "make", "for", "if", "while",
-	"switch", "select", "chan", "else", "var", "const",
-	"iota", "case"
+	"break", "default", "func", "interface", "select",
+	"case", "defer", "go", "map", "struct",
+	"chan", "else", "goto", "package", "switch",
+	"const", "fallthrough", "if", "range", "type",
+	"continue", "for", "import", "return", "var",
 ]
 
-[syntax.go.type]
+[syntax.type]
 colouring = 0xf8f273
 match = [
-	"int", "string", "uint",
+	"int", "string", "uint", "rune",
 	"int8", "int16", "int32", "int64",
 	"uint8", "uint16", "uint32", "uint64",
-	"rune", "byte", "float32", "float64"
+	"byte", "float32", "float64", "complex64",
+	"complex128", "uintptr", 
 ]
 
-[syntax.go.comment]
+[syntax.comment]
 colouring = 0x4b79fc
 pattern = '//.*'
 
-[syntax.go.string_literal]
+[syntax.string_literal]
 colouring = 0x4b79fc
 pattern = "\"([^\\\"]|\\.)*\""
 
-[syntax.go.symbol]
+[syntax.symbol]
 colouring = 0xf0a400
 match = [
 	"=", ":", ";", "*", "&", "+", "-", "/", "%",
