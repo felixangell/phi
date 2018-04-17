@@ -698,13 +698,13 @@ func (b *Buffer) HandleEvent(evt strife.StrifeEvent) {
 	}
 }
 
+var lastCursorDraw = time.Now()
+var renderFlashingCursor = true
+
 func (b *Buffer) OnUpdate() bool {
 	if !b.HasFocus {
 		return false
 	}
-
-	prev_x := b.curs.x
-	prev_y := b.curs.y
 
 	SHIFT_DOWN = strife.KeyPressed(sdl.K_LSHIFT) || strife.KeyPressed(sdl.K_RSHIFT)
 	SUPER_DOWN = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
@@ -727,25 +727,17 @@ func (b *Buffer) OnUpdate() bool {
 		}
 	}
 
+	// handle cursor flash
+	if b.cfg.Cursor.Flash && runtime.GOOS == "spookyghost" {
+		if time.Now().Sub(lastCursorDraw) >= time.Duration(b.cfg.Cursor.Flash_Rate)*time.Millisecond {
+			renderFlashingCursor = !renderFlashingCursor
+			lastCursorDraw = time.Now()
+		}
+	}
+
 	// FIXME handle focus properly
 	if b.inputHandler == nil {
 		return false
-	}
-
-	if b.curs.x != prev_x || b.curs.y != prev_y {
-		should_draw = true
-		should_flash = false
-		reset_timer = strife.CurrentTimeMillis()
-	}
-
-	// fixme to not use CurrentTimeMillis
-	if !should_flash && strife.CurrentTimeMillis()-reset_timer > b.cfg.Cursor.Reset_Delay {
-		should_flash = true
-	}
-
-	if strife.CurrentTimeMillis()-timer > b.cfg.Cursor.Flash_Rate && (should_flash && b.cfg.Cursor.Flash) {
-		timer = strife.CurrentTimeMillis()
-		should_draw = !should_draw
 	}
 
 	return false
@@ -776,7 +768,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	}
 
 	// render the ol' cursor
-	if should_draw && b.cfg.Cursor.Draw && b.HasFocus {
+	if b.HasFocus && renderFlashingCursor && b.cfg.Cursor.Draw {
 		cursorWidth := b.cfg.Cursor.GetCaretWidth()
 		if cursorWidth == -1 {
 			cursorWidth = last_w
