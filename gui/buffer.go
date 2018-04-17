@@ -851,12 +851,14 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 						}
 					}
 
-					matched := regex.FindString(a)
-					if matched != "" && len(matched) > 0 {
+					matched := regex.FindStringIndex(a)
+					if matched != nil {
 						// for some reason this affects the whole line
 						if _, ok := matches[charIndex]; !ok {
-							matches[charIndex] = syntaxRuneInfo{colours[syntaxIndex], -1, len(matched)}
-							charIndex = charIndex + len(matched)
+							matchedStrLen := (matched[1] - matched[0])
+
+							matches[charIndex+matched[0]] = syntaxRuneInfo{colours[syntaxIndex], -1, matchedStrLen}
+							charIndex = charIndex + matchedStrLen
 						}
 					}
 
