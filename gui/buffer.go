@@ -799,6 +799,9 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 	start := b.cam.y
 	upper := b.cam.y + visibleLines
+	if start > len(b.contents) {
+		start = len(b.contents)
+	}
 	if upper > len(b.contents) {
 		upper = len(b.contents)
 	}
