@@ -3,9 +3,7 @@ package cfg
 import (
 	"errors"
 	"log"
-	"runtime"
 	"strconv"
-	"strings"
 )
 
 type TomlConfig struct {
@@ -35,22 +33,6 @@ func (t *TomlConfig) GetLanguageFromExt(ext string) (string, error) {
 
 type FileAssociations struct {
 	Extensions []string
-}
-
-var DEFUALT_TOML_CONFIG string = getDefaultConfig()
-
-func getDefaultConfig() string {
-	switch strings.ToLower(runtime.GOOS) {
-	case "windows":
-		return DEFAULT_WINDOWS_TOML_CONFIG
-	case "linux":
-		return DEFAULT_LINUX_TOML_CONFIG
-	case "darwin":
-		return DEFAULT_MAC_TOML_CONFIG
-	}
-
-	// fallback is a windows config.
-	return DEFAULT_WINDOWS_TOML_CONFIG
 }
 
 type SyntaxCriteria struct {

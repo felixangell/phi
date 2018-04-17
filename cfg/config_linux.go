@@ -1,13 +1,15 @@
+// +build linux
+
 package cfg
 
-var DEFAULT_MAC_TOML_CONFIG string = `[editor]
+var DEFUALT_TOML_CONFIG = `[editor]
 tab_size = 4
 hungry_backspace = true
 tabs_are_spaces = true
 match_braces = false
 maintain_indentation = true
 highlight_line = true
-font_face = "Courier New"
+font_face = "truetype/freefont/FreeMono"
 font_size = 20
 show_line_numbers = true
 
@@ -43,13 +45,13 @@ match = [
 	"rune", "byte", "float32", "float64"
 ]
 
-[syntax.go.comment]
-colouring = 0x4b79fc
-pattern = '//.*'
-
 [syntax.go.string_literal]
 colouring = 0x4b79fc
 pattern = "\"([^\\\"]|\\.)*\""
+
+[syntax.go.comment]
+colouring = 0x4b79fc
+pattern = '//.*'
 
 [syntax.go.symbol]
 colouring = 0xf0a400
@@ -101,11 +103,11 @@ flash = true
 
 [commands]
 [commands.save]
-shortcut = "super+s"
+shortcut = "ctrl+s"
 
 [commands.close_buffer]
-shortcut = "super+w"
+shortcut = "ctrl+w"
 
 [commands.delete_line]
-shortcut = "super+d"
+shortcut = "ctrl+d"
 `

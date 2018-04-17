@@ -1,6 +1,8 @@
+// +build darwin
+
 package cfg
 
-var DEFAULT_WINDOWS_TOML_CONFIG string = `[editor]
+var DEFUALT_TOML_CONFIG = `[editor]
 tab_size = 4
 hungry_backspace = true
 tabs_are_spaces = true
@@ -43,13 +45,13 @@ match = [
 	"rune", "byte", "float32", "float64"
 ]
 
-[syntax.go.string_literal]
-colouring = 0x4b79fc
-pattern = "\"([^\\\"]|\\.)*\""
-
 [syntax.go.comment]
 colouring = 0x4b79fc
 pattern = '//.*'
+
+[syntax.go.string_literal]
+colouring = 0x4b79fc
+pattern = "\"([^\\\"]|\\.)*\""
 
 [syntax.go.symbol]
 colouring = 0xf0a400
@@ -101,11 +103,11 @@ flash = true
 
 [commands]
 [commands.save]
-shortcut = "ctrl+s"
+shortcut = "super+s"
 
 [commands.close_buffer]
-shortcut = "ctrl+w"
+shortcut = "super+w"
 
 [commands.delete_line]
-shortcut = "ctrl+d"
+shortcut = "super+d"
 `

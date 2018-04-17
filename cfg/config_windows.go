@@ -1,13 +1,15 @@
+// +build windows
+
 package cfg
 
-var DEFAULT_LINUX_TOML_CONFIG string = `[editor]
+var DEFUALT_TOML_CONFIG = `[editor]
 tab_size = 4
 hungry_backspace = true
 tabs_are_spaces = true
 match_braces = false
 maintain_indentation = true
 highlight_line = true
-font_face = "truetype/freefont/FreeMono"
+font_face = "Courier New"
 font_size = 20
 show_line_numbers = true
 
