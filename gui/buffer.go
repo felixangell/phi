@@ -831,11 +831,20 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 					// we only want to match words. so we check that it has a space
 					// before or after the subject word.
 					if strings.Compare(string(a), subject+" ") == 0 || strings.Compare(string(a), " "+subject) == 0 {
+						// hack
+						offs := 0
+
 						if _, ok := matches[charIndex]; !ok {
-							matches[charIndex] = syntaxRuneInfo{colours[syntaxIndex], -1, len(string(a))}
+							// the second branch was true
+							// so we have to offset this index by one
+							if a[0] == ' ' {
+								offs++
+							}
+
+							matches[charIndex+offs] = syntaxRuneInfo{colours[syntaxIndex], -1, len(subject)}
 							break
 						}
-						charIndex += len(subject)
+						charIndex += len(subject)+offs
 					}
 				}
 
