@@ -109,10 +109,22 @@ func (b *Buffer) OnInit() {}
 
 func (b *Buffer) appendLine(val string) {
 	b.contents = append(b.contents, rope.New(val))
-
 	// because we've added a new line
 	// we have to set the x to the start
 	b.curs.x = 0
+}
+
+// inserts a string, handling all of the newlines etc
+func (b *Buffer) insertString(idx int, val string) {
+	lines := strings.Split(val, "\n")
+
+	for _, l := range lines {
+		b.contents = append(b.contents, new(rope.Rope))
+		copy(b.contents[b.curs.y+idx+1:], b.contents[b.curs.y+idx:])
+		b.contents[b.curs.y+idx] = rope.New(l)
+		b.moveDown()
+	}
+
 }
 
 func (b *Buffer) insertRune(r rune) {

@@ -9,9 +9,9 @@ import (
 
 func Paste(b *Buffer) bool {
 	str, err := clipboard.ReadAll()
-	
+
 	if err == nil {
-		b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, str)
+		b.insertString(b.curs.x, str)
 		b.moveToEndOfLine()
 		return true
 	}
