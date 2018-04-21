@@ -129,7 +129,7 @@ func main() {
 
 	editor.init(&config)
 
-	timer := strife.CurrentTimeMillis()
+	lastDebugRender := time.Now()
 	frames, updates := 0, 0
 	fps, ups := frames, updates
 
@@ -161,8 +161,8 @@ func main() {
 		}
 		updates += 1
 
-		if strife.CurrentTimeMillis()-timer > 1000 {
-			timer = strife.CurrentTimeMillis()
+		if time.Now().Sub(lastDebugRender) >= time.Second {
+			lastDebugRender = time.Now()
 			fps, ups = frames, updates
 			frames, updates = 0, 0
 		}

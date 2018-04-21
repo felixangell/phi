@@ -48,7 +48,7 @@ func (l *Lexer) Tokenize() []*Token {
 
 		startPos := l.pos
 		for l.hasNext() {
-			// we run into a layout pos
+			// we run into a layout character 
 			if l.peek() <= ' ' {
 				break
 			}
