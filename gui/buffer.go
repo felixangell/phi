@@ -780,7 +780,10 @@ func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch ma
 	// start up a lexer instance and
 	// lex the line.
 	lexer := lex.New(currLine)
-	for _, tok := range lexer.Tokenize() {
+
+	tokenStream := lexer.Tokenize()
+
+	for _, tok := range tokenStream {
 		if _, ok := toMatch[tok.Lexeme]; ok {
 			(*matches)[tok.Start] = syntaxRuneInfo{bg, -1, len(tok.Lexeme)}
 		}
@@ -790,7 +793,7 @@ func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch ma
 func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 	matches := map[int]syntaxRuneInfo{}
 
-	subjects := make([]cfg.SyntaxCriteria, len(b.languageInfo.Syntax))
+	subjects := make([]*cfg.SyntaxCriteria, len(b.languageInfo.Syntax))
 	colours := make([]int, len(b.languageInfo.Syntax))
 
 	idx := 0
@@ -833,16 +836,9 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 				}
 			}
 		} else {
-			// FIXME bit of cleanup is due here!
-
-			matchList := make(map[string]bool, len(syntax.Match))
-			for _, val := range syntax.Match {
-				matchList[val] = true
-			}
-
 			background := colours[syntaxIndex]
 			foreground := 0
-			lexFindMatches(&matches, currLine, matchList, background, foreground)
+			lexFindMatches(&matches, currLine, syntax.MatchList, background, foreground)
 		}
 	}
 

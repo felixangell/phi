@@ -1,7 +1,7 @@
 package cfg
 
 type LanguageSyntaxConfig struct {
-	Syntax map[string]SyntaxCriteria `toml:"syntax"`
+	Syntax map[string]*SyntaxCriteria `toml:"syntax"`
 }
 
 type DefaultSyntax map[string]string
@@ -28,10 +28,10 @@ match = [
 colouring = 0xf0a400
 match = [
 	"for", "break", "if", "else", "continue", "return",
-	"goto", "static", "extern", "const", "typedef",
+	"goto", "extern", "const", "typedef",
 	"struct", "union", "register", "enum", 
 	"do", "static", "sizeof", "volatile", "unsigned",
-	"switch", "case", "goto", "default"
+	"switch", "case", "default"
 ]
 
 [syntax.string_literal]

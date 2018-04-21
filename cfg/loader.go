@@ -120,15 +120,36 @@ func configureAndValidate(conf *TomlConfig) {
 
 	log.Println("Syntax Highlighting")
 	{
+		syntaxSet := []*LanguageSyntaxConfig{}
+
 		conf.associations = map[string]*LanguageSyntaxConfig{}
 
 		for lang, extSet := range conf.Associations {
 			log.Println(lang, "=>", extSet.Extensions)
 			languageConfig := loadSyntaxDef(lang)
+			syntaxSet = append(syntaxSet, languageConfig)
 
 			for _, ext := range extSet.Extensions {
 				log.Println("registering", ext, "as", lang)
 				conf.associations[ext] = languageConfig
+			}
+		}
+
+		// go through each language
+		// and store the matches keywords
+		// as a hashmap for faster lookup
+		for _, language := range syntaxSet {
+			for _, syn := range language.Syntax {
+				syn.MatchList = map[string]bool{}
+
+				for _, item := range syn.Match {
+					if _, ok := syn.MatchList[item]; ok {
+						log.Println("Warning duplicate match item '" + item + "'")
+						continue
+					}
+
+					syn.MatchList[item] = true
+				}
 			}
 		}
 	}

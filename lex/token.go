@@ -1,5 +1,7 @@
 package lex
 
+import "fmt"
+
 type TokenType uint
 
 const (
@@ -14,4 +16,8 @@ type Token struct {
 
 func NewToken(lexeme string, kind TokenType, start int) *Token {
 	return &Token {lexeme, kind, start}
+}
+
+func (t *Token) String() string {
+	return fmt.Sprintf("lexeme: %s, type %s, at pos %d", t.Lexeme, t.Type, t.Start)
 }

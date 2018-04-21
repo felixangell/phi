@@ -36,6 +36,8 @@ type SyntaxCriteria struct {
 	Colour  int      `toml:"colouring"`
 	Match   []string `toml:"match"`
 	Pattern string   `toml:"pattern"`
+
+	MatchList map[string]bool
 }
 
 type Command struct {
