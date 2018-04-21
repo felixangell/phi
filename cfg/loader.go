@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/felixangell/strife"
+
 	// fork of BurntSushi with hexadecimal support.
 	"github.com/felixangell/toml"
 )
@@ -61,7 +63,42 @@ func loadSyntaxDef(lang string) *LanguageSyntaxConfig {
 	return conf
 }
 
+func findFontFolder() string {
+	// TODO
+	return "/usr/share/fonts/"
+}
+
 func configureAndValidate(conf *TomlConfig) {
+	// fonts
+	log.Println("Configuring fonts")
+	{
+		var fontFolder string
+
+		switch runtime.GOOS {
+		case "windows":
+			fontFolder = filepath.Join(os.Getenv("WINDIR"), "fonts")
+		case "darwin":
+			fontFolder = "/Library/Fonts/"
+		case "linux":
+			fontFolder = findFontFolder()
+		}
+
+		// we only support ttf at the moment.
+		fontPath := filepath.Join(fontFolder, conf.Editor.Font_Face) + ".ttf"
+		if _, err := os.Stat(fontPath); os.IsNotExist(err) {
+			log.Fatal("No such font '" + fontPath + "'")
+			// TODO cool error messages for the toml format?
+			os.Exit(0)
+		}
+
+		// load the font!
+		font, err := strife.LoadFont(fontPath, conf.Editor.Font_Size)
+		if err != nil {
+			panic(err)
+		}
+		conf.Editor.Loaded_Font = font
+	}
+
 	// config & validate the keyboard shortcuts
 	log.Println("Configuring keyboard shortcuts")
 	{

@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
 	"runtime"
 	"time"
 
@@ -58,27 +57,7 @@ func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
 	}
 
 	n.AddComponent(mainView)
-
-	// TODO put me somewhere else:
-	// also improve the font loading code
-	var fontFolder string
-
-	switch runtime.GOOS {
-	case "windows":
-		fontFolder = filepath.Join(os.Getenv("WINDIR"), "fonts")
-	case "darwin":
-		fontFolder = "/Library/Fonts/"
-	case "linux":
-		fontFolder = "/usr/share/fonts/"
-	}
-
-	fontPath := filepath.Join(fontFolder, cfg.Editor.Font_Face) + ".ttf"
-
-	font, err := strife.LoadFont(fontPath, cfg.Editor.Font_Size)
-	if err != nil {
-		panic(err)
-	}
-	n.defaultFont = font
+	n.defaultFont = cfg.Editor.Loaded_Font
 }
 
 func (n *PhiEditor) dispose() {

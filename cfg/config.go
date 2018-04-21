@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"strconv"
+	"github.com/felixangell/strife"
 )
 
 type TomlConfig struct {
@@ -94,6 +95,7 @@ type EditorConfig struct {
 	Font_Face            string
 	Font_Size            int
 	Show_Line_Numbers    bool
+	Loaded_Font 		 *strife.Font
 }
 
 func NewDefaultConfig() *TomlConfig {
