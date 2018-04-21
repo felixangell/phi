@@ -145,7 +145,9 @@ func main() {
 			break
 		}
 
-		if editor.update() || config.Render.Always_Render {
+		shouldRender := editor.update()
+
+		if shouldRender || config.Render.Always_Render {
 			ctx.Clear()
 			editor.render(ctx)
 

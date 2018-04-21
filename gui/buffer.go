@@ -849,6 +849,14 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 	var visibleLines int = 50
 
+	// HACK
+	// force a render off screen
+	// so we can calculate the size of characters
+
+	if int(last_h) == 0 || int(last_w) == 0 {
+		last_w, last_h = ctx.String("_", -50, -50)
+	}
+
 	// last_h > 0 means we have done
 	// a render.
 	if int(last_h) > 0 && int(b.h) != 0 {
@@ -875,7 +883,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 		// char index => colour
 		var matches map[int]syntaxRuneInfo
-		if b.languageInfo != nil {
+		if b.languageInfo != nil && len(currLine) > 0 {
 			matches = b.syntaxHighlightLine(string(currLine))
 		}
 
