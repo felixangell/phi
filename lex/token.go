@@ -10,12 +10,12 @@ const (
 
 type Token struct {
 	Lexeme string
-	Type TokenType
-	Start int
+	Type   TokenType
+	Start  int
 }
 
 func NewToken(lexeme string, kind TokenType, start int) *Token {
-	return &Token {lexeme, kind, start}
+	return &Token{lexeme, kind, start}
 }
 
 func (t *Token) String() string {

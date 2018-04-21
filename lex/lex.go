@@ -1,13 +1,13 @@
 package lex
 
 type Lexer struct {
-	pos int
+	pos   int
 	input []rune
 }
 
 func New(input string) *Lexer {
-	return &Lexer {
-		pos: 0,
+	return &Lexer{
+		pos:   0,
 		input: []rune(input),
 	}
 }
@@ -19,7 +19,7 @@ func (l *Lexer) consume() rune {
 }
 
 func (l *Lexer) next(offs int) rune {
-	return l.input[l.pos + offs]
+	return l.input[l.pos+offs]
 }
 
 func (l *Lexer) peek() rune {
@@ -48,7 +48,7 @@ func (l *Lexer) Tokenize() []*Token {
 
 		startPos := l.pos
 		for l.hasNext() {
-			// we run into a layout character 
+			// we run into a layout character
 			if l.peek() <= ' ' {
 				break
 			}

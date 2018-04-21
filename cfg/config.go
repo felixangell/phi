@@ -2,10 +2,10 @@ package cfg
 
 import (
 	"errors"
-	"regexp"
-	"log"
-	"strconv"
 	"github.com/felixangell/strife"
+	"log"
+	"regexp"
+	"strconv"
 )
 
 type TomlConfig struct {
@@ -39,7 +39,7 @@ type SyntaxCriteria struct {
 	Pattern string   `toml:"pattern"`
 
 	CompiledPattern *regexp.Regexp
-	MatchList map[string]bool
+	MatchList       map[string]bool
 }
 
 type Command struct {
@@ -99,7 +99,7 @@ type EditorConfig struct {
 	Font_Face            string
 	Font_Size            int
 	Show_Line_Numbers    bool
-	Loaded_Font 		 *strife.Font
+	Loaded_Font          *strife.Font
 }
 
 func NewDefaultConfig() *TomlConfig {

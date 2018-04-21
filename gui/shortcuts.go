@@ -2,9 +2,9 @@ package gui
 
 import (
 	"bytes"
+	"github.com/atotto/clipboard"
 	"io/ioutil"
 	"log"
-	"github.com/atotto/clipboard"
 )
 
 func Paste(b *Buffer) bool {

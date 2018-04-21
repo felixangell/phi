@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"runtime"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/felixangell/strife"
