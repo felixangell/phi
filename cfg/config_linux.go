@@ -46,6 +46,9 @@ flash = true
 [commands.save]
 shortcut = "ctrl+s"
 
+[commands.paste]
+shortcut = "ctrl+v"
+
 [commands.close_buffer]
 shortcut = "ctrl+w"
 

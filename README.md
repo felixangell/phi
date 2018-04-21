@@ -38,17 +38,33 @@ broken change, please:
 * try removing the ~/.phi-config folder manually and letting the editor re-load it
 
 # building
-You'll need Go with the GOPATH, GOBIN, etc. setup, as well as SDL2, SDL2\_image, and SDL2\_ttf. Here's
-an example for Ubuntu:
+## requirements
+You will need the go compiler installed with the GOPATH/GOBIN/etc setup. In addition
+you will need the following libraries:
+
+* sdl2
+* sdl2_image
+* sdl2_ttf
+
+If you're on Linux, you will need:
+
+* xsel
+* xclip
+
+Either works. This is for copying/pasting.
+
+### linux
+Here's an example for Ubuntu:
 
 ```bash
-$ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
+$ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev xclip
 $ go get github.com/felixangell/phi-editor
 $ cd $GOPATH/src/github.com/felixangell/phi-editor
 $ go build
 $ ./phi-editor
 ```
 
+### macOS
 If you're on macOS, you can do something like this, using homebrew:
 
 ```bash
@@ -59,6 +75,7 @@ $ go build
 $ ./phi-editor
 ```
 
+### windows
 If you're on windows, you have my condolences.
 
 ## configuration

@@ -46,6 +46,9 @@ flash = true
 [commands.save]
 shortcut = "super+s"
 
+[commands.paste]
+shortcut = "super+v"
+
 [commands.close_buffer]
 shortcut = "super+w"
 

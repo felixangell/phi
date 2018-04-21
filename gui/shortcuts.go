@@ -4,7 +4,21 @@ import (
 	"bytes"
 	"io/ioutil"
 	"log"
+	"github.com/atotto/clipboard"
 )
+
+func Paste(b *Buffer) bool {
+	str, err := clipboard.ReadAll()
+	
+	if err == nil {
+		b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, str)
+		b.moveToEndOfLine()
+		return true
+	}
+
+	log.Println("Failed to paste from clipboard: ", err.Error())
+	return false
+}
 
 // NOTE: all shortcuts return a bool
 // this is whether or not they have

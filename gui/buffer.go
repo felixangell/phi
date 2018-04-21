@@ -201,6 +201,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 		actionName, actionExists := cfg.Shortcuts.Controls[string(unicode.ToLower(r))]
 		if actionExists {
 			if proc, ok := actions[actionName]; ok {
+				log.Println("Executing action '" + actionName + "'")
 				return proc(b)
 			}
 		} else {
@@ -368,10 +369,16 @@ func (b *Buffer) moveRight() {
 
 func (b *Buffer) moveToEndOfLine() {
 	lineLen := b.contents[b.curs.y].Len()
+
 	if b.curs.x > lineLen {
 		distToMove := b.curs.x - lineLen
 		for i := 0; i < distToMove; i++ {
 			b.moveLeft()
+		}
+	} else if b.curs.x < lineLen {
+		distToMove := lineLen - b.curs.x
+		for i := 0; i < distToMove; i++ {
+			b.moveRight()
 		}
 	}
 }

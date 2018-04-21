@@ -6,4 +6,5 @@ var actions = map[string]BufferAction{
 	"save":         Save,
 	"delete_line":  DeleteLine,
 	"close_buffer": CloseBuffer,
+	"paste": Paste,
 }
