@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -773,8 +772,6 @@ var last_w, last_h int
 // editor x and y offsets
 var ex, ey = 0, 0
 
-var compiledRegex = map[string]*regexp.Regexp{}
-
 // runs up a lexer instance
 func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch map[string]bool, bg int, fg int) {
 	// start up a lexer instance and
@@ -807,31 +804,15 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 	for syntaxIndex, syntax := range subjects {
 		if syntax.Pattern != "" {
 			for charIndex := 0; charIndex < len(currLine); charIndex++ {
-				// we have a regex pattern
-
-				// FIXME this is also very slow!
-				// we could easily compile all of these
-				// regular expressions when we load the
-				// syntax highlighter.
 				a := string(currLine[charIndex:])
 
-				// no need to compile the same regex
-				// pattern multiple times.
-				regex, ok := compiledRegex[syntax.Pattern]
-				if !ok {
-					var err error
-					regex, err = regexp.Compile(syntax.Pattern)
-					if err != nil {
-						log.Println(err.Error())
-					}
-				}
-
-				matched := regex.FindStringIndex(a)
+				matched := syntax.CompiledPattern.FindStringIndex(a)
 				if matched != nil {
 					if _, ok := matches[charIndex]; !ok {
 						matchedStrLen := (matched[1] - matched[0])
 						matches[charIndex+matched[0]] = syntaxRuneInfo{colours[syntaxIndex], -1, matchedStrLen}
-						charIndex = charIndex + matchedStrLen
+						charIndex += matchedStrLen
+						continue
 					}
 				}
 			}

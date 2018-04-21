@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"regexp"
 	"strings"
 
 	"github.com/felixangell/strife"
@@ -138,18 +139,30 @@ func configureAndValidate(conf *TomlConfig) {
 		// go through each language
 		// and store the matches keywords
 		// as a hashmap for faster lookup
+		// in addition to this we compile any
+		// regular expressions if necessary.
 		for _, language := range syntaxSet {
 			for _, syn := range language.Syntax {
 				syn.MatchList = map[string]bool{}
 
-				for _, item := range syn.Match {
-					if _, ok := syn.MatchList[item]; ok {
-						log.Println("Warning duplicate match item '" + item + "'")
+				if syn.Pattern != "" {
+					regex, err := regexp.Compile(syn.Pattern)
+					if err != nil {
+						log.Println(err.Error())
 						continue
 					}
+					syn.CompiledPattern = regex
+				} else {
+					for _, item := range syn.Match {
+						if _, ok := syn.MatchList[item]; ok {
+							log.Println("Warning duplicate match item '" + item + "'")
+							continue
+						}
 
-					syn.MatchList[item] = true
+						syn.MatchList[item] = true
+					}
 				}
+
 			}
 		}
 	}

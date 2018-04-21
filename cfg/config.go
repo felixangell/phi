@@ -2,6 +2,7 @@ package cfg
 
 import (
 	"errors"
+	"regexp"
 	"log"
 	"strconv"
 	"github.com/felixangell/strife"
@@ -37,6 +38,7 @@ type SyntaxCriteria struct {
 	Match   []string `toml:"match"`
 	Pattern string   `toml:"pattern"`
 
+	CompiledPattern *regexp.Regexp
 	MatchList map[string]bool
 }
 
