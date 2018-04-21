@@ -14,6 +14,7 @@ import (
 
 	"github.com/felixangell/go-rope"
 	"github.com/felixangell/phi-editor/cfg"
+	"github.com/felixangell/phi-editor/lex"
 	"github.com/felixangell/strife"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -774,6 +775,18 @@ var ex, ey = 0, 0
 
 var compiledRegex = map[string]*regexp.Regexp{}
 
+// runs up a lexer instance
+func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch map[string]bool, bg int, fg int) {
+	// start up a lexer instance and
+	// lex the line.
+	lexer := lex.New(currLine)
+	for _, tok := range lexer.Tokenize() {
+		if _, ok := toMatch[tok.Lexeme]; ok {
+			(*matches)[tok.Start] = syntaxRuneInfo{bg, -1, len(tok.Lexeme)}
+		}
+	}
+}
+
 func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 	matches := map[int]syntaxRuneInfo{}
 
@@ -788,10 +801,9 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 	}
 
 	// HOLY SLOW BATMAN
-	for charIndex := 0; charIndex < len(currLine); charIndex++ {
-		for syntaxIndex, syntax := range subjects {
-
-			if syntax.Pattern != "" {
+	for syntaxIndex, syntax := range subjects {
+		if syntax.Pattern != "" {
+			for charIndex := 0; charIndex < len(currLine); charIndex++ {
 				// we have a regex pattern
 
 				// FIXME this is also very slow!
@@ -819,36 +831,18 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 						charIndex = charIndex + matchedStrLen
 					}
 				}
-
-			} else {
-
-				for _, subject := range syntax.Match {
-					if charIndex+len(subject)+1 > len(currLine) {
-						continue
-					}
-					a := currLine[charIndex : charIndex+len(subject)+1]
-
-					// we only want to match words. so we check that it has a space
-					// before or after the subject word.
-					if strings.Compare(string(a), subject+" ") == 0 || strings.Compare(string(a), " "+subject) == 0 {
-						// hack
-						offs := 0
-
-						if _, ok := matches[charIndex]; !ok {
-							// the second branch was true
-							// so we have to offset this index by one
-							if a[0] == ' ' {
-								offs++
-							}
-
-							matches[charIndex+offs] = syntaxRuneInfo{colours[syntaxIndex], -1, len(subject)}
-							break
-						}
-						charIndex += len(subject)+offs
-					}
-				}
-
 			}
+		} else {
+			// FIXME bit of cleanup is due here!
+
+			matchList := make(map[string]bool, len(syntax.Match))
+			for _, val := range syntax.Match {
+				matchList[val] = true
+			}
+
+			background := colours[syntaxIndex]
+			foreground := 0
+			lexFindMatches(&matches, currLine, matchList, background, foreground)
 		}
 	}
 
