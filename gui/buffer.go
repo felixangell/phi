@@ -66,6 +66,32 @@ func NewBuffer(conf *cfg.TomlConfig, parent *View, index int) *Buffer {
 	return buff
 }
 
+// sx, sy -> the starting x, y pos of the cursor
+// ex, ey -> the end x, y of the selection
+type selection struct {
+	parent *Buffer
+	sx, sy int
+	ex, ey int
+}
+
+func (s *selection) renderAt(ctx *strife.Renderer, xOff int, yOff int) {
+	ctx.SetColor(strife.Red)
+
+	xd := (s.ex - s.sx) + 1
+	yd := (s.ey - s.sy) + 1
+
+	for y := 0; y < yd; y++ {
+		lineLen := s.parent.contents[s.ey+y].Len() - s.sx
+		if y == yd-1 {
+			lineLen = xd
+		}
+
+		width := lineLen * last_w
+
+		ctx.Rect(xOff+(s.sx*last_w), yOff+((s.sy+y)*last_h), width, last_h, strife.Fill)
+	}
+}
+
 func (b *Buffer) OpenFile(filePath string) {
 	b.filePath = filePath
 
@@ -455,13 +481,61 @@ func (b *Buffer) scrollDown() {
 	}
 }
 
-// processes a key press. returns if there
-// was a key that MODIFIED the buffer.
+var lastSelection *selection
+
+func (b *Buffer) processSelection(key int) bool {
+	if lastSelection == nil {
+		lastSelection = &selection{
+			b,
+			b.curs.x, b.curs.y,
+			b.curs.x, b.curs.y,
+		}
+	}
+
+	switch key {
+	case sdl.K_LEFT:
+		lastSelection.ex--
+		b.moveLeft()
+		break
+	case sdl.K_RIGHT:
+		lastSelection.ex++
+		b.moveRight()
+		break
+	case sdl.K_UP:
+		lastSelection.ey--
+		b.moveUp()
+		break
+	case sdl.K_DOWN:
+		lastSelection.ey++
+		b.moveDown()
+		break
+	}
+
+	return true
+}
+
+// processes a key press. returns if a key was processed
+// or not, for example the letter 'a' could run through this
+// which is not an action key, therefore we return false
+// because it was not processed.
 func (b *Buffer) processActionKey(key int) bool {
+	if SHIFT_DOWN {
+		switch key {
+		case sdl.K_LEFT:
+			fallthrough
+		case sdl.K_RIGHT:
+			fallthrough
+		case sdl.K_DOWN:
+			fallthrough
+		case sdl.K_UP:
+			return b.processSelection(key)
+		}
+	}
+
 	switch key {
 	case sdl.K_CAPSLOCK:
 		CAPS_LOCK = !CAPS_LOCK
-		return true
+
 	case sdl.K_RETURN:
 		if SUPER_DOWN {
 			// in sublime this goes
@@ -504,30 +578,32 @@ func (b *Buffer) processActionKey(key int) bool {
 		b.contents = append(b.contents, nil)
 		copy(b.contents[b.curs.y+1:], b.contents[b.curs.y:])
 		b.contents[b.curs.y] = newRope
-		return true
+
 	case sdl.K_BACKSPACE:
 		if SUPER_DOWN {
 			b.deleteBeforeCursor()
 		} else {
 			b.deletePrev()
 		}
-		return true
+
 	case sdl.K_RIGHT:
 		currLineLength := b.contents[b.curs.y].Len()
 
 		if CONTROL_DOWN && b.parent != nil {
 			b.parent.ChangeFocus(1)
-			return true
+			break
 		}
 
 		if SUPER_DOWN {
 			for b.curs.x < currLineLength {
 				b.curs.move(1, 0)
 			}
-			return true
+			break
 		}
 
 		// FIXME this is weird!
+		// this will move to the next blank or underscore
+		// character
 		if ALT_DOWN {
 			currLine := b.contents[b.curs.y]
 
@@ -542,15 +618,14 @@ func (b *Buffer) processActionKey(key int) bool {
 			for j := 0; j < i; j++ {
 				b.moveRight()
 			}
-			return true
+			break
 		}
 
 		b.moveRight()
-		return true
 	case sdl.K_LEFT:
 		if CONTROL_DOWN && b.parent != nil {
 			b.parent.ChangeFocus(-1)
-			return true
+			break
 		}
 
 		if SUPER_DOWN {
@@ -579,11 +654,10 @@ func (b *Buffer) processActionKey(key int) bool {
 			for j := 0; j < start-i; j++ {
 				b.moveLeft()
 			}
-			return true
+			break
 		}
 
 		b.moveLeft()
-		return true
 	case sdl.K_UP:
 		if ALT_DOWN {
 			return b.swapLineUp()
@@ -602,7 +676,7 @@ func (b *Buffer) processActionKey(key int) bool {
 			// TODO: offset should account for tabs
 			b.curs.move(offs, -1)
 		}
-		return true
+
 	case sdl.K_DOWN:
 		if ALT_DOWN {
 			return b.swapLineDown()
@@ -621,7 +695,7 @@ func (b *Buffer) processActionKey(key int) bool {
 			// TODO: offset should account for tabs
 			b.curs.move(offs, 1)
 		}
-		return true
+
 	case sdl.K_TAB:
 		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
@@ -634,7 +708,6 @@ func (b *Buffer) processActionKey(key int) bool {
 			// move by TAB_SIZE characters on the view.
 			b.curs.moveRender(1, 0, int(b.cfg.Editor.Tab_Size), 0)
 		}
-		return true
 
 	case sdl.K_END:
 		currLine := b.contents[b.curs.y]
@@ -642,25 +715,20 @@ func (b *Buffer) processActionKey(key int) bool {
 			distToMove := currLine.Len() - b.curs.x
 			b.curs.move(distToMove, 0)
 		}
-		return true
 
 	case sdl.K_HOME:
 		if b.curs.x > 0 {
 			b.curs.move(-b.curs.x, 0)
 		}
-		return true
 
 	case sdl.K_PAGEUP:
 		b.scrollUp()
-		return true
 
 	case sdl.K_PAGEDOWN:
 		b.scrollDown()
-		return true
 
 	case sdl.K_DELETE:
 		b.deleteNext()
-		return true
 
 	case sdl.K_LGUI:
 		fallthrough
@@ -681,9 +749,12 @@ func (b *Buffer) processActionKey(key int) bool {
 		fallthrough
 	case sdl.K_RSHIFT:
 		return true
+
+	default:
+		return false
 	}
 
-	return false
+	return true
 }
 
 var (
@@ -735,6 +806,17 @@ func (b *Buffer) OnUpdate() bool {
 		// action first
 		actionPerformed := b.processActionKey(keyCode)
 		if actionPerformed {
+
+			// check if we need to remove the selection
+			// or not, this is if we moved the cursor somehow
+			if lastSelection != nil {
+				if b.curs.x != lastSelection.ex {
+					lastSelection = nil
+				} else if b.curs.y != lastSelection.ey {
+					lastSelection = nil
+				}
+			}
+
 			return true
 		}
 
@@ -840,25 +922,15 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w, last_h, strife.Fill)
 	}
 
-	// render the ol' cursor
-	if b.HasFocus && renderFlashingCursor && b.cfg.Cursor.Draw {
-		cursorWidth := b.cfg.Cursor.GetCaretWidth()
-		if cursorWidth == -1 {
-			cursorWidth = last_w
-		}
-
-		ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor)) // caret colour
-		ctx.Rect(ex+(rx+b.curs.rx*last_w)-(b.cam.x*last_w), (ry+b.curs.ry*last_h)-(b.cam.y*last_h), cursorWidth, last_h, strife.Fill)
-	}
-
 	var visibleLines int = 50
 
 	// HACK
 	// force a render off screen
 	// so we can calculate the size of characters
-
-	if int(last_h) == 0 || int(last_w) == 0 {
-		last_w, last_h = ctx.String("_", -50, -50)
+	{
+		if int(last_h) == 0 || int(last_w) == 0 {
+			last_w, last_h = ctx.String("_", -50, -50)
+		}
 	}
 
 	// last_h > 0 means we have done
@@ -877,6 +949,11 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	}
 	if upper > len(b.contents) {
 		upper = len(b.contents)
+	}
+
+	// render the selection if any
+	if lastSelection != nil {
+		lastSelection.renderAt(ctx, b.x+ex, b.y+ey)
 	}
 
 	numLines := len(b.contents)
@@ -946,6 +1023,17 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		}
 
 		y_col += 1
+	}
+
+	// render the ol' cursor
+	if b.HasFocus && renderFlashingCursor && b.cfg.Cursor.Draw {
+		cursorWidth := b.cfg.Cursor.GetCaretWidth()
+		if cursorWidth == -1 {
+			cursorWidth = last_w
+		}
+
+		ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor)) // caret colour
+		ctx.Rect(ex+(rx+b.curs.rx*last_w)-(b.cam.x*last_w), (ry+b.curs.ry*last_h)-(b.cam.y*last_h), cursorWidth, last_h, strife.Fill)
 	}
 }
 
