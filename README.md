@@ -68,7 +68,7 @@ $ ./phi-editor
 If you're on macOS, you can do something like this, using homebrew:
 
 ```bash
-$ brew install sdl2 sdl2_image sdl2_ttf
+$ brew install sdl2 sdl2_image sdl2_ttf pkg-config
 $ go get github.com/felixangell/phi-editor
 $ cd $GOPATH/src/github.com/felixangell/phi-editor
 $ go build
