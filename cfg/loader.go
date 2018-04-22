@@ -49,6 +49,8 @@ var Shortcuts = &shortcutRegister{
 
 func loadSyntaxDef(lang string) *LanguageSyntaxConfig {
 	languagePath := filepath.Join(configDirAbsPath, "syntax", lang+".toml")
+	log.Println("Loading lang from ", languagePath)
+
 	syntaxTomlData, err := ioutil.ReadFile(languagePath)
 	if err != nil {
 		log.Println("Failed to load highlighting for language '"+lang+"' from path: ", languagePath)
@@ -128,6 +130,8 @@ func configureAndValidate(conf *TomlConfig) {
 		for lang, extSet := range conf.Associations {
 			log.Println(lang, "=>", extSet.Extensions)
 			languageConfig := loadSyntaxDef(lang)
+			// check for errors here
+
 			syntaxSet = append(syntaxSet, languageConfig)
 
 			for _, ext := range extSet.Extensions {

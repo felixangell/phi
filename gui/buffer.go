@@ -12,8 +12,8 @@ import (
 	"unicode"
 
 	"github.com/felixangell/go-rope"
-	"github.com/felixangell/phi-editor/cfg"
-	"github.com/felixangell/phi-editor/lex"
+	"github.com/felixangell/phi/cfg"
+	"github.com/felixangell/phi/lex"
 	"github.com/felixangell/strife"
 	"github.com/veandco/go-sdl2/sdl"
 )

@@ -24,7 +24,7 @@ colouring = 0xf0a400
 pattern = '\b([a-z]|[A-Z])+(_|([a-z]|[A-Z])+)*\b'
 
 [syntax.symbol]
-match = "="
+match = ["="]
 colouring = 0xf8f273
 `)
 

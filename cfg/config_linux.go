@@ -46,6 +46,9 @@ draw = true
 flash = true
 
 [commands]
+[commands.exit]
+shortcut = "ctrl+q"
+
 [commands.save]
 shortcut = "ctrl+s"
 

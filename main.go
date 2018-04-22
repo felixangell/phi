@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/felixangell/phi-editor/cfg"
-	"github.com/felixangell/phi-editor/gui"
+	"github.com/felixangell/phi/cfg"
+	"github.com/felixangell/phi/gui"
 	"github.com/felixangell/strife"
 )
 
