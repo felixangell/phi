@@ -833,7 +833,11 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 	if b.cfg.Editor.Highlight_Line && b.HasFocus {
 		ctx.SetColor(strife.Black) // highlight_line_col?
-		ctx.Rect(ex+rx, ey+(ry+b.curs.ry*last_h)-(b.cam.y*last_h), b.w, last_h, strife.Fill)
+
+		highlightLinePosY := ey + (ry + b.curs.ry*last_h) - (b.cam.y * last_h)
+		highlightLinePosX := ex + rx
+
+		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w, last_h, strife.Fill)
 	}
 
 	// render the ol' cursor

@@ -21,6 +21,9 @@ always_render = true
 syntax_highlighting = true
 
 [file_associations]
+[file_associations.toml]
+extensions = [".toml"]
+
 [file_associations.c]
 extensions = [".c", ".h", ".cc"]
 
