@@ -1,6 +1,6 @@
 <p align="center"><img src="res/icons/icon96.png"></p>
 
-<h1>phi-editor</h1>
+<h1>phi</h1>
 Phi is a minimal text editor designed to look pretty, run fast, and be easy
 to configure and use. It's primary function is for editing code.
 
@@ -12,7 +12,7 @@ Do not edit your precious files with this editor!
 
 <br>
 
-Here's a screenshot of the editor:
+Here's a screenshot of Phi in action:
 
 <p align="center"><img src="screenshot.png"></p>
 
@@ -23,6 +23,13 @@ The editor must:
 * load and edit large files with ease;
 * look pretty; and finally
 * be easy to use
+
+# why?
+The editor does not exist as a serious replacement to Sublime Text/Atom/Emacs/[editor name here]. 
+
+Though one of my big goals for the project is to possibly replace sublime text for my own personal use. Thus the editor is somewhat optimized for my own work-flow.
+
+The code is up purely for people to look at and maybe use or contribute or whatever. Sharing is caring!
 
 # reporting bugs/troubleshooting
 Note the editor is still unstable. Please report any bugs you find so I can
