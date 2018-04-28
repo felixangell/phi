@@ -7,6 +7,12 @@ import (
 	"log"
 )
 
+func ShowPalette(b *Buffer) bool {
+	b.parent.UnfocusBuffers()
+	b.parent.focusPalette(b)
+	return true
+}
+
 func Paste(b *Buffer) bool {
 	str, err := clipboard.ReadAll()
 

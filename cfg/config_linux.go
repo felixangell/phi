@@ -49,6 +49,9 @@ flash = true
 [commands.exit]
 shortcut = "ctrl+q"
 
+[commands.show_palette]
+shortcut = "ctrl+p"
+
 [commands.save]
 shortcut = "ctrl+s"
 

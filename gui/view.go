@@ -5,28 +5,67 @@ import (
 	"github.com/felixangell/strife"
 )
 
+// View is an array of buffers basically.
 type View struct {
 	BaseComponent
-	conf        *cfg.TomlConfig
-	buffers     map[int]*Buffer
-	focusedBuff int
+
+	conf           *cfg.TomlConfig
+	buffers        map[int]*Buffer
+	focusedBuff    int
+	commandPalette *CommandPalette
 }
 
 func NewView(width, height int, conf *cfg.TomlConfig) *View {
 	view := &View{
-		conf:    conf,
-		buffers: map[int]*Buffer{},
+		conf:           conf,
+		buffers:        map[int]*Buffer{},
+		commandPalette: NewCommandPalette(*conf),
 	}
+
 	view.Translate(width, height)
 	view.Resize(width, height)
-	view.focusPalette()
+
+	view.commandPalette.Resize(view.w/3, 48)
+	view.commandPalette.Translate((view.w/2)-(view.commandPalette.w/2), 10)
+
+	view.UnfocusBuffers()
+
 	return view
 }
 
-func (n *View) focusPalette() {
+func (n *View) hidePalette() {
+	p := n.commandPalette
+	p.HasFocus = false
+
+	// set focus to the buffer
+	// that invoked the cmd palette
+	p.parentBuff.inputHandler = p.buff.inputHandler
+	p.parentBuff.HasFocus = true
+
+	// remove focus from palette
+	p.buff.HasFocus = false
+	p.buff.SetInputHandler(nil)
+}
+
+func (n *View) focusPalette(buff *Buffer) {
+	p := n.commandPalette
+	p.HasFocus = true
+
+	// focus the command palette
+	p.buff.HasFocus = true
+	p.buff.SetInputHandler(buff.inputHandler)
+
+	// remove focus from the buffer
+	// that invoked the command palette
+	buff.inputHandler = nil
+	p.parentBuff = buff
+}
+
+func (n *View) UnfocusBuffers() {
 	// clear focus from buffers
 	for _, buff := range n.buffers {
 		buff.HasFocus = false
+		buff.inputHandler = nil
 	}
 }
 
@@ -40,21 +79,7 @@ func sign(dir int) int {
 }
 
 func (n *View) ChangeFocus(dir int) {
-	// remove focus from the curr buffer.
-	if buf, ok := n.buffers[n.focusedBuff]; ok {
-		buf.HasFocus = false
-	}
-
-	newIndex := n.focusedBuff + sign(dir)
-	if newIndex >= n.NumComponents() {
-		newIndex = 0
-	} else if newIndex < 0 {
-		newIndex = n.NumComponents() - 1
-	}
-
-	if buff := n.components[newIndex]; buff != nil {
-		n.focusedBuff = newIndex
-	}
+	// TODO
 }
 
 func (n *View) OnInit() {
@@ -62,19 +87,23 @@ func (n *View) OnInit() {
 
 func (n *View) OnUpdate() bool {
 	dirty := false
-	for _, comp := range n.components {
-		if comp == nil {
-			continue
-		}
 
-		if Update(comp) {
+	for _, buffer := range n.buffers {
+		if buffer.OnUpdate() {
 			dirty = true
 		}
 	}
+	n.commandPalette.OnUpdate()
+
 	return dirty
 }
 
-func (n *View) OnRender(ctx *strife.Renderer) {}
+func (n *View) OnRender(ctx *strife.Renderer) {
+	for _, buffer := range n.buffers {
+		buffer.OnRender(ctx)
+	}
+	n.commandPalette.OnRender(ctx)
+}
 
 func (n *View) OnDispose() {}
 
@@ -83,7 +112,7 @@ func (n *View) AddBuffer() *Buffer {
 		buf.HasFocus = false
 	}
 
-	c := NewBuffer(n.conf, n, n.NumComponents())
+	c := NewBuffer(n.conf, n, len(n.buffers))
 	c.HasFocus = true
 
 	// work out the size of the buffer and set it
@@ -91,29 +120,17 @@ func (n *View) AddBuffer() *Buffer {
 	// we haven't yet added the panel
 	var bufferWidth int
 
-	// NOTE: because we're ADDING a component
-	// here we add 1 to the components since
-	// we want to calculate the sizes _after_
-	// we've added this component.
-	numComponents := n.NumComponents() + 1
-	if numComponents > 0 {
-		bufferWidth = n.w / numComponents
-	} else {
-		bufferWidth = n.w
-	}
-
-	n.AddComponent(c)
 	n.buffers[c.index] = c
 	n.focusedBuff = c.index
 
 	// translate all the components accordingly.
-	for i, p := range n.components {
-		if p == nil {
+	for i, buff := range n.buffers {
+		if buff == nil {
 			continue
 		}
 
-		p.Resize(bufferWidth, n.h)
-		p.SetPosition(bufferWidth*i, 0)
+		buff.Resize(bufferWidth, n.h)
+		buff.SetPosition(bufferWidth*i, 0)
 	}
 
 	return c

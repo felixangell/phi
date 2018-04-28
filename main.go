@@ -18,15 +18,13 @@ const (
 )
 
 type PhiEditor struct {
-	gui.BaseComponent
 	running     bool
 	defaultFont *strife.Font
+	mainView    *gui.View
 }
 
 func (n *PhiEditor) handleEvent(evt strife.StrifeEvent) {
-	for _, comp := range n.GetComponents() {
-		gui.HandleEvent(comp, evt)
-	}
+
 }
 
 func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
@@ -50,39 +48,21 @@ func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
 		mainView.AddBuffer().OpenFile(tempFile.Name())
 	}
 
-	{
-		palette := gui.NewCommandPalette(cfg)
-		palette.Resize(1280/3, 72)
-		// mainView.AddComponent(palette)
-	}
-
-	n.AddComponent(mainView)
+	n.mainView = mainView
 	n.defaultFont = cfg.Editor.Loaded_Font
 }
 
 func (n *PhiEditor) dispose() {
-	for _, comp := range n.GetComponents() {
-		gui.Dispose(comp)
-	}
+
 }
 
 func (n *PhiEditor) update() bool {
-	needsRender := false
-	for _, comp := range n.GetComponents() {
-		dirty := comp.OnUpdate()
-		if dirty {
-			needsRender = true
-		}
-	}
-	return needsRender
+	return n.mainView.OnUpdate()
 }
 
 func (n *PhiEditor) render(ctx *strife.Renderer) {
 	ctx.SetFont(n.defaultFont)
-
-	for _, child := range n.GetComponents() {
-		gui.Render(child, ctx)
-	}
+	n.mainView.OnRender(ctx)
 }
 
 func main() {

@@ -52,6 +52,9 @@ shortcut = "super+q"
 [commands.save]
 shortcut = "super+s"
 
+[commands.show_palette]
+shortcut = "super+p"
+
 [commands.paste]
 shortcut = "super+v"
 

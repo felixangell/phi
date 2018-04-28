@@ -59,10 +59,10 @@ func NewBuffer(conf *cfg.TomlConfig, parent *View, index int) *Buffer {
 		contents: buffContents,
 		curs:     &Cursor{},
 		cfg:      config,
-		filePath: "/tmp/phi_file_" + time.Now().String(), // TODO make this a randomly chosen temp file
+		filePath: "",
 		cam:      &camera{0, 0},
 	}
-
+	buff.appendLine("")
 	return buff
 }
 
@@ -243,7 +243,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 				return proc(b)
 			}
 		} else {
-			log.Println("warning, unimplemented shortcut ctrl+", unicode.ToLower(r), actionName)
+			log.Println("warning, unimplemented shortcut ctrl +", string(unicode.ToLower(r)), actionName)
 		}
 	}
 
@@ -790,6 +790,10 @@ var lastCursorDraw = time.Now()
 var renderFlashingCursor = true
 
 func (b *Buffer) OnUpdate() bool {
+	return b.doUpdate(nil)
+}
+
+func (b *Buffer) doUpdate(pred func(r int) bool) bool {
 	if !b.HasFocus {
 		return false
 	}
@@ -801,6 +805,12 @@ func (b *Buffer) OnUpdate() bool {
 
 	if strife.PollKeys() {
 		keyCode := strife.PopKey()
+
+		if pred != nil {
+			if val := pred(keyCode); val {
+				return val
+			}
+		}
 
 		// try process this key input as an
 		// action first

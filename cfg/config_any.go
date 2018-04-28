@@ -49,6 +49,9 @@ flash = true
 [commands.save]
 shortcut = "ctrl+s"
 
+[commands.show_palette]
+shortcut = "ctrl+p"
+
 [commands.paste]
 shortcut = "ctrl+v"
 
