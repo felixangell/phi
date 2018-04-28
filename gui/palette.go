@@ -15,7 +15,7 @@ type CommandPalette struct {
 	parentBuff *Buffer
 }
 
-func NewCommandPalette(conf cfg.TomlConfig) *CommandPalette {
+func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 	conf.Editor.Show_Line_Numbers = false
 	conf.Editor.Highlight_Line = false
 
@@ -25,6 +25,12 @@ func NewCommandPalette(conf cfg.TomlConfig) *CommandPalette {
 		HasFocus:   false,
 	}
 	palette.buff.appendLine("")
+
+	palette.Resize(view.w/3, 48)
+	palette.Translate((view.w/2)-(palette.w/2), 10)
+	palette.buff.Resize(palette.w, palette.h)
+	palette.buff.Translate((view.w/2)-(palette.w/2), 10)
+
 	return palette
 }
 
@@ -46,6 +52,10 @@ func (b *CommandPalette) processCommand() {
 	action(b.parentBuff)
 }
 
+func (b *CommandPalette) clearInput() {
+	actions["delete_line"](b.buff)
+}
+
 func (b *CommandPalette) OnUpdate() bool {
 	if !b.HasFocus {
 		return true
@@ -57,13 +67,7 @@ func (b *CommandPalette) OnUpdate() bool {
 		}
 
 		b.processCommand()
-
-		// regardless we close the command
-		// palette and re-focus on the buffer
-		// that we transferred from.
-		b.parentBuff.SetInputHandler(b.inputHandler)
-		b.parentBuff.HasFocus = true
-
+		b.parentBuff.parent.hidePalette()
 		return true
 	}
 	return b.buff.doUpdate(override)

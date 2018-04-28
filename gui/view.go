@@ -17,17 +17,14 @@ type View struct {
 
 func NewView(width, height int, conf *cfg.TomlConfig) *View {
 	view := &View{
-		conf:           conf,
-		buffers:        map[int]*Buffer{},
-		commandPalette: NewCommandPalette(*conf),
+		conf:    conf,
+		buffers: map[int]*Buffer{},
 	}
 
 	view.Translate(width, height)
 	view.Resize(width, height)
 
-	view.commandPalette.Resize(view.w/3, 48)
-	view.commandPalette.Translate((view.w/2)-(view.commandPalette.w/2), 10)
-
+	view.commandPalette = NewCommandPalette(*conf, view)
 	view.UnfocusBuffers()
 
 	return view
@@ -35,6 +32,7 @@ func NewView(width, height int, conf *cfg.TomlConfig) *View {
 
 func (n *View) hidePalette() {
 	p := n.commandPalette
+	p.clearInput()
 	p.HasFocus = false
 
 	// set focus to the buffer
@@ -79,7 +77,7 @@ func sign(dir int) int {
 }
 
 func (n *View) ChangeFocus(dir int) {
-	// TODO
+	println("implement me! ", dir)
 }
 
 func (n *View) OnInit() {
