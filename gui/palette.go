@@ -24,6 +24,7 @@ func NewCommandPalette(conf cfg.TomlConfig) *CommandPalette {
 		parentBuff: nil,
 		HasFocus:   false,
 	}
+	palette.buff.appendLine("")
 	return palette
 }
 

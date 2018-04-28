@@ -119,6 +119,7 @@ func (n *View) AddBuffer() *Buffer {
 	// note that we +1 the components because
 	// we haven't yet added the panel
 	var bufferWidth int
+	bufferWidth = n.w / (len(n.buffers) + 1)
 
 	n.buffers[c.index] = c
 	n.focusedBuff = c.index

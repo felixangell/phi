@@ -62,7 +62,6 @@ func NewBuffer(conf *cfg.TomlConfig, parent *View, index int) *Buffer {
 		filePath: "",
 		cam:      &camera{0, 0},
 	}
-	buff.appendLine("")
 	return buff
 }
 
