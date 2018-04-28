@@ -20,14 +20,22 @@ type Component interface {
 
 	HandleEvent(evt strife.StrifeEvent)
 
-	GetInputHandler() *InputHandler
-	SetInputHandler(h *InputHandler)
+	SetFocus(focus bool)
+	HasFocus() bool
 }
 
 type BaseComponent struct {
-	x, y         int
-	w, h         int
-	inputHandler *InputHandler
+	x, y    int
+	w, h    int
+	focused bool
+}
+
+func (b *BaseComponent) SetFocus(focus bool) {
+	b.focused = focus
+}
+
+func (b *BaseComponent) HasFocus() bool {
+	return b.focused
 }
 
 func (b *BaseComponent) HandleEvent(evt strife.StrifeEvent) {
@@ -47,12 +55,4 @@ func (b *BaseComponent) Translate(x, y int) {
 func (b *BaseComponent) Resize(w, h int) {
 	b.w = w
 	b.h = h
-}
-
-func (b *BaseComponent) SetInputHandler(i *InputHandler) {
-	b.inputHandler = i
-}
-
-func (b *BaseComponent) GetInputHandler() *InputHandler {
-	return b.inputHandler
 }

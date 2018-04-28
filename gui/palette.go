@@ -10,7 +10,6 @@ import (
 
 type CommandPalette struct {
 	BaseComponent
-	HasFocus   bool
 	buff       *Buffer
 	parentBuff *Buffer
 }
@@ -22,7 +21,6 @@ func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 	palette := &CommandPalette{
 		buff:       NewBuffer(&conf, nil, 0),
 		parentBuff: nil,
-		HasFocus:   false,
 	}
 	palette.buff.appendLine("")
 
@@ -57,8 +55,8 @@ func (b *CommandPalette) clearInput() {
 }
 
 func (b *CommandPalette) OnUpdate() bool {
-	if !b.HasFocus {
-		return true
+	if !b.HasFocus() {
+		return false
 	}
 
 	override := func(k int) bool {
@@ -74,7 +72,7 @@ func (b *CommandPalette) OnUpdate() bool {
 }
 
 func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
-	if !b.HasFocus {
+	if !b.HasFocus() {
 		return
 	}
 

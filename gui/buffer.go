@@ -34,7 +34,6 @@ type camera struct {
 
 type Buffer struct {
 	BaseComponent
-	HasFocus     bool
 	index        int
 	parent       *View
 	font         *strife.Font
@@ -793,7 +792,7 @@ func (b *Buffer) OnUpdate() bool {
 }
 
 func (b *Buffer) doUpdate(pred func(r int) bool) bool {
-	if !b.HasFocus {
+	if !b.HasFocus() {
 		return false
 	}
 
@@ -843,8 +842,7 @@ func (b *Buffer) doUpdate(pred func(r int) bool) bool {
 		}
 	}
 
-	// FIXME handle focus properly
-	if b.inputHandler == nil {
+	if !b.HasFocus() {
 		return false
 	}
 
@@ -922,7 +920,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	ctx.SetColor(strife.HexRGB(b.cfg.Theme.Background))
 	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
 
-	if b.cfg.Editor.Highlight_Line && b.HasFocus {
+	if b.cfg.Editor.Highlight_Line && b.HasFocus() {
 		ctx.SetColor(strife.Black) // highlight_line_col?
 
 		highlightLinePosY := ey + (ry + b.curs.ry*last_h) - (b.cam.y * last_h)
@@ -998,7 +996,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			// if we're currently over a character then set
 			// the font colour to something else
 			// ONLY SET THE COLOUR IF WE HAVE FOCUS ALSO!
-			if b.HasFocus && b.curs.x+1 == x_col && b.curs.y == y_col && should_draw {
+			if b.HasFocus() && b.curs.x+1 == x_col && b.curs.y == y_col && should_draw {
 				ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor_Invert))
 			}
 
@@ -1035,7 +1033,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	}
 
 	// render the ol' cursor
-	if b.HasFocus && renderFlashingCursor && b.cfg.Cursor.Draw {
+	if b.HasFocus() && renderFlashingCursor && b.cfg.Cursor.Draw {
 		cursorWidth := b.cfg.Cursor.GetCaretWidth()
 		if cursorWidth == -1 {
 			cursorWidth = last_w

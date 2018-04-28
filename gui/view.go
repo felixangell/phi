@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/strife"
 )
@@ -33,37 +34,32 @@ func NewView(width, height int, conf *cfg.TomlConfig) *View {
 func (n *View) hidePalette() {
 	p := n.commandPalette
 	p.clearInput()
-	p.HasFocus = false
+	p.SetFocus(false)
 
 	// set focus to the buffer
 	// that invoked the cmd palette
-	p.parentBuff.inputHandler = p.buff.inputHandler
-	p.parentBuff.HasFocus = true
+	p.parentBuff.SetFocus(true)
 
 	// remove focus from palette
-	p.buff.HasFocus = false
-	p.buff.SetInputHandler(nil)
+	p.buff.SetFocus(false)
 }
 
 func (n *View) focusPalette(buff *Buffer) {
 	p := n.commandPalette
-	p.HasFocus = true
+	p.SetFocus(true)
 
 	// focus the command palette
-	p.buff.HasFocus = true
-	p.buff.SetInputHandler(buff.inputHandler)
+	p.buff.SetFocus(true)
 
 	// remove focus from the buffer
 	// that invoked the command palette
-	buff.inputHandler = nil
 	p.parentBuff = buff
 }
 
 func (n *View) UnfocusBuffers() {
 	// clear focus from buffers
 	for _, buff := range n.buffers {
-		buff.HasFocus = false
-		buff.inputHandler = nil
+		buff.SetFocus(false)
 	}
 }
 
@@ -77,7 +73,24 @@ func sign(dir int) int {
 }
 
 func (n *View) ChangeFocus(dir int) {
-	println("implement me! ", dir)
+	prevBuff, _ := n.buffers[n.focusedBuff]
+
+	if dir == -1 {
+		n.focusedBuff--
+	} else if dir == 1 {
+		n.focusedBuff++
+	}
+
+	if n.focusedBuff < 0 {
+		n.focusedBuff = len(n.buffers) - 1
+	} else if n.focusedBuff >= len(n.buffers) {
+		n.focusedBuff = 0
+	}
+
+	prevBuff.SetFocus(false)
+	if buff, ok := n.buffers[n.focusedBuff]; ok {
+		buff.SetFocus(true)
+	}
 }
 
 func (n *View) OnInit() {
@@ -86,20 +99,22 @@ func (n *View) OnInit() {
 func (n *View) OnUpdate() bool {
 	dirty := false
 
-	for _, buffer := range n.buffers {
-		if buffer.OnUpdate() {
-			dirty = true
-		}
+	if buff, ok := n.buffers[n.focusedBuff]; ok {
+		buff.OnUpdate()
 	}
+
 	n.commandPalette.OnUpdate()
 
 	return dirty
 }
 
 func (n *View) OnRender(ctx *strife.Renderer) {
-	for _, buffer := range n.buffers {
+	for idx, buffer := range n.buffers {
 		buffer.OnRender(ctx)
+
+		ctx.String(fmt.Sprintf("idx %d", idx), (buffer.x+buffer.w)-150, (buffer.y+buffer.h)-150)
 	}
+
 	n.commandPalette.OnRender(ctx)
 }
 
@@ -107,11 +122,11 @@ func (n *View) OnDispose() {}
 
 func (n *View) AddBuffer() *Buffer {
 	if buf, ok := n.buffers[n.focusedBuff]; ok {
-		buf.HasFocus = false
+		buf.SetFocus(false)
 	}
 
 	c := NewBuffer(n.conf, n, len(n.buffers))
-	c.HasFocus = true
+	c.SetFocus(true)
 
 	// work out the size of the buffer and set it
 	// note that we +1 the components because
