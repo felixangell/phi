@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/strife"
+	"log"
 )
 
 // View is an array of buffers basically.
@@ -72,6 +73,24 @@ func sign(dir int) int {
 	return 0
 }
 
+func (n *View) removeBuffer(index int) {
+	log.Println("Removing buffer index:", index)
+	delete(n.buffers, index)
+
+	// only resize the buffers if we have
+	// some remaining in the window
+	if len(n.buffers) > 0 {
+		bufferWidth := n.w / len(n.buffers)
+
+		// translate all the components accordingly.
+		for i, buff := range n.buffers {
+			buff.Resize(bufferWidth, n.h)
+			buff.SetPosition(bufferWidth*i, 0)
+		}
+	}
+
+}
+
 func (n *View) ChangeFocus(dir int) {
 	prevBuff, _ := n.buffers[n.focusedBuff]
 
@@ -132,17 +151,13 @@ func (n *View) AddBuffer() *Buffer {
 	// note that we +1 the components because
 	// we haven't yet added the panel
 	var bufferWidth int
-	bufferWidth = n.w / (len(n.buffers) + 1)
+	bufferWidth = n.w / (c.index + 1)
 
 	n.buffers[c.index] = c
 	n.focusedBuff = c.index
 
 	// translate all the components accordingly.
 	for i, buff := range n.buffers {
-		if buff == nil {
-			continue
-		}
-
 		buff.Resize(bufferWidth, n.h)
 		buff.SetPosition(bufferWidth*i, 0)
 	}

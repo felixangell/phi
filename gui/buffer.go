@@ -926,7 +926,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		highlightLinePosY := ey + (ry + b.curs.ry*last_h) - (b.cam.y * last_h)
 		highlightLinePosX := ex + rx
 
-		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w, last_h, strife.Fill)
+		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w-ex, last_h, strife.Fill)
 	}
 
 	var visibleLines int = 50
