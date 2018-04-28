@@ -60,7 +60,7 @@ func (b *CommandPalette) OnUpdate() bool {
 	}
 
 	override := func(k int) bool {
-		if k != sdl.K_RETURN {
+		if k != sdl.K_RETURN && k != sdl.K_ESCAPE {
 			return false
 		}
 
