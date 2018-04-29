@@ -131,6 +131,13 @@ func (b *Buffer) OnDispose() {
 
 func (b *Buffer) OnInit() {}
 
+func (b *Buffer) setLine(idx int, val string) {
+	b.contents[idx] = rope.New(val)
+	if b.curs.y == idx {
+		b.moveToEndOfLine()
+	}
+}
+
 func (b *Buffer) appendLine(val string) {
 	b.contents = append(b.contents, rope.New(val))
 	// because we've added a new line
