@@ -1,0 +1,60 @@
+* {
+	margin: 0;
+	border: 0;
+}
+
+body {
+	font-family: 'Inconsolata', monospace;	
+	color: #f2f4f6;
+	background: #fff;
+	font-size: 14pt;
+	line-height: 1.6em;
+	color: #002649;
+}
+
+header {
+	display: block;
+	width: 100%;
+	margin-bottom: 40px;
+}
+
+header nav {
+	display: inline-block;
+	width: 100%;
+}
+
+header nav ul li {
+	display: block;
+	float: left;
+	margin: 15px;
+}
+
+a {
+	color: #f8f273;;
+}
+
+.section {
+	display: block;
+	margin: 20px 0 20px 0;
+}
+
+.logo {
+	display: block;
+	margin: 40px auto;
+	width: 10%;
+}
+
+.text-center {
+	text-align: center;
+}
+
+img.fit {
+	display: block;
+	max-width: 100%;
+}
+
+.wrapper {
+	display: block;
+	width: 800px;
+	margin: 0 auto;
+}
