@@ -236,9 +236,9 @@ func (b *Buffer) processTextInput(r rune) bool {
 	if CONTROL_DOWN {
 		actionName, actionExists := cfg.Shortcuts.Controls[string(unicode.ToLower(r))]
 		if actionExists {
-			if proc, ok := actions[actionName]; ok {
+			if action, ok := actions[actionName]; ok {
 				log.Println("Executing action '" + actionName + "'")
-				return proc(b)
+				return action.proc(b)
 			}
 		} else {
 			log.Println("warning, unimplemented shortcut ctrl +", string(unicode.ToLower(r)), actionName)
@@ -248,8 +248,8 @@ func (b *Buffer) processTextInput(r rune) bool {
 	if SUPER_DOWN {
 		actionName, actionExists := cfg.Shortcuts.Supers[string(unicode.ToLower(r))]
 		if actionExists {
-			if proc, ok := actions[actionName]; ok {
-				return proc(b)
+			if action, ok := actions[actionName]; ok {
+				return action.proc(b)
 			}
 		} else {
 			log.Println("warning, unimplemented shortcut ctrl+", unicode.ToLower(r), actionName)

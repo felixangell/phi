@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"github.com/felixangell/fuzzysearch/fuzzy"
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/strife"
 	"github.com/veandco/go-sdl2/sdl"
@@ -8,10 +9,30 @@ import (
 	"strings"
 )
 
+var commandSet []string
+
+func init() {
+	commandSet = make([]string, len(actions))
+	for _, action := range actions {
+		commandSet = append(commandSet, action.name)
+	}
+}
+
 type CommandPalette struct {
 	BaseComponent
-	buff       *Buffer
-	parentBuff *Buffer
+	buff              *Buffer
+	parentBuff        *Buffer
+	recentSuggestions *[]suggestion
+}
+
+const suggestionBoxHeight = 128
+
+type suggestion struct {
+	name string
+}
+
+func (s *suggestion) render(x, y int, ctx *strife.Renderer) {
+	ctx.String(s.name, x, y)
 }
 
 func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
@@ -39,7 +60,6 @@ func (b *CommandPalette) OnInit() {
 
 func (b *CommandPalette) processCommand() {
 	tokenizedLine := strings.Split(b.buff.contents[0].String(), " ")
-
 	command := tokenizedLine[0]
 
 	action, exists := actions[command]
@@ -47,11 +67,26 @@ func (b *CommandPalette) processCommand() {
 		return
 	}
 
-	action(b.parentBuff)
+	action.proc(b.parentBuff)
+}
+
+func (b *CommandPalette) calculateSuggestions() {
+	tokenizedLine := strings.Split(b.buff.contents[0].String(), " ")
+	command := tokenizedLine[0]
+
+	ranks := fuzzy.RankFind(command, commandSet)
+	suggestions := make([]suggestion, len(ranks))
+
+	for _, r := range ranks {
+		cmdName := commandSet[r.Index]
+		suggestions = append(suggestions, suggestion{cmdName})
+	}
+
+	b.recentSuggestions = &suggestions
 }
 
 func (b *CommandPalette) clearInput() {
-	actions["delete_line"](b.buff)
+	actions["delete_line"].proc(b.buff)
 }
 
 func (b *CommandPalette) OnUpdate() bool {
@@ -61,6 +96,7 @@ func (b *CommandPalette) OnUpdate() bool {
 
 	override := func(k int) bool {
 		if k != sdl.K_RETURN && k != sdl.K_ESCAPE {
+			b.calculateSuggestions()
 			return false
 		}
 
@@ -82,6 +118,12 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 	ctx.Rect(b.x-border, b.y-border, b.w+(border*2), b.h+(border*2), strife.Fill)
 
 	b.buff.OnRender(ctx)
+
+	if b.recentSuggestions != nil {
+		for i, sugg := range *b.recentSuggestions {
+			sugg.render(b.x, b.y+(i*suggestionBoxHeight), ctx)
+		}
+	}
 }
 
 func (b *CommandPalette) OnDispose() {
