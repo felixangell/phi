@@ -1041,15 +1041,18 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 		if b.cfg.Editor.Show_Line_Numbers {
 			gutterPadPx := 10
-			numLinesWidth := len(string(numLines)) + 1
-			gutterWidth := last_w*numLinesWidth + (gutterPadPx * 2)
+
+			// how many chars we need
+			numLinesCharWidth := len(string(numLines)) + 2
+
+			gutterWidth := last_w*numLinesCharWidth + (gutterPadPx * 2)
 
 			// render the line numbers
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumBackground))
 			ctx.Rect(rx, (ry + (y_col * last_h)), gutterWidth, b.h, strife.Fill)
 
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumForeground))
-			ctx.String(fmt.Sprintf("%*d", numLinesWidth, start+lineNum), rx+gutterPadPx, (ry + (y_col * last_h)))
+			ctx.String(fmt.Sprintf("%*d", numLinesCharWidth, start+lineNum), rx+gutterPadPx, (ry + (y_col * last_h)))
 
 			b.ex = gutterWidth
 		}
