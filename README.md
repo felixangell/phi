@@ -1,14 +1,14 @@
 <p align="center"><img src="res/icons/icon96.png"></p>
 
 <h1>phi</h1>
-Phi is a minimal text editor designed to look pretty, run fast, and be easy
+Phi is a minimal code editor designed to look pretty, run fast, and be easy
 to configure and use. It's primary function is for editing code.
 
 Note that this is a work in progress and is very buggy! The editor is written as if it's a game,
 so it will probably **eat up your battery**, as well as **run possibly quite slow** - especially
 if you dont have a dedicated GPU - and probably **crash frequently**.
 
-Do not edit your precious files with this editor!
+**Do not edit your precious files with this editor!**
 
 <br>
 
@@ -23,6 +23,19 @@ The editor must:
 * load and edit large files with ease;
 * look pretty; and finally
 * be easy to use
+
+## non-goals
+The editor probably wont:
+
+* have any plugin support;
+* be very customizable in terms of layout;
+* support many non utf8 encodings;
+* support non true-type-fonts;
+* support right-to-left languages;
+
+Perhaps in the future if I have time to get round to some of these
+I may. Avoiding most of these is to avoid complexity in the code-base
+and general architecture of the editor.
 
 # why?
 The editor does not exist as a serious replacement to Sublime Text/Atom/Emacs/[editor name here]. 
@@ -90,7 +103,7 @@ Configuration files are stored in `$HOME/.phi-editor/config.toml`. Note that
 this directory is created on first startup by the editor, as well as the configuration
 files in the 'cfg/' directory are pre-loaded dependening on platform: see 'cfg/linuxconfig.go', for example.
 
-Below is a (non-exhaustive) configuration file to give you an
+Below is an incomplete configuration file to give you an
 idea of what the config files are like:
 
 ```toml
