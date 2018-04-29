@@ -268,7 +268,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 		actionName, actionExists := cfg.Shortcuts.Supers[string(unicode.ToLower(r))]
 		if actionExists {
 			if action, ok := actions[actionName]; ok {
-				return action.proc(b.parent)
+				return action.proc(b.parent, []string{})
 			}
 		} else {
 			log.Println("warning, unimplemented shortcut ctrl+", unicode.ToLower(r), actionName)

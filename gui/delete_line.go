@@ -1,6 +1,6 @@
 package gui
 
-func DeleteLine(v *View) bool {
+func DeleteLine(v *View, commands []string) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false

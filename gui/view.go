@@ -137,7 +137,7 @@ func (n *View) OnUpdate() bool {
 		if actionExists {
 			if action, ok := actions[actionName]; ok {
 				log.Println("Executing action '" + actionName + "'")
-				return action.proc(n)
+				return action.proc(n, []string{})
 			}
 		} else {
 			log.Println("warning, unimplemented shortcut ctrl +", string(unicode.ToLower(r)), actionName)

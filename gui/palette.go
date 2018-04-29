@@ -130,7 +130,7 @@ func (b *CommandPalette) processCommand() {
 		return
 	}
 
-	action.proc(b.parent)
+	action.proc(b.parent, tokenizedLine[1:])
 }
 
 func (b *CommandPalette) calculateSuggestions() {

@@ -7,14 +7,14 @@ import (
 	"log"
 )
 
-func ShowPalette(v *View) bool {
+func ShowPalette(v *View, commands []string) bool {
 	b := v.getCurrentBuff()
 	v.UnfocusBuffers()
 	v.focusPalette(b)
 	return true
 }
 
-func Paste(v *View) bool {
+func Paste(v *View, commands []string) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false
@@ -38,7 +38,7 @@ func Paste(v *View) bool {
 // if the buffer is modified it will be
 // re-rendered.
 
-func Save(v *View) bool {
+func Save(v *View, commands []string) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false

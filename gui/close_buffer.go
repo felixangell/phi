@@ -1,6 +1,6 @@
 package gui
 
-func CloseBuffer(v *View) bool {
+func CloseBuffer(v *View, commands []string) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false
