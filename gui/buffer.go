@@ -32,6 +32,15 @@ type camera struct {
 	y int
 }
 
+type BufferConfig struct {
+	background        int32
+	foreground        int32
+	cursor            int32
+	cursorInvert      int32
+	lineNumBackground int32
+	lineNumForeground int32
+}
+
 type Buffer struct {
 	BaseComponent
 	index        int
@@ -40,12 +49,13 @@ type Buffer struct {
 	contents     []*rope.Rope
 	curs         *Cursor
 	cfg          *cfg.TomlConfig
+	buffOpts     BufferConfig
 	cam          *camera
 	filePath     string
 	languageInfo *cfg.LanguageSyntaxConfig
 }
 
-func NewBuffer(conf *cfg.TomlConfig, parent *View, index int) *Buffer {
+func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index int) *Buffer {
 	config := conf
 	if config == nil {
 		config = cfg.NewDefaultConfig()
@@ -58,6 +68,7 @@ func NewBuffer(conf *cfg.TomlConfig, parent *View, index int) *Buffer {
 		contents: buffContents,
 		curs:     &Cursor{},
 		cfg:      config,
+		buffOpts: buffOpts,
 		filePath: "",
 		cam:      &camera{0, 0},
 	}
@@ -931,7 +942,7 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 
 func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	// BACKGROUND
-	ctx.SetColor(strife.HexRGB(b.cfg.Theme.Background))
+	ctx.SetColor(strife.HexRGB(b.buffOpts.background))
 	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
 
 	if b.cfg.Editor.Highlight_Line && b.HasFocus() {
@@ -1014,13 +1025,13 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 			x_col += 1
 
-			ctx.SetColor(strife.HexRGB(b.cfg.Theme.Foreground))
+			ctx.SetColor(strife.HexRGB(b.buffOpts.foreground))
 
 			// if we're currently over a character then set
 			// the font colour to something else
 			// ONLY SET THE COLOUR IF WE HAVE FOCUS ALSO!
 			if b.HasFocus() && b.curs.x+1 == x_col && b.curs.y == y_col && should_draw {
-				ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor_Invert))
+				ctx.SetColor(strife.HexRGB(b.buffOpts.cursorInvert))
 			}
 
 			if info, ok := matches[idx]; ok {
@@ -1043,10 +1054,10 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			gutterWidth := last_w*numLinesWidth + (gutterPadPx * 2)
 
 			// render the line numbers
-			ctx.SetColor(strife.HexRGB(b.cfg.Theme.Background))
+			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumBackground))
 			ctx.Rect(rx, (ry + (y_col * last_h)), gutterWidth, b.h, strife.Fill)
 
-			ctx.SetColor(strife.HexRGB(b.cfg.Theme.Foreground))
+			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumForeground))
 			ctx.String(fmt.Sprintf("%*d", numLinesWidth, start+lineNum), rx+gutterPadPx, (ry + (y_col * last_h)))
 
 			ex = gutterWidth
@@ -1062,7 +1073,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			cursorWidth = last_w
 		}
 
-		ctx.SetColor(strife.HexRGB(b.cfg.Theme.Cursor)) // caret colour
+		ctx.SetColor(strife.HexRGB(b.buffOpts.cursor)) // caret colour
 		ctx.Rect(ex+(rx+b.curs.rx*last_w)-(b.cam.x*last_w), (ry+b.curs.ry*last_h)-(b.cam.y*last_h), cursorWidth, last_h, strife.Fill)
 	}
 }

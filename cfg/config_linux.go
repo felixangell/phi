@@ -38,6 +38,21 @@ background = 0x002649
 foreground = 0xf2f4f6
 cursor = 0xf2f4f6
 cursor_invert = 0x000000
+gutter_background = 0x000000
+gutter_foreground = 0xf2f4f6
+
+[theme.palette]
+background = 0x002649
+foreground = 0xf2f4f6
+cursor = 0xf2f4f6
+render_shadow = true
+shadow_color = 0x000000
+
+[theme.palette.suggestion]
+background = 0xff00ff
+foreground = 0xffffff
+selected_background = 0xff0000
+selected_foreground = 0x0000ff
 
 [cursor]
 flash_rate = 400

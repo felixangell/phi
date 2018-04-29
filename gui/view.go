@@ -144,7 +144,16 @@ func (n *View) AddBuffer() *Buffer {
 		buf.SetFocus(false)
 	}
 
-	c := NewBuffer(n.conf, n, len(n.buffers))
+	cfg := n.conf
+	c := NewBuffer(cfg, BufferConfig{
+		cfg.Theme.Background,
+		cfg.Theme.Foreground,
+		cfg.Theme.Cursor,
+		cfg.Theme.Cursor_Invert,
+		cfg.Theme.Gutter_Background,
+		cfg.Theme.Gutter_Foreground,
+	}, n, len(n.buffers))
+
 	c.SetFocus(true)
 
 	// work out the size of the buffer and set it

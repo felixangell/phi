@@ -16,7 +16,7 @@ func NewBufferAction(name string, proc func(*Buffer) bool) BufferAction {
 
 var actions = map[string]BufferAction{
 	"save":         NewBufferAction("save", Save),
-	"delete_line":  NewBufferAction("delete_ine", DeleteLine),
+	"delete_line":  NewBufferAction("delete_line", DeleteLine),
 	"close_buffer": NewBufferAction("close_buffer", CloseBuffer),
 	"paste":        NewBufferAction("paste", Paste),
 	"show_palette": NewBufferAction("show_palette", ShowPalette),

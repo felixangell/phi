@@ -22,6 +22,7 @@ type CommandPalette struct {
 	BaseComponent
 	buff       *Buffer
 	parentBuff *Buffer
+	conf       *cfg.TomlConfig
 
 	suggestionIndex   int
 	recentSuggestions *[]suggestion
@@ -30,22 +31,37 @@ type CommandPalette struct {
 var suggestionBoxHeight, suggestionBoxWidth = 48, 0
 
 type suggestion struct {
-	name string
+	parent *CommandPalette
+	name   string
 }
 
 func (s *suggestion) renderHighlighted(x, y int, ctx *strife.Renderer) {
-	ctx.SetColor(strife.Blue)
+	// wewlad
+	conf := s.parent.conf.Theme.Palette
+
+	border := 5
+	ctx.SetColor(strife.HexRGB(conf.Outline))
+	ctx.Rect(x-border, y-border, suggestionBoxWidth+(border*2), suggestionBoxHeight+(border*2), strife.Fill)
+
+	ctx.SetColor(strife.HexRGB(conf.Suggestion.Selected_Background))
 	ctx.Rect(x, y, suggestionBoxWidth, suggestionBoxHeight, strife.Fill)
 
-	ctx.SetColor(strife.White)
+	ctx.SetColor(strife.HexRGB(conf.Suggestion.Selected_Foreground))
 	ctx.String(s.name, x, y)
 }
 
 func (s *suggestion) render(x, y int, ctx *strife.Renderer) {
-	ctx.SetColor(strife.Red)
+	// wewlad
+	conf := s.parent.conf.Theme.Palette
+
+	border := 5
+	ctx.SetColor(strife.HexRGB(conf.Outline))
+	ctx.Rect(x-border, y-border, suggestionBoxWidth+(border*2), suggestionBoxHeight+(border*2), strife.Fill)
+
+	ctx.SetColor(strife.HexRGB(conf.Suggestion.Background))
 	ctx.Rect(x, y, suggestionBoxWidth, suggestionBoxHeight, strife.Fill)
 
-	ctx.SetColor(strife.White)
+	ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
 	ctx.String(s.name, x, y)
 }
 
@@ -54,7 +70,18 @@ func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 	conf.Editor.Highlight_Line = false
 
 	palette := &CommandPalette{
-		buff:       NewBuffer(&conf, nil, 0),
+		conf: &conf,
+		buff: NewBuffer(&conf, BufferConfig{
+			conf.Theme.Palette.Background,
+			conf.Theme.Palette.Foreground,
+
+			conf.Theme.Palette.Cursor,
+			conf.Theme.Palette.Cursor, // TODO invert
+
+			// we dont show line numbers
+			// so these aren't necessary
+			0x0, 0x0,
+		}, nil, 0),
 		parentBuff: nil,
 	}
 	palette.buff.appendLine("")
@@ -105,7 +132,7 @@ func (b *CommandPalette) calculateSuggestions() {
 		if cmdName == "" {
 			continue
 		}
-		suggestions = append(suggestions, suggestion{cmdName})
+		suggestions = append(suggestions, suggestion{b, cmdName})
 	}
 
 	b.recentSuggestions = &suggestions
@@ -189,9 +216,10 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 		return
 	}
 
-	border := 5
+	conf := b.conf.Theme.Palette
 
-	ctx.SetColor(strife.White)
+	border := 5
+	ctx.SetColor(strife.HexRGB(conf.Outline))
 	ctx.Rect(b.x-border, b.y-border, b.w+(border*2), b.h+(border*2), strife.Fill)
 
 	b.buff.OnRender(ctx)
@@ -199,9 +227,9 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 	if b.recentSuggestions != nil {
 		for i, sugg := range *b.recentSuggestions {
 			if b.suggestionIndex != i {
-				sugg.render(b.x, b.y+((i+1)*suggestionBoxHeight), ctx)
+				sugg.render(b.x, b.y+((i+1)*(suggestionBoxHeight+border)), ctx)
 			} else {
-				sugg.renderHighlighted(b.x, b.y+((i+1)*suggestionBoxHeight), ctx)
+				sugg.renderHighlighted(b.x, b.y+((i+1)*(suggestionBoxHeight+border)), ctx)
 			}
 		}
 	}
