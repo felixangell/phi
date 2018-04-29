@@ -222,6 +222,25 @@ var altAlternative = map[rune]rune{
 	'\\': '«',
 }
 
+func (b *Buffer) deleteLine() {
+	if len(b.contents) > 1 {
+		b.contents = remove(b.contents, b.curs.y)
+	} else {
+		// we are on the first line
+		// and there is nothing else to delete
+		// so we just clear the line
+		b.contents[b.curs.y] = new(rope.Rope)
+	}
+
+	if b.curs.y >= len(b.contents) {
+		if b.curs.y > 0 {
+			b.moveUp()
+		}
+	}
+
+	b.moveToEndOfLine()
+}
+
 func (b *Buffer) processTextInput(r rune) bool {
 	if ALT_DOWN && r == '\t' {
 		// nop, we dont want to
@@ -245,23 +264,11 @@ func (b *Buffer) processTextInput(r rune) bool {
 		}
 	}
 
-	if CONTROL_DOWN {
-		actionName, actionExists := cfg.Shortcuts.Controls[string(unicode.ToLower(r))]
-		if actionExists {
-			if action, ok := actions[actionName]; ok {
-				log.Println("Executing action '" + actionName + "'")
-				return action.proc(b)
-			}
-		} else {
-			log.Println("warning, unimplemented shortcut ctrl +", string(unicode.ToLower(r)), actionName)
-		}
-	}
-
 	if SUPER_DOWN {
 		actionName, actionExists := cfg.Shortcuts.Supers[string(unicode.ToLower(r))]
 		if actionExists {
 			if action, ok := actions[actionName]; ok {
-				return action.proc(b)
+				return action.proc(b.parent)
 			}
 		} else {
 			log.Println("warning, unimplemented shortcut ctrl+", unicode.ToLower(r), actionName)
@@ -807,10 +814,10 @@ var lastCursorDraw = time.Now()
 var renderFlashingCursor = true
 
 func (b *Buffer) OnUpdate() bool {
-	return b.doUpdate(nil)
+	return false
 }
 
-func (b *Buffer) doUpdate(pred func(r int) bool) bool {
+func (b *Buffer) processInput(pred func(r int) bool) bool {
 	if !b.HasFocus() {
 		return false
 	}

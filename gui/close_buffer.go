@@ -1,8 +1,16 @@
 package gui
 
-func CloseBuffer(b *Buffer) bool {
-	view := b.parent
-	view.ChangeFocus(-1)
-	view.removeBuffer(b.index)
+func CloseBuffer(v *View) bool {
+	b := v.getCurrentBuff()
+	if b == nil {
+		return false
+	}
+
+	if len(v.buffers) > 1 {
+		v.ChangeFocus(-1)
+	}
+
+	v.removeBuffer(b.index)
+
 	return false
 }

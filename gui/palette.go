@@ -23,6 +23,7 @@ type CommandPalette struct {
 	buff       *Buffer
 	parentBuff *Buffer
 	conf       *cfg.TomlConfig
+	parent     *View
 
 	suggestionIndex   int
 	recentSuggestions *[]suggestion
@@ -82,7 +83,8 @@ func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 	conf.Editor.Highlight_Line = false
 
 	palette := &CommandPalette{
-		conf: &conf,
+		conf:   &conf,
+		parent: view,
 		buff: NewBuffer(&conf, BufferConfig{
 			conf.Theme.Palette.Background,
 			conf.Theme.Palette.Foreground,
@@ -128,7 +130,7 @@ func (b *CommandPalette) processCommand() {
 		return
 	}
 
-	action.proc(b.parentBuff)
+	action.proc(b.parent)
 }
 
 func (b *CommandPalette) calculateSuggestions() {
@@ -167,7 +169,7 @@ func (b *CommandPalette) scrollSuggestion(dir int) {
 }
 
 func (b *CommandPalette) clearInput() {
-	actions["delete_line"].proc(b.buff)
+	b.buff.deleteLine()
 }
 
 func (b *CommandPalette) setToSuggested() {
@@ -215,16 +217,17 @@ func (b *CommandPalette) OnUpdate() bool {
 				return true
 			}
 
-			fallthrough
+			b.processCommand()
+			break
+
 		case sdl.K_ESCAPE:
 			break
 		}
 
-		b.processCommand()
-		b.parentBuff.parent.hidePalette()
+		b.parent.hidePalette()
 		return true
 	}
-	return b.buff.doUpdate(override)
+	return b.buff.processInput(override)
 }
 
 func (b *CommandPalette) OnRender(ctx *strife.Renderer) {

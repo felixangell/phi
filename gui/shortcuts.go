@@ -7,13 +7,19 @@ import (
 	"log"
 )
 
-func ShowPalette(b *Buffer) bool {
-	b.parent.UnfocusBuffers()
-	b.parent.focusPalette(b)
+func ShowPalette(v *View) bool {
+	b := v.getCurrentBuff()
+	v.UnfocusBuffers()
+	v.focusPalette(b)
 	return true
 }
 
-func Paste(b *Buffer) bool {
+func Paste(v *View) bool {
+	b := v.getCurrentBuff()
+	if b == nil {
+		return false
+	}
+
 	str, err := clipboard.ReadAll()
 
 	if err == nil {
@@ -32,7 +38,11 @@ func Paste(b *Buffer) bool {
 // if the buffer is modified it will be
 // re-rendered.
 
-func Save(b *Buffer) bool {
+func Save(v *View) bool {
+	b := v.getCurrentBuff()
+	if b == nil {
+		return false
+	}
 
 	var buffer bytes.Buffer
 	for idx, line := range b.contents {

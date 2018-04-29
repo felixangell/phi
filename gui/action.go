@@ -4,10 +4,10 @@ import "os"
 
 type BufferAction struct {
 	name string
-	proc func(*Buffer) bool
+	proc func(*View) bool
 }
 
-func NewBufferAction(name string, proc func(*Buffer) bool) BufferAction {
+func NewBufferAction(name string, proc func(*View) bool) BufferAction {
 	return BufferAction{
 		name: name,
 		proc: proc,
@@ -20,7 +20,7 @@ var actions = map[string]BufferAction{
 	"close_buffer": NewBufferAction("close_buffer", CloseBuffer),
 	"paste":        NewBufferAction("paste", Paste),
 	"show_palette": NewBufferAction("show_palette", ShowPalette),
-	"exit": NewBufferAction("exit", func(*Buffer) bool {
+	"exit": NewBufferAction("exit", func(*View) bool {
 		// TODO do this properly lol
 		os.Exit(0)
 		return false

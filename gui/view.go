@@ -1,10 +1,11 @@
 package gui
 
 import (
-	"fmt"
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/strife"
+	"github.com/veandco/go-sdl2/sdl"
 	"log"
+	"unicode"
 )
 
 // View is an array of buffers basically.
@@ -39,7 +40,10 @@ func (n *View) hidePalette() {
 
 	// set focus to the buffer
 	// that invoked the cmd palette
-	p.parentBuff.SetFocus(true)
+	if p.parentBuff != nil {
+		p.parentBuff.SetFocus(true)
+		n.focusedBuff = p.parentBuff.index
+	}
 
 	// remove focus from palette
 	p.buff.SetFocus(false)
@@ -112,13 +116,36 @@ func (n *View) ChangeFocus(dir int) {
 	}
 }
 
+func (n *View) getCurrentBuff() *Buffer {
+	if buff, ok := n.buffers[n.focusedBuff]; ok {
+		return buff
+	}
+	return nil
+}
+
 func (n *View) OnInit() {
 }
 
 func (n *View) OnUpdate() bool {
 	dirty := false
 
+	CONTROL_DOWN = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
+	if CONTROL_DOWN && strife.PollKeys() {
+		r := rune(strife.PopKey())
+
+		actionName, actionExists := cfg.Shortcuts.Controls[string(unicode.ToLower(r))]
+		if actionExists {
+			if action, ok := actions[actionName]; ok {
+				log.Println("Executing action '" + actionName + "'")
+				return action.proc(n)
+			}
+		} else {
+			log.Println("warning, unimplemented shortcut ctrl +", string(unicode.ToLower(r)), actionName)
+		}
+	}
+
 	if buff, ok := n.buffers[n.focusedBuff]; ok {
+		buff.processInput(nil)
 		buff.OnUpdate()
 	}
 
@@ -128,10 +155,8 @@ func (n *View) OnUpdate() bool {
 }
 
 func (n *View) OnRender(ctx *strife.Renderer) {
-	for idx, buffer := range n.buffers {
+	for _, buffer := range n.buffers {
 		buffer.OnRender(ctx)
-
-		ctx.String(fmt.Sprintf("idx %d", idx), (buffer.x+buffer.w)-150, (buffer.y+buffer.h)-150)
 	}
 
 	n.commandPalette.OnRender(ctx)
@@ -140,9 +165,7 @@ func (n *View) OnRender(ctx *strife.Renderer) {
 func (n *View) OnDispose() {}
 
 func (n *View) AddBuffer() *Buffer {
-	if buf, ok := n.buffers[n.focusedBuff]; ok {
-		buf.SetFocus(false)
-	}
+	n.UnfocusBuffers()
 
 	cfg := n.conf
 	c := NewBuffer(cfg, BufferConfig{
