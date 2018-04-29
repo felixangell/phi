@@ -763,6 +763,13 @@ var (
 	CAPS_LOCK         = false
 )
 
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 // TODO(Felix) this is really stupid
 func (b *Buffer) makeTab() string {
 	blah := []rune{}
@@ -929,7 +936,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w-ex, last_h, strife.Fill)
 	}
 
-	var visibleLines int = 50
+	var visibleLines, visibleChars int = 50, -1
 
 	// HACK
 	// force a render off screen
@@ -947,6 +954,12 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		// so we dont cut anything off if its
 		// not evenly divisible
 		visibleLines = (int(b.h) / int(last_h)) + 3
+	}
+
+	// calculate how many chars we can fit
+	// on the screen.
+	if int(last_w) > 0 && int(b.w) != 0 {
+		visibleChars = (int(b.w-ex) / int(last_w)) - 3
 	}
 
 	start := b.cam.y
@@ -968,6 +981,9 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	var y_col int
 	for lineNum, rope := range b.contents[start:upper] {
 		currLine := []rune(rope.String())
+
+		// slice the visible characters only.
+		currLine = currLine[:min(visibleChars, len(currLine))]
 
 		// char index => colour
 		var matches map[int]syntaxRuneInfo
