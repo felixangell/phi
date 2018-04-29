@@ -47,7 +47,13 @@ func (s *suggestion) renderHighlighted(x, y int, ctx *strife.Renderer) {
 	ctx.Rect(x, y, suggestionBoxWidth, suggestionBoxHeight, strife.Fill)
 
 	ctx.SetColor(strife.HexRGB(conf.Suggestion.Selected_Foreground))
-	ctx.String(s.name, x, y)
+
+	// FIXME strife library needs something to get
+	// text width and heights... for now we render offscreen to measure... lol
+	_, h := ctx.String("foo", -500000, -50000)
+
+	yOffs := (suggestionBoxHeight / 2) - (h / 2)
+	ctx.String(s.name, x+border, y+yOffs)
 }
 
 func (s *suggestion) render(x, y int, ctx *strife.Renderer) {
@@ -62,7 +68,13 @@ func (s *suggestion) render(x, y int, ctx *strife.Renderer) {
 	ctx.Rect(x, y, suggestionBoxWidth, suggestionBoxHeight, strife.Fill)
 
 	ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
-	ctx.String(s.name, x, y)
+
+	// FIXME strife library needs something to get
+	// text width and heights... for now we render offscreen to measure... lol
+	_, h := ctx.String("foo", -500000, -50000)
+
+	yOffs := (suggestionBoxHeight / 2) - (h / 2)
+	ctx.String(s.name, x+border, y+yOffs)
 }
 
 func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
@@ -88,17 +100,21 @@ func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 
 	palette.Resize(view.w/3, 48)
 	palette.Translate((view.w/2)-(palette.w/2), 10)
+
+	// the buffer is not rendered
+	// relative to the palette so we have to set its position
 	palette.buff.Resize(palette.w, palette.h)
 	palette.buff.Translate((view.w/2)-(palette.w/2), 10)
+
+	// this is technically a hack. this ex is an xoffset
+	// for the line numbers but we're going to use it for
+	// general border offsets. this is a real easy fixme
+	// for general code clean but maybe another day!
+	palette.buff.ex = 5
 
 	suggestionBoxWidth = palette.w
 
 	return palette
-}
-
-func (b *CommandPalette) OnInit() {
-	b.buff.Translate(b.x, b.y)
-	b.buff.Resize(b.w, b.h)
 }
 
 func (b *CommandPalette) processCommand() {
@@ -222,6 +238,9 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 	ctx.SetColor(strife.HexRGB(conf.Outline))
 	ctx.Rect(b.x-border, b.y-border, b.w+(border*2), b.h+(border*2), strife.Fill)
 
+	_, charHeight := ctx.String("foo", -5000, -5000)
+	b.buff.ey = (suggestionBoxHeight / 2) - (charHeight / 2)
+
 	b.buff.OnRender(ctx)
 
 	if b.recentSuggestions != nil {
@@ -233,8 +252,4 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 			}
 		}
 	}
-}
-
-func (b *CommandPalette) OnDispose() {
-	log.Println("poop diddity scoop")
 }

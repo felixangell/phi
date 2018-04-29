@@ -53,6 +53,7 @@ type Buffer struct {
 	cam          *camera
 	filePath     string
 	languageInfo *cfg.LanguageSyntaxConfig
+	ex, ey       int
 }
 
 func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index int) *Buffer {
@@ -134,13 +135,6 @@ func (b *Buffer) OpenFile(filePath string) {
 		b.appendLine(line)
 	}
 }
-
-func (b *Buffer) OnDispose() {
-	// hm!
-	// os.Remove(b.fileHandle)
-}
-
-func (b *Buffer) OnInit() {}
 
 func (b *Buffer) setLine(idx int, val string) {
 	b.contents[idx] = rope.New(val)
@@ -883,9 +877,6 @@ type syntaxRuneInfo struct {
 // dimensions of the last character we rendered
 var last_w, last_h int
 
-// editor x and y offsets
-var ex, ey = 0, 0
-
 // runs up a lexer instance
 func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch map[string]bool, bg int, fg int) {
 	// start up a lexer instance and
@@ -948,10 +939,10 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	if b.cfg.Editor.Highlight_Line && b.HasFocus() {
 		ctx.SetColor(strife.Black) // highlight_line_col?
 
-		highlightLinePosY := ey + (ry + b.curs.ry*last_h) - (b.cam.y * last_h)
-		highlightLinePosX := ex + rx
+		highlightLinePosY := b.ey + (ry + b.curs.ry*last_h) - (b.cam.y * last_h)
+		highlightLinePosX := b.ex + rx
 
-		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w-ex, last_h, strife.Fill)
+		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w-b.ex, last_h-b.ey, strife.Fill)
 	}
 
 	var visibleLines, visibleChars int = 50, -1
@@ -971,13 +962,13 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		// render an extra three lines just
 		// so we dont cut anything off if its
 		// not evenly divisible
-		visibleLines = (int(b.h) / int(last_h)) + 3
+		visibleLines = (int(b.h-b.ey) / int(last_h)) + 3
 	}
 
 	// calculate how many chars we can fit
 	// on the screen.
 	if int(last_w) > 0 && int(b.w) != 0 {
-		visibleChars = (int(b.w-ex) / int(last_w)) - 3
+		visibleChars = (int(b.w-b.ex) / int(last_w)) - 3
 	}
 
 	start := b.cam.y
@@ -991,7 +982,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 	// render the selection if any
 	if lastSelection != nil {
-		lastSelection.renderAt(ctx, b.x+ex, b.y+ey)
+		lastSelection.renderAt(ctx, b.x+b.ex, b.y+b.ey)
 	}
 
 	numLines := len(b.contents)
@@ -1045,7 +1036,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 				a, colorStack = int32(colorStack[len(colorStack)-1]), colorStack[:len(colorStack)-1]
 				ctx.SetColor(strife.HexRGB(a))
 			}
-			last_w, last_h = ctx.String(string(char), ex+(rx+((x_col-1)*last_w)), (ry + (y_col * last_h)))
+			last_w, last_h = ctx.String(string(char), b.ex+(rx+((x_col-1)*last_w)), b.ey+(ry+(y_col*last_h)))
 		}
 
 		if b.cfg.Editor.Show_Line_Numbers {
@@ -1060,7 +1051,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumForeground))
 			ctx.String(fmt.Sprintf("%*d", numLinesWidth, start+lineNum), rx+gutterPadPx, (ry + (y_col * last_h)))
 
-			ex = gutterWidth
+			b.ex = gutterWidth
 		}
 
 		y_col += 1
@@ -1074,7 +1065,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		}
 
 		ctx.SetColor(strife.HexRGB(b.buffOpts.cursor)) // caret colour
-		ctx.Rect(ex+(rx+b.curs.rx*last_w)-(b.cam.x*last_w), (ry+b.curs.ry*last_h)-(b.cam.y*last_h), cursorWidth, last_h, strife.Fill)
+		ctx.Rect(b.ex+(rx+b.curs.rx*last_w)-(b.cam.x*last_w), b.ey+(ry+b.curs.ry*last_h)-(b.cam.y*last_h), cursorWidth, last_h, strife.Fill)
 	}
 }
 

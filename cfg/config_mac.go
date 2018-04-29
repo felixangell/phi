@@ -42,17 +42,18 @@ gutter_background = 0x000000
 gutter_foreground = 0xf2f4f6
 
 [theme.palette]
-background = 0x002649
-foreground = 0xf2f4f6
+outline = 0xebedef
+background = 0xffffff
+foreground = 0x000000
 cursor = 0xf2f4f6
 render_shadow = true
 shadow_color = 0x000000
 
 [theme.palette.suggestion]
-background = 0xff00ff
-foreground = 0xffffff
-selected_background = 0xff0000
-selected_foreground = 0x0000ff
+background = 0xebedef
+foreground = 0x3a3839
+selected_background = 0xc7cbd1
+selected_foreground = 0x3a3839
 
 [cursor]
 flash_rate = 400
