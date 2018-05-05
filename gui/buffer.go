@@ -1012,6 +1012,11 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		var x_col int
 		for idx, char := range currLine {
 			switch char {
+
+			// 13 is a carriage return
+			case 13:
+				continue
+
 			case '\n':
 				x_col = 0
 				y_col += 1
