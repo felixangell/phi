@@ -140,7 +140,7 @@ func (n *View) OnUpdate() bool {
 				return action.proc(n, []string{})
 			}
 		} else {
-			log.Println("warning, unimplemented shortcut ctrl +", string(unicode.ToLower(r)), actionName)
+			log.Println("warning, unimplemented shortcut ctrl +", string(unicode.ToLower(r)), " #", int(r), actionName)
 		}
 	}
 

@@ -553,6 +553,9 @@ func (b *Buffer) processActionKey(key int) bool {
 	case sdl.K_CAPSLOCK:
 		CAPS_LOCK = !CAPS_LOCK
 
+	case sdl.K_ESCAPE:
+		return true
+
 	case sdl.K_RETURN:
 		if SUPER_DOWN {
 			// in sublime this goes
