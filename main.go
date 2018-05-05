@@ -89,7 +89,7 @@ func main() {
 		size := "16"
 		switch runtime.GOOS {
 		case "windows":
-			size = "256"
+			size = "64"
 		case "darwin":
 			size = "512"
 		case "linux":
