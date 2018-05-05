@@ -1,6 +1,7 @@
 tests/
 phi-editor
 phi
+phi.exe
 fmt.sh
 .idea/
 vendor/

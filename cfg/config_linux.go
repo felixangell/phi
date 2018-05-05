@@ -38,7 +38,7 @@ background = 0x002649
 foreground = 0xf2f4f6
 cursor = 0xf2f4f6
 cursor_invert = 0x000000
-gutter_background = 0x000000
+gutter_background = 0x002649
 gutter_foreground = 0xf2f4f6
 
 [theme.palette]
