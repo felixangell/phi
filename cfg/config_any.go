@@ -65,6 +65,12 @@ flash = true
 [commands.save]
 shortcut = "ctrl+s"
 
+[commands.focus_left]
+shortcut = "ctrl+left"
+
+[commands.focus_right]
+shortcut = "ctrl+right"
+
 [commands.show_palette]
 shortcut = "ctrl+p"
 

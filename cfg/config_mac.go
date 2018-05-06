@@ -71,6 +71,12 @@ shortcut = "super+s"
 [commands.show_palette]
 shortcut = "super+p"
 
+[commands.focus_left]
+shortcut = "super+left"
+
+[commands.focus_right]
+shortcut = "super+right"
+
 [commands.paste]
 shortcut = "super+v"
 

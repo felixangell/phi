@@ -68,6 +68,12 @@ shortcut = "ctrl+q"
 [commands.show_palette]
 shortcut = "ctrl+p"
 
+[commands.focus_left]
+shortcut = "ctrl+left"
+
+[commands.focus_right]
+shortcut = "ctrl+right"
+
 [commands.save]
 shortcut = "ctrl+s"
 
