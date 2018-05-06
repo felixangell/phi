@@ -5,6 +5,7 @@ import (
 	"github.com/felixangell/strife"
 	"github.com/veandco/go-sdl2/sdl"
 	"log"
+	"runtime"
 	"unicode"
 )
 
@@ -130,17 +131,39 @@ func (n *View) OnUpdate() bool {
 	dirty := false
 
 	CONTROL_DOWN = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
-	if CONTROL_DOWN && strife.PollKeys() {
+	SUPER_DOWN = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
+
+	mainSuper := CONTROL_DOWN
+	if runtime.GOOS == "darwin" {
+		mainSuper = SUPER_DOWN
+	}
+
+	if mainSuper && strife.PollKeys() {
 		r := rune(strife.PopKey())
 
-		actionName, actionExists := cfg.Shortcuts.Controls[string(unicode.ToLower(r))]
+		left := 1073741904
+		right := 1073741903
+
+		// map to left/right/etc.
+		// FIXME
+		var key string
+		switch int(r) {
+		case left:
+			key = "left"
+		case right:
+			key = "right"
+		default:
+			key = string(unicode.ToLower(r))
+		}
+
+		actionName, actionExists := cfg.Shortcuts.Controls[key]
 		if actionExists {
 			if action, ok := actions[actionName]; ok {
 				log.Println("Executing action '" + actionName + "'")
 				return action.proc(n, []string{})
 			}
 		} else {
-			log.Println("warning, unimplemented shortcut ctrl +", string(unicode.ToLower(r)), " #", int(r), actionName)
+			log.Println("warning, unimplemented shortcut ctrl +", string(unicode.ToLower(r)), " #", int(r), actionName, key)
 		}
 	}
 

@@ -53,7 +53,25 @@ func GotoLine(v *View, commands []string) bool {
 	return false
 }
 
+func focusLeft(v *View, commands []string) bool {
+	if v == nil {
+		return false
+	}
+	v.ChangeFocus(-1)
+	return false
+}
+
+func focusRight(v *View, commands []string) bool {
+	if v == nil {
+		return false
+	}
+	v.ChangeFocus(1)
+	return false
+}
+
 var actions = map[string]BufferAction{
+	"focus_left":   NewBufferAction("focus_left", focusLeft),
+	"focus_right":  NewBufferAction("focus_right", focusRight),
 	"goto":         NewBufferAction("goto", GotoLine),
 	"new":          NewBufferAction("new", NewFile),
 	"save":         NewBufferAction("save", Save),

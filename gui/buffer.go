@@ -360,8 +360,28 @@ func (b *Buffer) processTextInput(r rune) bool {
 		}
 	}
 
-	if SUPER_DOWN {
-		actionName, actionExists := cfg.Shortcuts.Supers[string(unicode.ToLower(r))]
+	mainSuper := CONTROL_DOWN
+	if runtime.GOOS == "darwin" {
+		mainSuper = SUPER_DOWN
+	}
+
+	if mainSuper {
+		left := 1073741903
+		right := 1073741904
+
+		// map to left/right/etc.
+		// FIXME
+		var key string
+		switch int(r) {
+		case left:
+			key = "left"
+		case right:
+			key = "right"
+		default:
+			key = string(unicode.ToLower(r))
+		}
+
+		actionName, actionExists := cfg.Shortcuts.Supers[key]
 		if actionExists {
 			if action, ok := actions[actionName]; ok {
 				return action.proc(b.parent, []string{})
@@ -750,11 +770,6 @@ func (b *Buffer) processActionKey(key int) bool {
 	case sdl.K_RIGHT:
 		currLineLength := b.contents[b.curs.y].Len()
 
-		if CONTROL_DOWN && b.parent != nil {
-			b.parent.ChangeFocus(1)
-			break
-		}
-
 		if SUPER_DOWN {
 			for b.curs.x < currLineLength {
 				b.curs.move(1, 0)
@@ -784,11 +799,6 @@ func (b *Buffer) processActionKey(key int) bool {
 
 		b.moveRight()
 	case sdl.K_LEFT:
-		if CONTROL_DOWN && b.parent != nil {
-			b.parent.ChangeFocus(-1)
-			break
-		}
-
 		if SUPER_DOWN {
 			// TODO go to the nearest \t
 			// if no \t (i.e. start of line) go to
