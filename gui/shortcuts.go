@@ -64,10 +64,18 @@ func Save(v *View, commands []string) bool {
 	// - lots of checks to do here: does the file exist/not exist
 	//   handle the errors... etc.
 
+	// ALWAYS use atomic save possibly?
+	// start writing the file on a gothread
+	// and then move the file overwriting when the
+	// file has been written?
+
 	err := ioutil.WriteFile(b.filePath, buffer.Bytes(), 0775)
 	if err != nil {
 		log.Println(err.Error())
 	}
 	log.Println("Wrote file '" + b.filePath + "' to disk")
+
+	b.modified = false
+
 	return false
 }

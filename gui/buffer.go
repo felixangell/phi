@@ -55,6 +55,7 @@ type Buffer struct {
 	filePath     string
 	languageInfo *cfg.LanguageSyntaxConfig
 	ex, ey       int
+	modified     bool
 }
 
 func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index int) *Buffer {
@@ -135,9 +136,16 @@ func (b *Buffer) OpenFile(filePath string) {
 	for _, line := range lines {
 		b.appendLine(line)
 	}
+
+	// because appendLine sets modified to true
+	// we should reset this to false since weve
+	// only loaded a file.
+	b.modified = false
 }
 
 func (b *Buffer) setLine(idx int, val string) {
+	b.modified = true
+
 	b.contents[idx] = rope.New(val)
 	if b.curs.y == idx {
 		b.moveToEndOfLine()
@@ -145,6 +153,8 @@ func (b *Buffer) setLine(idx int, val string) {
 }
 
 func (b *Buffer) appendLine(val string) {
+	b.modified = true
+
 	b.contents = append(b.contents, rope.New(val))
 	// because we've added a new line
 	// we have to set the x to the start
@@ -153,6 +163,8 @@ func (b *Buffer) appendLine(val string) {
 
 // inserts a string, handling all of the newlines etc
 func (b *Buffer) insertString(idx int, val string) {
+	b.modified = true
+
 	lines := strings.Split(val, "\n")
 
 	for _, l := range lines {
@@ -165,6 +177,8 @@ func (b *Buffer) insertString(idx int, val string) {
 }
 
 func (b *Buffer) insertRune(r rune) {
+	b.modified = true
+
 	log.Println("Inserting rune ", r, " into current line at ", b.curs.x, ":", b.curs.y)
 	log.Println("Line before insert> ", b.contents[b.curs.y])
 
@@ -224,6 +238,9 @@ var altAlternative = map[rune]rune{
 }
 
 func (b *Buffer) deleteLine() {
+	// HACK FIXME
+	b.modified = true
+
 	if len(b.contents) > 1 {
 		b.contents = remove(b.contents, b.curs.y)
 	} else {
@@ -312,6 +329,9 @@ func (b *Buffer) processTextInput(r rune) bool {
 			}
 		}
 	}
+
+	// HACK FIXME
+	b.modified = true
 
 	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
 	b.curs.move(1, 0)
@@ -584,6 +604,9 @@ func (b *Buffer) processActionKey(key int) bool {
 			// nicely indented!
 		}
 
+		// HACK FIXME
+		b.modified = true
+
 		initial_x := b.curs.x
 		prevLineLen := b.contents[b.curs.y].Len()
 
@@ -621,6 +644,9 @@ func (b *Buffer) processActionKey(key int) bool {
 		b.contents[b.curs.y] = newRope
 
 	case sdl.K_BACKSPACE:
+		// HACK FIXME
+		b.modified = true
+
 		if SUPER_DOWN {
 			b.deleteBeforeCursor()
 		} else {
@@ -738,6 +764,9 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 
 	case sdl.K_TAB:
+		// HACK FIXME
+		b.modified = true
+
 		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
 			// and insert it.
