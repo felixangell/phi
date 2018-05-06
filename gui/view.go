@@ -111,7 +111,10 @@ func (n *View) ChangeFocus(dir int) {
 		n.focusedBuff = 0
 	}
 
-	prevBuff.Buff.SetFocus(false)
+	if prevBuff != nil {
+		prevBuff.Buff.SetFocus(false)
+	}
+
 	if buffPane, ok := n.buffers[n.focusedBuff]; ok {
 		buffPane.Buff.SetFocus(true)
 	}

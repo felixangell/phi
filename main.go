@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"runtime/pprof"
 	"time"
 
 	"github.com/felixangell/phi/cfg"
@@ -68,15 +67,6 @@ func (n *PhiEditor) render(ctx *strife.Renderer) {
 }
 
 func main() {
-	f, err := os.Create("cpu.prof")
-	if err != nil {
-		log.Fatal("could not create CPU profile: ", err)
-	}
-	if err := pprof.StartCPUProfile(f); err != nil {
-		log.Fatal("could not start CPU profile: ", err)
-	}
-	defer pprof.StopCPUProfile()
-
 	config := cfg.Setup()
 
 	ww, wh := 1280, 720
