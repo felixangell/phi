@@ -12,6 +12,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/felixangell/fuzzysearch/fuzzy"
 	"github.com/felixangell/go-rope"
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/phi/lex"
@@ -26,11 +27,84 @@ var (
 	should_flash bool
 )
 
-// TODO: allow font setting or whatever
+// TODO move into config
+// line pad:
+var pad = 6
+var halfPad = pad / 2
 
 type camera struct {
 	x int
 	y int
+}
+
+// TODO maybe have a thread that finds
+// words in the current file
+// and adds them to the vocabulary.
+type AutoCompleteBox struct {
+	vocabularyRegister map[string]bool
+	vocabulary         []string
+	suggestions        []string
+	lastRunes          []rune
+}
+
+func (a *AutoCompleteBox) hasSuggestions() bool {
+	return len(a.suggestions) > 0
+}
+
+func (a *AutoCompleteBox) process(r rune) {
+	// space or non letter clears last word
+	if r == ' ' || !unicode.IsLetter(r) {
+		// we completed the word
+		// so we add it to the vocabulary
+		if r == ' ' {
+			word := string(a.lastRunes)
+			if _, ok := a.vocabularyRegister[word]; !ok {
+				a.vocabulary = append(a.vocabulary, word)
+				a.vocabularyRegister[word] = true
+			}
+		}
+
+		a.lastRunes = []rune{}
+		return
+	}
+
+	a.lastRunes = append(a.lastRunes, r)
+
+	// don't bother unless its 4 or more letters.
+	if len(a.lastRunes) <= 3 {
+		return
+	}
+
+	word := string(a.lastRunes)
+	println("looking up word: ", word)
+
+	results := fuzzy.RankFind(word, a.vocabulary)
+	a.suggestions = []string{}
+	for _, res := range results {
+		a.suggestions = append(a.suggestions, res.Target)
+	}
+}
+
+func (a *AutoCompleteBox) renderAt(x, y int, ctx *strife.Renderer) {
+	height := last_h + pad
+	itemCount := len(a.suggestions)
+
+	ctx.SetColor(strife.HexRGB(0x000000))
+	ctx.Rect(x, y, 120, height*itemCount, strife.Fill)
+
+	ctx.SetColor(strife.HexRGB(0xffffff))
+	for idx, sugg := range a.suggestions {
+		ctx.String(sugg, x, y+(idx*height))
+	}
+}
+
+func newAutoCompleteBox() *AutoCompleteBox {
+	return &AutoCompleteBox{
+		map[string]bool{},
+		[]string{},
+		[]string{},
+		[]rune{},
+	}
 }
 
 type BufferConfig struct {
@@ -56,6 +130,7 @@ type Buffer struct {
 	languageInfo *cfg.LanguageSyntaxConfig
 	ex, ey       int
 	modified     bool
+	autoComplete *AutoCompleteBox
 }
 
 func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index int) *Buffer {
@@ -66,14 +141,15 @@ func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index 
 
 	buffContents := []*rope.Rope{}
 	buff := &Buffer{
-		index:    index,
-		parent:   parent,
-		contents: buffContents,
-		curs:     &Cursor{},
-		cfg:      config,
-		buffOpts: buffOpts,
-		filePath: "",
-		cam:      &camera{0, 0},
+		index:        index,
+		parent:       parent,
+		contents:     buffContents,
+		curs:         &Cursor{},
+		cfg:          config,
+		buffOpts:     buffOpts,
+		filePath:     "",
+		cam:          &camera{0, 0},
+		autoComplete: newAutoCompleteBox(),
 	}
 	return buff
 }
@@ -267,6 +343,8 @@ func (b *Buffer) processTextInput(r rune) bool {
 		return true
 	}
 
+	b.autoComplete.process(r)
+
 	// only do the alt alternatives on mac osx
 	// todo change this so it's not checking on every
 	// input
@@ -373,6 +451,7 @@ func (b *Buffer) deleteNext() {
 	b.deletePrev()
 }
 
+// FIXME clean this up!
 func (b *Buffer) deletePrev() {
 	if b.curs.x > 0 {
 		offs := -1
@@ -389,6 +468,7 @@ func (b *Buffer) deletePrev() {
 				// delete {TAB_SIZE} amount of characters
 				// from the cursors x pos
 				for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {
+
 					b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
 					b.curs.move(-1, 0)
 				}
@@ -397,8 +477,18 @@ func (b *Buffer) deletePrev() {
 		}
 
 		b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
+
+		if len(b.autoComplete.lastRunes) > 0 {
+			// pop the last word off in the auto complete
+			b.autoComplete.lastRunes = b.autoComplete.lastRunes[:len(b.autoComplete.lastRunes)-1]
+		}
+
 		b.curs.moveRender(-1, 0, offs, 0)
 	} else if b.curs.x == 0 && b.curs.y > 0 {
+		// TODO this should set the previous word
+		// in the auto complete to the word before the cursor after
+		// wrapping back the line?
+
 		// start of line, wrap to previous
 		prevLineLen := b.contents[b.curs.y-1].Len()
 		b.contents[b.curs.y-1] = b.contents[b.curs.y-1].Concat(b.contents[b.curs.y])
@@ -606,6 +696,10 @@ func (b *Buffer) processActionKey(key int) bool {
 
 		// HACK FIXME
 		b.modified = true
+
+		// FIXME
+		// clear the last runes
+		b.autoComplete.lastRunes = []rune{}
 
 		initial_x := b.curs.x
 		prevLineLen := b.contents[b.curs.y].Len()
@@ -997,9 +1091,6 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	// TODO load this from config files!
 
-	pad := 6
-	halfPad := pad / 2
-
 	// BACKGROUND
 	ctx.SetColor(strife.HexRGB(b.buffOpts.background))
 	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
@@ -1140,6 +1231,8 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		y_col += 1
 	}
 
+	cursorHeight := last_h + pad
+
 	// render the ol' cursor
 	if b.HasFocus() && (renderFlashingCursor || b.curs.moving) && b.cfg.Cursor.Draw {
 		cursorWidth := b.cfg.Cursor.GetCaretWidth()
@@ -1147,12 +1240,22 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			cursorWidth = last_w
 		}
 
-		cursorHeight := last_h + pad
-
+		xPos := b.ex + (rx + b.curs.rx*last_w) - (b.cam.x * last_w)
 		yPos := b.ey + (ry + b.curs.ry*cursorHeight) - (b.cam.y * cursorHeight)
 
 		ctx.SetColor(strife.HexRGB(b.buffOpts.cursor))
-		ctx.Rect(b.ex+(rx+b.curs.rx*last_w)-(b.cam.x*last_w), yPos, cursorWidth, cursorHeight, strife.Fill)
+		ctx.Rect(xPos, yPos, cursorWidth, cursorHeight, strife.Fill)
+	}
+
+	if b.autoComplete.hasSuggestions() {
+
+		xPos := b.ex + (rx + b.curs.rx*last_w) - (b.cam.x * last_w)
+		yPos := b.ey + (ry + b.curs.ry*cursorHeight) - (b.cam.y * cursorHeight)
+
+		autoCompleteBoxHeight := len(b.autoComplete.suggestions) * cursorHeight
+		yPos = yPos - autoCompleteBoxHeight
+
+		b.autoComplete.renderAt(xPos, yPos, ctx)
 	}
 }
 
