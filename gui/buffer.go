@@ -995,6 +995,11 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 }
 
 func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
+	// TODO load this from config files!
+
+	pad := 6
+	halfPad := pad / 2
+
 	// BACKGROUND
 	ctx.SetColor(strife.HexRGB(b.buffOpts.background))
 	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
@@ -1002,10 +1007,10 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	if b.cfg.Editor.Highlight_Line && b.HasFocus() {
 		ctx.SetColor(strife.Black) // highlight_line_col?
 
-		highlightLinePosY := b.ey + (ry + b.curs.ry*last_h) - (b.cam.y * last_h)
+		highlightLinePosY := b.ey + (ry + b.curs.ry*(last_h+pad)) - (b.cam.y * (last_h + pad))
 		highlightLinePosX := b.ex + rx
 
-		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w-b.ex, last_h-b.ey, strife.Fill)
+		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w-b.ex, (last_h+pad)-b.ey, strife.Fill)
 	}
 
 	var visibleLines, visibleChars int = 50, -1
@@ -1105,7 +1110,10 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 				ctx.SetColor(strife.HexRGB(a))
 			}
 
-			last_w, last_h = ctx.String(string(char), b.ex+(rx+((x_col-1)*last_w)), b.ey+(ry+(y_col*last_h)))
+			lineHeight := last_h + pad
+			yPos := b.ey + ((ry + y_col) * lineHeight) + halfPad
+
+			last_w, last_h = ctx.String(string(char), b.ex+(rx+((x_col-1)*last_w)), yPos)
 		}
 
 		if b.cfg.Editor.Show_Line_Numbers {
@@ -1116,12 +1124,15 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 			gutterWidth := last_w*numLinesCharWidth + (gutterPadPx * 2)
 
+			lineHeight := last_h + pad
+			yPos := ((ry + y_col) * lineHeight) + halfPad
+
 			// render the line numbers
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumBackground))
-			ctx.Rect(rx, (ry + (y_col * last_h)), gutterWidth, b.h, strife.Fill)
+			ctx.Rect(rx, yPos, gutterWidth, b.h, strife.Fill)
 
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumForeground))
-			ctx.String(fmt.Sprintf("%*d", numLinesCharWidth, start+lineNum), rx+gutterPadPx, (ry + (y_col * last_h)))
+			ctx.String(fmt.Sprintf("%*d", numLinesCharWidth, start+lineNum), rx+gutterPadPx, yPos)
 
 			b.ex = gutterWidth
 		}
@@ -1136,8 +1147,12 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			cursorWidth = last_w
 		}
 
-		ctx.SetColor(strife.HexRGB(b.buffOpts.cursor)) // caret colour
-		ctx.Rect(b.ex+(rx+b.curs.rx*last_w)-(b.cam.x*last_w), b.ey+(ry+b.curs.ry*last_h)-(b.cam.y*last_h), cursorWidth, last_h, strife.Fill)
+		cursorHeight := last_h + pad
+
+		yPos := b.ey + (ry + b.curs.ry*cursorHeight) - (b.cam.y * cursorHeight)
+
+		ctx.SetColor(strife.HexRGB(b.buffOpts.cursor))
+		ctx.Rect(b.ex+(rx+b.curs.rx*last_w)-(b.cam.x*last_w), yPos, cursorWidth, cursorHeight, strife.Fill)
 	}
 }
 
