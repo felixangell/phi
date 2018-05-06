@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 	"time"
 
@@ -86,19 +87,20 @@ func main() {
 	window.Create()
 
 	{
-		size := "16"
+		size := 16
 		switch runtime.GOOS {
 		case "windows":
-			size = "64"
+			size = 64
 		case "darwin":
-			size = "512"
+			size = 512
 		case "linux":
-			size = "96"
+			size = 96
 		default:
 			log.Println("unrecognized runtime ", runtime.GOOS)
 		}
 
-		icon, err := strife.LoadImage("./res/icons/icon" + size + ".png")
+		iconFile := fmt.Sprintf("icon%d.png", size)
+		icon, err := strife.LoadImage(filepath.Join(cfg.ICON_DIR_PATH, iconFile))
 		if err != nil {
 			log.Println("Failed to load icon ", err.Error())
 		} else {
