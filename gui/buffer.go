@@ -549,6 +549,14 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 	}
 
+	// temporary for the really slow
+	// exit times with alt f4...
+	if ALT_DOWN {
+		if key == sdl.K_F4 {
+			os.Exit(0)
+		}
+	}
+
 	switch key {
 	case sdl.K_CAPSLOCK:
 		CAPS_LOCK = !CAPS_LOCK
@@ -1051,6 +1059,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 				a, colorStack = int32(colorStack[len(colorStack)-1]), colorStack[:len(colorStack)-1]
 				ctx.SetColor(strife.HexRGB(a))
 			}
+
 			last_w, last_h = ctx.String(string(char), b.ex+(rx+((x_col-1)*last_w)), b.ey+(ry+(y_col*last_h)))
 		}
 

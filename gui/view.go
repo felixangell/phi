@@ -13,7 +13,7 @@ type View struct {
 	BaseComponent
 
 	conf           *cfg.TomlConfig
-	buffers        map[int]*Buffer
+	buffers        map[int]*BufferPane
 	focusedBuff    int
 	commandPalette *CommandPalette
 }
@@ -21,7 +21,7 @@ type View struct {
 func NewView(width, height int, conf *cfg.TomlConfig) *View {
 	view := &View{
 		conf:    conf,
-		buffers: map[int]*Buffer{},
+		buffers: map[int]*BufferPane{},
 	}
 
 	view.Translate(width, height)
@@ -63,8 +63,8 @@ func (n *View) focusPalette(buff *Buffer) {
 
 func (n *View) UnfocusBuffers() {
 	// clear focus from buffers
-	for _, buff := range n.buffers {
-		buff.SetFocus(false)
+	for _, buffPane := range n.buffers {
+		buffPane.Buff.SetFocus(false)
 	}
 }
 
@@ -87,9 +87,9 @@ func (n *View) removeBuffer(index int) {
 		bufferWidth := n.w / len(n.buffers)
 
 		// translate all the components accordingly.
-		for i, buff := range n.buffers {
-			buff.Resize(bufferWidth, n.h)
-			buff.SetPosition(bufferWidth*i, 0)
+		for i, buffPane := range n.buffers {
+			buffPane.Buff.Resize(bufferWidth, n.h)
+			buffPane.Buff.SetPosition(bufferWidth*i, 0)
 		}
 	}
 
@@ -110,15 +110,15 @@ func (n *View) ChangeFocus(dir int) {
 		n.focusedBuff = 0
 	}
 
-	prevBuff.SetFocus(false)
-	if buff, ok := n.buffers[n.focusedBuff]; ok {
-		buff.SetFocus(true)
+	prevBuff.Buff.SetFocus(false)
+	if buffPane, ok := n.buffers[n.focusedBuff]; ok {
+		buffPane.Buff.SetFocus(true)
 	}
 }
 
 func (n *View) getCurrentBuff() *Buffer {
-	if buff, ok := n.buffers[n.focusedBuff]; ok {
-		return buff
+	if buffPane, ok := n.buffers[n.focusedBuff]; ok {
+		return buffPane.Buff
 	}
 	return nil
 }
@@ -144,9 +144,8 @@ func (n *View) OnUpdate() bool {
 		}
 	}
 
-	if buff, ok := n.buffers[n.focusedBuff]; ok {
-		buff.processInput(nil)
-		buff.OnUpdate()
+	if buffPane, ok := n.buffers[n.focusedBuff]; ok {
+		buffPane.OnUpdate()
 	}
 
 	n.commandPalette.OnUpdate()
@@ -155,8 +154,8 @@ func (n *View) OnUpdate() bool {
 }
 
 func (n *View) OnRender(ctx *strife.Renderer) {
-	for _, buffer := range n.buffers {
-		buffer.OnRender(ctx)
+	for _, buffPane := range n.buffers {
+		buffPane.OnRender(ctx)
 	}
 
 	n.commandPalette.OnRender(ctx)
@@ -185,13 +184,13 @@ func (n *View) AddBuffer() *Buffer {
 	var bufferWidth int
 	bufferWidth = n.w / (c.index + 1)
 
-	n.buffers[c.index] = c
+	n.buffers[c.index] = NewBufferPane(c)
 	n.focusedBuff = c.index
 
-	// translate all the components accordingly.
-	for i, buff := range n.buffers {
-		buff.Resize(bufferWidth, n.h)
-		buff.SetPosition(bufferWidth*i, 0)
+	// translate all the buffers accordingly.
+	for i, buffPane := range n.buffers {
+		buffPane.Buff.Resize(bufferWidth, n.h)
+		buffPane.Buff.SetPosition(bufferWidth*i, 0)
 	}
 
 	return c
