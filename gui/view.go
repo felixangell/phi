@@ -189,8 +189,8 @@ func (n *View) AddBuffer() *Buffer {
 
 	// translate all the buffers accordingly.
 	for i, buffPane := range n.buffers {
-		buffPane.Buff.Resize(bufferWidth, n.h)
-		buffPane.Buff.SetPosition(bufferWidth*i, 0)
+		buffPane.Resize(bufferWidth, n.h)
+		buffPane.SetPosition(bufferWidth*i, 0)
 	}
 
 	return c
