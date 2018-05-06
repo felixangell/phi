@@ -1,4 +1,4 @@
-<p align="center"><img src="res/icons/icon96.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/felixangell/phi/gh-pages/images/icon96.png"></p>
 
 <h1>phi</h1>
 Phi is a minimal code editor designed to look pretty, run fast, and be easy
