@@ -123,7 +123,7 @@ func (b *CommandPalette) processCommand() {
 	tokenizedLine := strings.Split(b.buff.contents[0].String(), " ")
 	command := tokenizedLine[0]
 
-	log.Println(tokenizedLine)
+	log.Println("command palette: ", tokenizedLine)
 
 	action, exists := actions[command]
 	if !exists {

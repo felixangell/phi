@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"path"
 	"runtime"
@@ -434,6 +435,18 @@ func (b *Buffer) moveToEndOfLine() {
 		distToMove := lineLen - b.curs.x
 		for i := 0; i < distToMove; i++ {
 			b.moveRight()
+		}
+	}
+}
+
+// TODO make this scroll auto magically.
+func (b *Buffer) gotoLine(num int64) {
+	distToMove := float64(num - int64(b.curs.y))
+	for i := int64(0); i < int64(math.Abs(distToMove)); i++ {
+		if distToMove < 0 {
+			b.moveUp()
+		} else {
+			b.moveDown()
 		}
 	}
 }

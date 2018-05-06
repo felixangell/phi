@@ -19,18 +19,33 @@ func NewBufferPane(buff *Buffer) *BufferPane {
 	}
 }
 
+var lastWidth int
+
 func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
-	pad := 10
+	conf := b.Buff.cfg.Theme.Palette
+
+	pad := 6
 	mpY := (b.y + b.h) - (metaPanelHeight)
 
 	// panel backdrop
-	ctx.SetColor(strife.Black)
+	ctx.SetColor(strife.HexRGB(conf.Suggestion.Background))
 	ctx.Rect(b.x, mpY, b.w, metaPanelHeight, strife.Fill)
+
+	// tab info etc. on right hand side
+	{
+		tabSize := b.Buff.cfg.Editor.Tab_Size
+		syntaxName := "Undefined"
+
+		infoLine := fmt.Sprintf("Tab Size: %d    Syntax: %s", tabSize, syntaxName)
+		ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
+
+		lastWidth, _ = ctx.String(infoLine, ((b.x + b.w) - (lastWidth + (pad))), mpY+(pad/2)+1)
+	}
 
 	{
 		infoLine := fmt.Sprintf("Line %d, Column %d", b.Buff.curs.y, b.Buff.curs.x)
-		ctx.SetColor(strife.White)
-		_, strHeight := ctx.String(infoLine, b.x+(pad/2), mpY+(pad/2))
+		ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
+		_, strHeight := ctx.String(infoLine, b.x+pad, mpY+(pad/2)+1)
 		metaPanelHeight = strHeight + pad
 	}
 

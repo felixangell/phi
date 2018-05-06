@@ -1,16 +1,22 @@
 package gui
 
-import "os"
+import (
+	"log"
+	"os"
+	"strconv"
+)
 
 type BufferAction struct {
-	name string
-	proc func(*View, []string) bool
+	name          string
+	proc          func(*View, []string) bool
+	showInPalette bool
 }
 
 func NewBufferAction(name string, proc func(*View, []string) bool) BufferAction {
 	return BufferAction{
-		name: name,
-		proc: proc,
+		name:          name,
+		proc:          proc,
+		showInPalette: true,
 	}
 }
 
@@ -27,7 +33,28 @@ func NewFile(v *View, commands []string) bool {
 	return false
 }
 
+func GotoLine(v *View, commands []string) bool {
+	if len(commands) == 0 {
+		return false
+	}
+
+	lineNum, err := strconv.ParseInt(commands[0], 10, 64)
+	if err != nil {
+		log.Println("goto line invalid argument ", err.Error())
+		return false
+	}
+
+	b := v.getCurrentBuff()
+	if b == nil {
+		return false
+	}
+
+	b.gotoLine(lineNum)
+	return false
+}
+
 var actions = map[string]BufferAction{
+	"goto":         NewBufferAction("goto", GotoLine),
 	"new":          NewBufferAction("new", NewFile),
 	"save":         NewBufferAction("save", Save),
 	"delete_line":  NewBufferAction("delete_line", DeleteLine),
