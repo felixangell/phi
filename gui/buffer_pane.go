@@ -48,7 +48,7 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 			modified = '*'
 		}
 
-		infoLine := fmt.Sprintf("%s%c Line %d, Column %d", b.Buff.filePath, modified, b.Buff.curs.y, b.Buff.curs.x)
+		infoLine := fmt.Sprintf("%s%c Line %d, Column %d", b.Buff.filePath, modified, b.Buff.curs.y+1, b.Buff.curs.x+1)
 		ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
 		_, strHeight := ctx.String(infoLine, b.x+pad, mpY+(pad/2)+1)
 		metaPanelHeight = strHeight + pad

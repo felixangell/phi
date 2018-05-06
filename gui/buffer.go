@@ -1233,7 +1233,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			ctx.Rect(rx, yPos, gutterWidth, b.h, strife.Fill)
 
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumForeground))
-			ctx.String(fmt.Sprintf("%*d", numLinesCharWidth, start+lineNum), rx+gutterPadPx, yPos)
+			ctx.String(fmt.Sprintf("%*d", numLinesCharWidth, (start+lineNum)+1), rx+gutterPadPx, yPos)
 
 			b.ex = gutterWidth
 		}
