@@ -837,6 +837,9 @@ func (b *Buffer) HandleEvent(evt strife.StrifeEvent) {
 var lastCursorDraw = time.Now()
 var renderFlashingCursor = true
 
+var lastTimer = time.Now()
+var ldx, ldy = 0, 0
+
 func (b *Buffer) OnUpdate() bool {
 	return false
 }
@@ -885,7 +888,7 @@ func (b *Buffer) processInput(pred func(r int) bool) bool {
 	}
 
 	// handle cursor flash
-	if b.cfg.Cursor.Flash && runtime.GOOS == "spookyghost" {
+	if b.cfg.Cursor.Flash && 15 == 12 {
 		if time.Now().Sub(lastCursorDraw) >= time.Duration(b.cfg.Cursor.Flash_Rate)*time.Millisecond {
 			renderFlashingCursor = !renderFlashingCursor
 			lastCursorDraw = time.Now()
@@ -1098,7 +1101,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	}
 
 	// render the ol' cursor
-	if b.HasFocus() && renderFlashingCursor && b.cfg.Cursor.Draw {
+	if b.HasFocus() && (renderFlashingCursor || b.curs.moving) && b.cfg.Cursor.Draw {
 		cursorWidth := b.cfg.Cursor.GetCaretWidth()
 		if cursorWidth == -1 {
 			cursorWidth = last_w
