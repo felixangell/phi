@@ -1,12 +1,13 @@
 package gui
 
 import (
-	"github.com/felixangell/phi/cfg"
-	"github.com/felixangell/strife"
-	"github.com/veandco/go-sdl2/sdl"
 	"log"
 	"runtime"
 	"unicode"
+
+	"github.com/felixangell/phi/cfg"
+	"github.com/felixangell/strife"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 // View is an array of buffers basically.
@@ -136,9 +137,15 @@ func (n *View) OnUpdate() bool {
 	CONTROL_DOWN = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
 	SUPER_DOWN = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
 
+	shortcutName := "ctl"
 	mainSuper := CONTROL_DOWN
+	source := cfg.Shortcuts.Controls
+
+	// FIXME
 	if runtime.GOOS == "darwin" {
 		mainSuper = SUPER_DOWN
+		shortcutName = "super"
+		source = cfg.Shortcuts.Supers
 	}
 
 	if mainSuper && strife.PollKeys() {
@@ -159,14 +166,14 @@ func (n *View) OnUpdate() bool {
 			key = string(unicode.ToLower(r))
 		}
 
-		actionName, actionExists := cfg.Shortcuts.Controls[key]
+		actionName, actionExists := source[key]
 		if actionExists {
 			if action, ok := actions[actionName]; ok {
 				log.Println("Executing action '" + actionName + "'")
 				return action.proc(n, []string{})
 			}
 		} else {
-			log.Println("warning, unimplemented shortcut ctrl +", string(unicode.ToLower(r)), " #", int(r), actionName, key)
+			log.Println("view: unimplemented shortcut", shortcutName, "+", string(unicode.ToLower(r)), "#", int(r), actionName, key)
 		}
 	}
 

@@ -360,9 +360,11 @@ func (b *Buffer) processTextInput(r rune) bool {
 		}
 	}
 
-	mainSuper := CONTROL_DOWN
+	mainSuper, shortcutName := CONTROL_DOWN, "ctrl"
+	source := cfg.Shortcuts.Controls
 	if runtime.GOOS == "darwin" {
-		mainSuper = SUPER_DOWN
+		mainSuper, shortcutName = SUPER_DOWN, "super"
+		source = cfg.Shortcuts.Supers
 	}
 
 	if mainSuper {
@@ -381,13 +383,13 @@ func (b *Buffer) processTextInput(r rune) bool {
 			key = string(unicode.ToLower(r))
 		}
 
-		actionName, actionExists := cfg.Shortcuts.Supers[key]
+		actionName, actionExists := source[key]
 		if actionExists {
 			if action, ok := actions[actionName]; ok {
 				return action.proc(b.parent, []string{})
 			}
 		} else {
-			log.Println("warning, unimplemented shortcut ctrl+", unicode.ToLower(r), actionName)
+			log.Println("warning, unimplemented shortcut", shortcutName, "+", unicode.ToLower(r), "#", int(r), actionName)
 		}
 	}
 
