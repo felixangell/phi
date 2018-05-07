@@ -67,6 +67,8 @@ func (n *PhiEditor) render(ctx *strife.Renderer) {
 }
 
 func main() {
+	runtime.LockOSThread()
+
 	config := cfg.Setup()
 
 	ww, wh := 1280, 720
