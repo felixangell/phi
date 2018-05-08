@@ -27,6 +27,10 @@ var (
 	should_flash bool
 )
 
+const (
+	DEFAULT_SCROLL_AMOUNT = 10
+)
+
 // TODO move into config
 // line pad:
 var pad = 6
@@ -259,7 +263,7 @@ func (b *Buffer) insertRune(r rune) {
 	log.Println("Line before insert> ", b.contents[b.curs.y])
 
 	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
-	b.curs.move(1, 0)
+	b.moveRight()
 }
 
 // TODO handle EVERYTHING but for now im handling
@@ -421,7 +425,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 			if b.curs.x < currLine.Len() {
 				curr := currLine.Index(b.curs.x + 1)
 				if curr == r {
-					b.curs.move(1, 0)
+					b.moveRight()
 					return true
 				} else {
 					log.Print("no it's ", curr)
@@ -434,7 +438,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 	b.modified = true
 
 	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
-	b.curs.move(1, 0)
+	b.moveRight()
 
 	// we don't need to match braces
 	// let's not continue any further
@@ -547,7 +551,7 @@ func (b *Buffer) moveRight() {
 	if b.curs.x >= currLineLength && b.curs.y < len(b.contents)-1 {
 		// we're at the end of the line and we have
 		// some lines after, let's wrap around
-		b.curs.move(0, 1)
+		b.moveDown()
 		b.curs.move(-currLineLength, 0)
 	} else if b.curs.x < b.contents[b.curs.y].Len() {
 		// we have characters to the right, let's move along
@@ -585,13 +589,40 @@ func (b *Buffer) gotoLine(num int64) {
 
 func (b *Buffer) moveUp() {
 	if b.curs.y > 0 {
-		b.curs.move(0, -1)
+		offs := 0
+		prevLineLen := b.contents[b.curs.y-1].Len()
+		if b.curs.x > prevLineLen {
+			offs = prevLineLen - b.curs.x
+		}
+
+		if b.cam.y > 0 {
+			if b.curs.y == b.cam.y {
+				b.scrollUp(1)
+			}
+		}
+
+		// TODO: offset should account for tabs
+		b.curs.move(offs, -1)
 	}
 }
 
 func (b *Buffer) moveDown() {
-	if b.curs.y < len(b.contents) {
-		b.curs.move(0, 1)
+	if b.curs.y < len(b.contents)-1 {
+		offs := 0
+		nextLineLen := b.contents[b.curs.y+1].Len()
+		if b.curs.x > nextLineLen {
+			offs = nextLineLen - b.curs.x
+		}
+
+		// TODO: offset should account for tabs
+
+		b.curs.move(offs, 1)
+
+		visibleLines := (int(b.h-b.ey) / int(last_h+pad))
+
+		if b.curs.y >= visibleLines && b.curs.y-b.cam.y == visibleLines {
+			b.scrollDown(1)
+		}
 	}
 }
 
@@ -617,29 +648,16 @@ func (b *Buffer) swapLineDown() bool {
 	return true
 }
 
-func (b *Buffer) scrollUp() {
+func (b *Buffer) scrollUp(lineScrollAmount int) {
 	if b.cam.y > 0 {
-		// TODO move the cursor down 45 lines
-		// IF the buffer exceeds the window size.
-		lineScrollAmount := 10
 		b.cam.y -= lineScrollAmount
-		for i := 0; i < lineScrollAmount; i++ {
-			b.moveUp()
-		}
 	}
 
 }
 
-func (b *Buffer) scrollDown() {
+func (b *Buffer) scrollDown(lineScrollAmount int) {
 	if b.cam.y < len(b.contents) {
-		// TODO move the cursor down 45 lines
-		// IF the buffer exceeds the window size.
-		lineScrollAmount := 10
-
 		b.cam.y += lineScrollAmount
-		for i := 0; i < lineScrollAmount; i++ {
-			b.moveDown()
-		}
 	}
 }
 
@@ -740,19 +758,19 @@ func (b *Buffer) processActionKey(key int) bool {
 			b.contents = append(b.contents, new(rope.Rope))      // grow
 			copy(b.contents[b.curs.y+1:], b.contents[b.curs.y:]) // shift
 			b.contents[b.curs.y] = new(rope.Rope)                // set
-			b.curs.move(0, 1)
+			b.moveDown()
 			return true
 		} else {
 			// we're at the end of a line
 			newRope = new(rope.Rope)
 		}
 
-		b.curs.move(0, 1)
+		b.moveDown()
 		for x := 0; x < initial_x; x++ {
 			// TODO(Felix): there's a bug here where
 			// this doesn't account for the rendered x
 			// position when we use tabs as tabs and not spaces
-			b.curs.move(-1, 0)
+			b.moveLeft()
 		}
 
 		b.contents = append(b.contents, nil)
@@ -774,7 +792,7 @@ func (b *Buffer) processActionKey(key int) bool {
 
 		if SUPER_DOWN {
 			for b.curs.x < currLineLength {
-				b.curs.move(1, 0)
+				b.moveLeft()
 			}
 			break
 		}
@@ -840,15 +858,7 @@ func (b *Buffer) processActionKey(key int) bool {
 			// go to the start of the file
 		}
 
-		if b.curs.y > 0 {
-			offs := 0
-			prevLineLen := b.contents[b.curs.y-1].Len()
-			if b.curs.x > prevLineLen {
-				offs = prevLineLen - b.curs.x
-			}
-			// TODO: offset should account for tabs
-			b.curs.move(offs, -1)
-		}
+		b.moveUp()
 
 	case sdl.K_DOWN:
 		if ALT_DOWN {
@@ -859,15 +869,7 @@ func (b *Buffer) processActionKey(key int) bool {
 			// go to the end of the file
 		}
 
-		if b.curs.y < len(b.contents)-1 {
-			offs := 0
-			nextLineLen := b.contents[b.curs.y+1].Len()
-			if b.curs.x > nextLineLen {
-				offs = nextLineLen - b.curs.x
-			}
-			// TODO: offset should account for tabs
-			b.curs.move(offs, 1)
-		}
+		b.moveDown()
 
 	case sdl.K_TAB:
 		// HACK FIXME
@@ -898,10 +900,10 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 
 	case sdl.K_PAGEUP:
-		b.scrollUp()
+		b.scrollUp(DEFAULT_SCROLL_AMOUNT)
 
 	case sdl.K_PAGEDOWN:
-		b.scrollDown()
+		b.scrollDown(DEFAULT_SCROLL_AMOUNT)
 
 	case sdl.K_DELETE:
 		b.deleteNext()
@@ -961,10 +963,10 @@ func (b *Buffer) HandleEvent(evt strife.StrifeEvent) {
 	switch event := evt.(type) {
 	case *strife.MouseWheelEvent:
 		if event.Y > 0 {
-			b.scrollDown()
+			b.scrollDown(DEFAULT_SCROLL_AMOUNT)
 		}
 		if event.Y < 0 {
-			b.scrollUp()
+			b.scrollUp(DEFAULT_SCROLL_AMOUNT)
 		}
 	}
 }
