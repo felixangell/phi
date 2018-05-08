@@ -551,8 +551,8 @@ func (b *Buffer) moveRight() {
 	if b.curs.x >= currLineLength && b.curs.y < len(b.contents)-1 {
 		// we're at the end of the line and we have
 		// some lines after, let's wrap around
-		b.moveDown()
 		b.curs.move(-currLineLength, 0)
+		b.moveDown()
 	} else if b.curs.x < b.contents[b.curs.y].Len() {
 		// we have characters to the right, let's move along
 		b.curs.move(1, 0)

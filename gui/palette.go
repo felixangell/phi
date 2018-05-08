@@ -1,12 +1,13 @@
 package gui
 
 import (
+	"log"
+	"strings"
+
 	"github.com/felixangell/fuzzysearch/fuzzy"
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/strife"
 	"github.com/veandco/go-sdl2/sdl"
-	"log"
-	"strings"
 )
 
 var commandSet []string
