@@ -618,7 +618,7 @@ func (b *Buffer) moveDown() {
 
 		b.curs.move(offs, 1)
 
-		visibleLines := (int(b.h-b.ey) / int(last_h+pad))
+		visibleLines := int(math.Ceil(float64(b.h-b.ey) / float64(last_h+pad)))
 
 		if b.curs.y >= visibleLines && b.curs.y-b.cam.y == visibleLines {
 			b.scrollDown(1)
