@@ -732,14 +732,6 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 	}
 
-	// temporary for the really slow
-	// exit times with alt f4...
-	if ALT_DOWN {
-		if key == sdl.K_F4 {
-			os.Exit(0)
-		}
-	}
-
 	switch key {
 	case sdl.K_CAPSLOCK:
 		CAPS_LOCK = !CAPS_LOCK
