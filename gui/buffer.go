@@ -232,6 +232,20 @@ func (b *Buffer) setLine(idx int, val string) {
 	}
 }
 
+func (b *Buffer) appendRopeAt(val *rope.Rope, idx int) {
+	b.modified = true
+
+	b.contents = append(b.contents, new(rope.Rope))
+	copy(b.contents[idx+1:], b.contents[idx:])
+	b.contents[idx] = val
+}
+
+func (b *Buffer) appendLineAt(val string, idx int) {
+	b.appendRopeAt(rope.New(val), idx)
+}
+
+// appendLine adds a string to the end of
+// the buffer.
 func (b *Buffer) appendLine(val string) {
 	b.modified = true
 
@@ -559,6 +573,12 @@ func (b *Buffer) moveRight() {
 	}
 }
 
+func (b *Buffer) moveToStartOfLine() {
+	for b.curs.x > 0 {
+		b.moveLeft()
+	}
+}
+
 func (b *Buffer) moveToEndOfLine() {
 	lineLen := b.contents[b.curs.y].Len()
 
@@ -741,17 +761,8 @@ func (b *Buffer) processActionKey(key int) bool {
 		// clear the last runes
 		b.autoComplete.lastRunes = []rune{}
 
-		initial_x := b.curs.x
-		prevLineLen := b.contents[b.curs.y].Len()
-
-		var newRope *rope.Rope
-		if initial_x < prevLineLen && initial_x > 0 {
-			// we're not at the end of the line, but we're not at
-			// the start, i.e. we're SPLITTING the line
-			left, right := b.contents[b.curs.y].Split(initial_x)
-			newRope = right
-			b.contents[b.curs.y] = left
-		} else if initial_x == 0 {
+		// START OF LINE:
+		if b.curs.x == 0 {
 			// we're at the start of a line, so we want to
 			// shift the line down and insert an empty line
 			// above it!
@@ -760,22 +771,25 @@ func (b *Buffer) processActionKey(key int) bool {
 			b.contents[b.curs.y] = new(rope.Rope)                // set
 			b.moveDown()
 			return true
-		} else {
-			// we're at the end of a line
-			newRope = new(rope.Rope)
 		}
 
+		initialX := b.curs.x
+		prevLineLen := b.contents[b.curs.y].Len()
+
+		// END OF LINE:
+		if initialX == prevLineLen {
+			b.appendLineAt("", b.curs.y+1)
+			b.moveDown()
+			b.moveToStartOfLine()
+			return true
+		}
+
+		// we're not at the end of the line, but we're not at
+		// the start, i.e. we're SPLITTING the line
+		left, right := b.contents[b.curs.y].Split(initialX)
+		b.contents[b.curs.y] = left
+		b.appendRopeAt(right, b.curs.y+1)
 		b.moveDown()
-		for x := 0; x < initial_x; x++ {
-			// TODO(Felix): there's a bug here where
-			// this doesn't account for the rendered x
-			// position when we use tabs as tabs and not spaces
-			b.moveLeft()
-		}
-
-		b.contents = append(b.contents, nil)
-		copy(b.contents[b.curs.y+1:], b.contents[b.curs.y:])
-		b.contents[b.curs.y] = newRope
 
 	case sdl.K_BACKSPACE:
 		// HACK FIXME
