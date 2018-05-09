@@ -118,13 +118,13 @@ type BufferConfig struct {
 	cursorInvert      int32
 	lineNumBackground int32
 	lineNumForeground int32
+	font              *strife.Font
 }
 
 type Buffer struct {
 	BaseComponent
 	index        int
 	parent       *View
-	font         *strife.Font
 	contents     []*rope.Rope
 	curs         *Cursor
 	cfg          *cfg.TomlConfig
@@ -1305,5 +1305,6 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 }
 
 func (b *Buffer) OnRender(ctx *strife.Renderer) {
+	ctx.SetFont(b.buffOpts.font)
 	b.renderAt(ctx, b.x, b.y)
 }

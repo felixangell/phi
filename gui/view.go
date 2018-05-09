@@ -211,6 +211,7 @@ func (n *View) AddBuffer() *Buffer {
 		cfg.Theme.Cursor_Invert,
 		cfg.Theme.Gutter_Background,
 		cfg.Theme.Gutter_Foreground,
+		cfg.Editor.Loaded_Font,
 	}, n, len(n.buffers))
 
 	c.SetFocus(true)

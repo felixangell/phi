@@ -96,6 +96,7 @@ func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 			// we dont show line numbers
 			// so these aren't necessary
 			0x0, 0x0,
+			conf.Editor.Loaded_Font,
 		}, nil, 0),
 		parentBuff: nil,
 	}

@@ -29,6 +29,8 @@ const (
 	CONFIG_TOML_FILE = "config.toml"
 )
 
+var FONT_FOLDER string = ""
+
 // this is the absolute path to the
 // config.toml file. todo rename/refactor
 var CONFIG_FULL_PATH string = ""
@@ -80,19 +82,17 @@ func configureAndValidate(conf *TomlConfig) {
 	// fonts
 	log.Println("Configuring fonts")
 	{
-		var fontFolder string
-
 		switch runtime.GOOS {
 		case "windows":
-			fontFolder = filepath.Join(os.Getenv("WINDIR"), "fonts")
+			FONT_FOLDER = filepath.Join(os.Getenv("WINDIR"), "fonts")
 		case "darwin":
-			fontFolder = "/Library/Fonts/"
+			FONT_FOLDER = "/Library/Fonts/"
 		case "linux":
-			fontFolder = findFontFolder()
+			FONT_FOLDER = findFontFolder()
 		}
 
 		// we only support ttf at the moment.
-		fontPath := filepath.Join(fontFolder, conf.Editor.Font_Face) + ".ttf"
+		fontPath := filepath.Join(FONT_FOLDER, conf.Editor.Font_Face) + ".ttf"
 		if _, err := os.Stat(fontPath); os.IsNotExist(err) {
 			log.Fatal("No such font '" + fontPath + "'")
 			// TODO cool error messages for the toml format?

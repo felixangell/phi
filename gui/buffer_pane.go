@@ -2,7 +2,10 @@ package gui
 
 import (
 	"fmt"
+	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/strife"
+	"log"
+	"path/filepath"
 )
 
 var metaPanelHeight = 32
@@ -10,12 +13,21 @@ var metaPanelHeight = 32
 type BufferPane struct {
 	BaseComponent
 	Buff *Buffer
+	font *strife.Font
 }
 
 func NewBufferPane(buff *Buffer) *BufferPane {
+	fontPath := filepath.Join(cfg.FONT_FOLDER, buff.cfg.Editor.Font_Face+".ttf")
+	metaPanelFont, err := strife.LoadFont(fontPath, 14)
+	if err != nil {
+		log.Println("Note: failed to load meta panel font ", fontPath)
+		metaPanelFont = buff.buffOpts.font
+	}
+
 	return &BufferPane{
 		BaseComponent{},
 		buff,
+		metaPanelFont,
 	}
 }
 
@@ -34,12 +46,15 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 	// tab info etc. on right hand side
 	{
 		tabSize := b.Buff.cfg.Editor.Tab_Size
+
+		// TODO
 		syntaxName := "Undefined"
 
 		infoLine := fmt.Sprintf("Tab Size: %d    Syntax: %s", tabSize, syntaxName)
 		ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
 
-		lastWidth, _ = ctx.String(infoLine, ((b.x + b.w) - (lastWidth + (pad))), mpY+(pad/2)+1)
+		ctx.SetFont(b.font)
+		lastWidth, _ = ctx.String(infoLine, ((b.x + b.w) - (lastWidth + (pad))), mpY+(pad/2))
 	}
 
 	{
@@ -48,8 +63,15 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 			modified = '*'
 		}
 
-		infoLine := fmt.Sprintf("%s%c Line %d, Column %d", b.Buff.filePath, modified, b.Buff.curs.y+1, b.Buff.curs.x+1)
+		infoLine := fmt.Sprintf("%s%c Line %d, Column %d", b.Buff.filePath, modified, b.Buff.curs.y+1, b.Buff.curs.x)
+
+		if DEBUG_MODE {
+			infoLine = fmt.Sprintf("%s, BuffIndex: %d", infoLine, b.Buff.index)
+		}
+
 		ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
+
+		ctx.SetFont(b.font)
 		_, strHeight := ctx.String(infoLine, b.x+pad, mpY+(pad/2)+1)
 		metaPanelHeight = strHeight + pad
 	}

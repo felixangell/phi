@@ -6,11 +6,13 @@ func CloseBuffer(v *View, commands []string) bool {
 		return false
 	}
 
-	if len(v.buffers) > 1 {
-		v.ChangeFocus(-1)
+	if b.modified {
+		// do command palette thing!
+		return false
 	}
 
 	v.removeBuffer(b.index)
 
+	v.ChangeFocus(-1)
 	return false
 }
