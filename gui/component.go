@@ -4,6 +4,8 @@ import (
 	"github.com/felixangell/strife"
 )
 
+var DEBUG_MODE = false
+
 type Component interface {
 	SetPosition(x, y int)
 	Translate(x, y int)

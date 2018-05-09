@@ -830,9 +830,7 @@ func (b *Buffer) processActionKey(key int) bool {
 			// if no \t (i.e. start of line) go to
 			// the start of the line!
 			b.curs.gotoStart()
-		}
-
-		if ALT_DOWN {
+		} else if ALT_DOWN {
 			currLine := b.contents[b.curs.y]
 
 			i := b.curs.x
@@ -1228,9 +1226,15 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			}
 
 			lineHeight := last_h + pad
-			yPos := b.ey + ((ry + y_col) * lineHeight) + halfPad
+			xPos := b.ex + (rx + ((x_col - 1) * last_w))
+			yPos := b.ey + (ry + (y_col * lineHeight)) + halfPad
 
-			last_w, last_h = ctx.String(string(char), b.ex+(rx+((x_col-1)*last_w)), yPos)
+			last_w, last_h = ctx.String(string(char), xPos, yPos)
+
+			if DEBUG_MODE {
+				ctx.SetColor(strife.HexRGB(0xff00ff))
+				ctx.Rect(xPos, yPos, last_w, last_h, strife.Line)
+			}
 		}
 
 		if b.cfg.Editor.Show_Line_Numbers {
@@ -1247,6 +1251,11 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			// render the line numbers
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumBackground))
 			ctx.Rect(rx, yPos, gutterWidth, b.h, strife.Fill)
+
+			if DEBUG_MODE {
+				ctx.SetColor(strife.HexRGB(0xff00ff))
+				ctx.Rect(rx, yPos, gutterWidth, b.h, strife.Line)
+			}
 
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumForeground))
 			ctx.String(fmt.Sprintf("%*d", numLinesCharWidth, (start+lineNum)+1), rx+gutterPadPx, yPos)
@@ -1271,6 +1280,11 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 		ctx.SetColor(strife.HexRGB(b.buffOpts.cursor))
 		ctx.Rect(xPos, yPos, cursorWidth, cursorHeight, strife.Fill)
+
+		if DEBUG_MODE {
+			ctx.SetColor(strife.HexRGB(0xff00ff))
+			ctx.Rect(xPos, yPos, cursorWidth, cursorHeight, strife.Line)
+		}
 	}
 
 	if b.autoComplete.hasSuggestions() {
@@ -1282,6 +1296,11 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		yPos = yPos - autoCompleteBoxHeight
 
 		b.autoComplete.renderAt(xPos, yPos, ctx)
+	}
+
+	if DEBUG_MODE {
+		ctx.SetColor(strife.HexRGB(0xff00ff))
+		ctx.Rect(b.ex+rx, b.ey+ry, b.w-b.ex, b.h-b.ey, strife.Line)
 	}
 }
 

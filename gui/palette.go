@@ -114,6 +114,7 @@ func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 	// general border offsets. this is a real easy fixme
 	// for general code clean but maybe another day!
 	palette.buff.ex = 5
+	palette.buff.ey = 0
 
 	suggestionBoxWidth = palette.w
 
@@ -239,8 +240,13 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 	conf := b.conf.Theme.Palette
 
 	border := 5
+	xPos := b.x - border
+	yPos := b.y - border
+	paletteWidth := b.w + (border * 2)
+	paletteHeight := b.h + (border * 2)
+
 	ctx.SetColor(strife.HexRGB(conf.Outline))
-	ctx.Rect(b.x-border, b.y-border, b.w+(border*2), b.h+(border*2), strife.Fill)
+	ctx.Rect(xPos, yPos, paletteWidth, paletteHeight, strife.Fill)
 
 	_, charHeight := ctx.String("foo", -5000, -5000)
 	b.buff.ey = (suggestionBoxHeight / 2) - (charHeight / 2)
@@ -255,5 +261,10 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 				sugg.renderHighlighted(b.x, b.y+((i+1)*(suggestionBoxHeight+border)), ctx)
 			}
 		}
+	}
+
+	if DEBUG_MODE {
+		ctx.SetColor(strife.HexRGB(0xff00ff))
+		ctx.Rect(xPos, yPos, paletteWidth, paletteHeight, strife.Line)
 	}
 }

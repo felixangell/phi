@@ -137,7 +137,7 @@ func (n *View) OnUpdate() bool {
 	CONTROL_DOWN = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
 	SUPER_DOWN = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
 
-	shortcutName := "ctl"
+	shortcutName := "ctrl"
 	mainSuper := CONTROL_DOWN
 	source := cfg.Shortcuts.Controls
 
@@ -150,6 +150,10 @@ func (n *View) OnUpdate() bool {
 
 	if mainSuper && strife.PollKeys() {
 		r := rune(strife.PopKey())
+
+		if r == sdl.K_F12 {
+			DEBUG_MODE = !DEBUG_MODE
+		}
 
 		left := 1073741904
 		right := 1073741903
