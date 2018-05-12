@@ -65,6 +65,12 @@ flash = true
 [commands.exit]
 shortcut = "ctrl+q"
 
+[commands.page_down]
+shortcut = "pgdown"
+
+[commands.page_up]
+shortcut = "pgup"
+
 [commands.show_palette]
 shortcut = "ctrl+p"
 

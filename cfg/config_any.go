@@ -65,6 +65,12 @@ flash = true
 [commands.save]
 shortcut = "ctrl+s"
 
+[commands.page_down]
+shortcut = "pgdown"
+
+[commands.page_up]
+shortcut = "pgup"
+
 [commands.focus_left]
 shortcut = "ctrl+left"
 

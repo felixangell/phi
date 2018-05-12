@@ -68,6 +68,12 @@ shortcut = "super+q"
 [commands.save]
 shortcut = "super+s"
 
+[commands.page_down]
+shortcut = "super+down"
+
+[commands.page_up]
+shortcut = "super+up"
+
 [commands.show_palette]
 shortcut = "super+p"
 
