@@ -40,13 +40,6 @@ func (n *View) hidePalette() {
 	p.clearInput()
 	p.SetFocus(false)
 
-	// set focus to the buffer
-	// that invoked the cmd palette
-	if p.parentBuff != nil {
-		p.parentBuff.SetFocus(true)
-		n.focusedBuff = p.parentBuff.index
-	}
-
 	// remove focus from palette
 	p.buff.SetFocus(false)
 }
@@ -54,9 +47,6 @@ func (n *View) hidePalette() {
 func (n *View) focusPalette(buff *Buffer) {
 	p := n.commandPalette
 	p.SetFocus(true)
-
-	// focus the command palette
-	p.buff.SetFocus(true)
 
 	// remove focus from the buffer
 	// that invoked the command palette
@@ -66,7 +56,7 @@ func (n *View) focusPalette(buff *Buffer) {
 func (n *View) UnfocusBuffers() {
 	// clear focus from buffers
 	for _, buffPane := range n.buffers {
-		buffPane.Buff.SetFocus(false)
+		buffPane.SetFocus(false)
 	}
 }
 
@@ -108,6 +98,15 @@ func (n *View) removeBuffer(index int) {
 	n.ChangeFocus(dir)
 }
 
+func (n *View) setFocusTo(index int) {
+	log.Println("Moving focus from ", n.focusedBuff, " to ", index)
+
+	n.UnfocusBuffers()
+	n.focusedBuff = index
+	buff := n.getCurrentBuffPane()
+	buff.SetFocus(true)
+}
+
 // FIXME
 func (n *View) ChangeFocus(dir int) {
 	// we cant change focus if there are no
@@ -116,27 +115,22 @@ func (n *View) ChangeFocus(dir int) {
 		return
 	}
 
-	prevBuff := n.buffers[n.focusedBuff]
+	newFocus := n.focusedBuff
 
 	if dir == -1 {
-		n.focusedBuff--
+		newFocus--
 	} else if dir == 1 {
-		n.focusedBuff++
+		newFocus++
 	}
 
-	if n.focusedBuff < 0 {
-		n.focusedBuff = len(n.buffers) - 1
-	} else if n.focusedBuff >= len(n.buffers) {
-		n.focusedBuff = 0
+	if newFocus < 0 {
+		newFocus = len(n.buffers) - 1
+	} else if newFocus >= len(n.buffers) {
+		newFocus = 0
 	}
 
-	if prevBuff != nil {
-		prevBuff.Buff.SetFocus(false)
-	}
-
-	if buffPane := n.getCurrentBuffPane(); buffPane != nil {
-		buffPane.Buff.SetFocus(true)
-	}
+	n.UnfocusBuffers()
+	n.setFocusTo(newFocus)
 }
 
 func (n *View) getCurrentBuffPane() *BufferPane {

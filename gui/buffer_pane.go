@@ -34,6 +34,11 @@ func NewBufferPane(buff *Buffer) *BufferPane {
 
 var lastWidth int
 
+func (b *BufferPane) SetFocus(focus bool) {
+	b.Buff.SetFocus(focus)
+	b.BaseComponent.SetFocus(focus)
+}
+
 func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 	conf := b.Buff.cfg.Theme.Palette
 

@@ -26,8 +26,15 @@ type CommandPalette struct {
 	conf       *cfg.TomlConfig
 	parent     *View
 
+	pathToIndex map[string]int
+
 	suggestionIndex   int
 	recentSuggestions *[]suggestion
+}
+
+func (p *CommandPalette) SetFocus(focus bool) {
+	p.buff.SetFocus(focus)
+	p.BaseComponent.SetFocus(focus)
 }
 
 var suggestionBoxHeight, suggestionBoxWidth = 48, 0
@@ -123,22 +130,42 @@ func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 }
 
 func (b *CommandPalette) processCommand() {
-	tokenizedLine := strings.Split(b.buff.contents[0].String(), " ")
-	command := tokenizedLine[0]
+	input := b.buff.contents[0].String()
+	input = strings.TrimSpace(input)
+	tokenizedLine := strings.Split(input, " ")
 
-	log.Println("command palette: ", tokenizedLine)
+	// command
+	if strings.Compare(tokenizedLine[0], "!") == 0 {
+		tokenizedLine := strings.Split(input, " ")
+		log.Println("COMMAND TING '", input, "', ", tokenizedLine)
+		command := tokenizedLine[0]
 
-	action, exists := actions[command]
-	if !exists {
+		log.Println("command palette: ", tokenizedLine)
+
+		action, exists := actions[command]
+		if !exists {
+			return
+		}
+
+		action.proc(b.parent, tokenizedLine[1:])
 		return
 	}
 
-	action.proc(b.parent, tokenizedLine[1:])
+	if index, ok := b.pathToIndex[input]; ok {
+		b.parent.setFocusTo(index)
+	}
 }
 
-func (b *CommandPalette) calculateSuggestions() {
-	tokenizedLine := strings.Split(b.buff.contents[0].String(), " ")
-	command := tokenizedLine[0]
+func (b *CommandPalette) calculateCommandSuggestions() {
+	input := b.buff.contents[0].String()
+	input = strings.TrimSpace(input)
+
+	tokenizedLine := strings.Split(input, " ")
+	if strings.Compare(tokenizedLine[0], "!") == 0 {
+		return
+	}
+
+	command := tokenizedLine[1]
 
 	if command == "" {
 		b.recentSuggestions = nil
@@ -154,6 +181,47 @@ func (b *CommandPalette) calculateSuggestions() {
 			continue
 		}
 		suggestions = append(suggestions, suggestion{b, cmdName})
+	}
+
+	b.recentSuggestions = &suggestions
+}
+
+func (b *CommandPalette) calculateSuggestions() {
+	input := b.buff.contents[0].String()
+	input = strings.TrimSpace(input)
+
+	if len(input) == 0 {
+		return
+	}
+
+	if input[0] == '!' {
+		b.calculateCommandSuggestions()
+		return
+	}
+
+	// fill it with the currently open files!
+
+	openFiles := make([]string, len(b.parent.buffers))
+
+	b.pathToIndex = map[string]int{}
+
+	for i, pane := range b.parent.buffers {
+		path := pane.Buff.filePath
+		openFiles[i] = path
+		b.pathToIndex[path] = i
+	}
+
+	ranks := fuzzy.RankFind(input, openFiles)
+	suggestions := []suggestion{}
+	for _, r := range ranks {
+		pane := b.parent.buffers[r.Index]
+		if pane != nil {
+			sugg := suggestion{
+				b,
+				pane.Buff.filePath,
+			}
+			suggestions = append(suggestions, sugg)
+		}
 	}
 
 	b.recentSuggestions = &suggestions
