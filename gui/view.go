@@ -221,7 +221,7 @@ func (n *View) OnUpdate() bool {
 		}
 	}
 
-	buff := n.getCurrentBuff()
+	buff := n.getCurrentBuffPane()
 	if buff != nil {
 		buff.OnUpdate()
 	}
