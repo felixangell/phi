@@ -12,7 +12,5 @@ func CloseBuffer(v *View, commands []string) bool {
 	}
 
 	v.removeBuffer(b.index)
-
-	v.ChangeFocus(-1)
 	return false
 }
