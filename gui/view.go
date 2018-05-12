@@ -159,10 +159,10 @@ func (n *View) OnUpdate() bool {
 			DEBUG_MODE = !DEBUG_MODE
 		}
 
-		left := 1073741904
-		right := 1073741903
-		up := 1073741906
-		down := 1073741905
+		left := sdl.K_LEFT
+		right := sdl.K_RIGHT
+		up := sdl.K_UP
+		down := sdl.K_DOWN
 
 		// map to left/right/etc.
 		// FIXME
