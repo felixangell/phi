@@ -782,6 +782,7 @@ func (b *Buffer) processActionKey(key int) bool {
 		b.contents[b.curs.y] = left
 		b.appendRopeAt(right, b.curs.y+1)
 		b.moveDown()
+		b.moveToStartOfLine()
 
 	case sdl.K_BACKSPACE:
 		// HACK FIXME
