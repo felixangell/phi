@@ -97,20 +97,26 @@ func (n *View) removeBuffer(index int) {
 
 			buffPane.Resize(bufferWidth, n.h)
 			buffPane.SetPosition(bufferWidth*idx, 0)
-
-			// set the focus buff, this will be set
-			// to the last buffer.
-			n.focusedBuff = buffPane.Buff.index
 		}
 	}
+
+	dir := -1
+	if n.focusedBuff == 0 {
+		dir = 1
+	}
+
+	n.ChangeFocus(dir)
 }
 
 // FIXME
 func (n *View) ChangeFocus(dir int) {
-	prevBuff := n.getCurrentBuffPane()
-	if prevBuff == nil {
-		// what do?
+	// we cant change focus if there are no
+	// buffers to focus to
+	if len(n.buffers) == 0 {
+		return
 	}
+
+	prevBuff := n.buffers[n.focusedBuff]
 
 	if dir == -1 {
 		n.focusedBuff--
@@ -257,8 +263,9 @@ func (n *View) AddBuffer() *Buffer {
 	var bufferWidth int
 	bufferWidth = n.w / (c.index + 1)
 
-	n.buffers = append(n.buffers, NewBufferPane(c))
 	n.focusedBuff = c.index
+
+	n.buffers = append(n.buffers, NewBufferPane(c))
 
 	// translate all the buffers accordingly.
 	idx := 0
