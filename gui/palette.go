@@ -14,8 +14,10 @@ var commandSet []string
 
 func init() {
 	commandSet = make([]string, len(actions))
+	idx := 0
 	for _, action := range actions {
-		commandSet = append(commandSet, action.name)
+		commandSet[idx] = action.name
+		idx++
 	}
 }
 
@@ -136,7 +138,10 @@ func (b *CommandPalette) processCommand() {
 
 	// command
 	if strings.Compare(tokenizedLine[0], "!") == 0 {
-		tokenizedLine := strings.Split(input, " ")
+
+		// slice off the command token
+		tokenizedLine := strings.Split(input, " ")[1:]
+
 		log.Println("COMMAND TING '", input, "', ", tokenizedLine)
 		command := tokenizedLine[0]
 
@@ -161,11 +166,27 @@ func (b *CommandPalette) calculateCommandSuggestions() {
 	input = strings.TrimSpace(input)
 
 	tokenizedLine := strings.Split(input, " ")
-	if strings.Compare(tokenizedLine[0], "!") == 0 {
+
+	if strings.Compare(tokenizedLine[0], "!") != 0 {
 		return
 	}
 
-	command := tokenizedLine[1]
+	if len(tokenizedLine) == 1 {
+		// no command so fill sugg box with all commands
+		suggestions := make([]suggestion, len(commandSet))
+
+		for idx, cmd := range commandSet {
+			suggestions[idx] = suggestion{b, "! " + cmd}
+		}
+
+		b.recentSuggestions = &suggestions
+		return
+	}
+
+	// slice off the command thingy
+	tokenizedLine = tokenizedLine[1:]
+
+	command := tokenizedLine[0]
 
 	if command == "" {
 		b.recentSuggestions = nil
@@ -180,6 +201,7 @@ func (b *CommandPalette) calculateCommandSuggestions() {
 		if cmdName == "" {
 			continue
 		}
+		cmdName = "! " + cmdName
 		suggestions = append(suggestions, suggestion{b, cmdName})
 	}
 
