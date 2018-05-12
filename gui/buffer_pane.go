@@ -2,10 +2,11 @@ package gui
 
 import (
 	"fmt"
-	"github.com/felixangell/phi/cfg"
-	"github.com/felixangell/strife"
 	"log"
 	"path/filepath"
+
+	"github.com/felixangell/phi/cfg"
+	"github.com/felixangell/strife"
 )
 
 var metaPanelHeight = 32
@@ -39,8 +40,17 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 	pad := 6
 	mpY := (b.y + b.h) - (metaPanelHeight)
 
+	focused := b.Buff.index == b.Buff.parent.focusedBuff
+
+	colour := strife.HexRGB(conf.Suggestion.Background)
+	if focused {
+		colour.R *= 2
+		colour.G *= 2
+		colour.B *= 2
+	}
+
 	// panel backdrop
-	ctx.SetColor(strife.HexRGB(conf.Suggestion.Background))
+	ctx.SetColor(colour)
 	ctx.Rect(b.x, mpY, b.w, metaPanelHeight, strife.Fill)
 
 	// tab info etc. on right hand side
