@@ -69,10 +69,10 @@ shortcut = "super+q"
 shortcut = "super+s"
 
 [commands.page_down]
-shortcut = "super+down"
+shortcut = "ctrl+down"
 
 [commands.page_up]
-shortcut = "super+up"
+shortcut = "ctrl+up"
 
 [commands.show_palette]
 shortcut = "super+p"

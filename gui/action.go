@@ -69,9 +69,45 @@ func focusRight(v *View, commands []string) bool {
 	return false
 }
 
+func pageDown(v *View, commands []string) bool {
+	if v == nil {
+		return false
+	}
+	buff := v.getCurrentBuff()
+	if buff == nil {
+		return false
+	}
+
+	buff.scrollDown(DEFAULT_SCROLL_AMOUNT)
+	for i := 0; i < DEFAULT_SCROLL_AMOUNT; i++ {
+		buff.moveDown()
+	}
+	return false
+}
+
+func pageUp(v *View, commands []string) bool {
+	if v == nil {
+		return false
+	}
+	buff := v.getCurrentBuff()
+	if buff == nil {
+		return false
+	}
+
+	buff.scrollUp(DEFAULT_SCROLL_AMOUNT)
+	for i := 0; i < DEFAULT_SCROLL_AMOUNT; i++ {
+		buff.moveUp()
+	}
+	return false
+}
+
 var actions = map[string]BufferAction{
-	"focus_left":   NewBufferAction("focus_left", focusLeft),
-	"focus_right":  NewBufferAction("focus_right", focusRight),
+	"page_down": NewBufferAction("page_down", pageDown),
+	"page_up":   NewBufferAction("page_up", pageUp),
+
+	"focus_left":  NewBufferAction("focus_left", focusLeft),
+	"focus_right": NewBufferAction("focus_right", focusRight),
+
 	"goto":         NewBufferAction("goto", GotoLine),
 	"new":          NewBufferAction("new", NewFile),
 	"save":         NewBufferAction("save", Save),

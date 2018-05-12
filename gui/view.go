@@ -138,17 +138,21 @@ func (n *View) OnUpdate() bool {
 	SUPER_DOWN = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
 
 	shortcutName := "ctrl"
-	mainSuper := CONTROL_DOWN
 	source := cfg.Shortcuts.Controls
 
-	// FIXME
-	if runtime.GOOS == "darwin" {
-		mainSuper = SUPER_DOWN
-		shortcutName = "super"
-		source = cfg.Shortcuts.Supers
-	}
+	if strife.PollKeys() && (SUPER_DOWN || CONTROL_DOWN) {
+		if runtime.GOOS == "darwin" {
+			if SUPER_DOWN {
+				source = cfg.Shortcuts.Supers
+				shortcutName = "super"
+			} else if CONTROL_DOWN {
+				source = cfg.Shortcuts.Controls
+				shortcutName = "control"
+			}
+		} else {
+			source = cfg.Shortcuts.Supers
+		}
 
-	if mainSuper && strife.PollKeys() {
 		r := rune(strife.PopKey())
 
 		if r == sdl.K_F12 {
@@ -157,6 +161,8 @@ func (n *View) OnUpdate() bool {
 
 		left := 1073741904
 		right := 1073741903
+		up := 1073741906
+		down := 1073741905
 
 		// map to left/right/etc.
 		// FIXME
@@ -166,6 +172,10 @@ func (n *View) OnUpdate() bool {
 			key = "left"
 		case right:
 			key = "right"
+		case up:
+			key = "up"
+		case down:
+			key = "down"
 		default:
 			key = string(unicode.ToLower(r))
 		}

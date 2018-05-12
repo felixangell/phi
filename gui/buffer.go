@@ -903,12 +903,12 @@ func (b *Buffer) processActionKey(key int) bool {
 			b.curs.move(-b.curs.x, 0)
 		}
 
+		// TODO remove since this is handled in the keymap!
 	case sdl.K_PAGEUP:
 		b.scrollUp(DEFAULT_SCROLL_AMOUNT)
 		for i := 0; i < DEFAULT_SCROLL_AMOUNT; i++ {
 			b.moveUp()
 		}
-
 	case sdl.K_PAGEDOWN:
 		b.scrollDown(DEFAULT_SCROLL_AMOUNT)
 		for i := 0; i < DEFAULT_SCROLL_AMOUNT; i++ {
