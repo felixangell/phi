@@ -808,17 +808,29 @@ func (b *Buffer) processActionKey(key int) bool {
 		// this will move to the next blank or underscore
 		// character
 		if ALT_DOWN {
-			currLine := b.contents[b.curs.y]
+			line := b.contents[b.curs.y]
 
-			var i int
-			for i = b.curs.x + 1; i < currLine.Len(); i++ {
-				curr := currLine.Index(i)
-				if curr <= ' ' || curr == '_' {
-					break
+			i := b.curs.x + 1 // ?
+
+			for i < len(line.String())-1 {
+				curr := line.Index(i)
+
+				switch curr {
+				case ' ':
+					fallthrough
+				case '\n':
+					fallthrough
+				case '_':
+					goto rightWordOuter
 				}
+
+				i = i + 1
 			}
 
-			for j := 0; j < i; j++ {
+		rightWordOuter:
+
+			dist := i - b.curs.x
+			for j := 0; j < dist; j++ {
 				b.moveRight()
 			}
 			break
@@ -837,19 +849,33 @@ func (b *Buffer) processActionKey(key int) bool {
 			i := b.curs.x
 			for i > 0 {
 				currChar := currLine.Index(i)
-				// TODO is a seperator thing?
-				if currChar <= ' ' || currChar == '_' {
-					// move over one more?
+
+				switch currChar {
+				case ' ':
+					fallthrough
+				case '\n':
+					fallthrough
+				case '_':
 					i = i - 1
+					goto outer
+				default:
 					break
 				}
 				i = i - 1
 			}
 
+		outer:
+
 			start := b.curs.x
 			for j := 0; j < start-i; j++ {
 				b.moveLeft()
 			}
+
+			if start == 0 {
+				b.moveUp()
+				b.moveToEndOfLine()
+			}
+
 			break
 		}
 

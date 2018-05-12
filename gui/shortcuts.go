@@ -2,9 +2,10 @@ package gui
 
 import (
 	"bytes"
-	"github.com/atotto/clipboard"
 	"io/ioutil"
 	"log"
+
+	"github.com/atotto/clipboard"
 )
 
 func ShowPalette(v *View, commands []string) bool {
