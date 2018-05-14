@@ -3,6 +3,9 @@ package gui
 import (
 	"log"
 	"strconv"
+	"strings"
+
+	"github.com/sqweek/dialog"
 )
 
 type BufferAction struct {
@@ -17,6 +20,25 @@ func NewBufferAction(name string, proc func(*View, []string) bool) BufferAction 
 		proc:          proc,
 		showInPalette: true,
 	}
+}
+
+func OpenFile(v *View, commands []string) bool {
+	path, err := dialog.File().Title("Open file").Load()
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+
+	buff := v.AddBuffer()
+	if len(strings.TrimSpace(path)) == 0 {
+		return false
+	}
+
+	buff.OpenFile(path)
+	buff.SetFocus(true)
+	v.focusedBuff = buff.index
+
+	return false
 }
 
 func NewFile(v *View, commands []string) bool {
@@ -109,6 +131,7 @@ var actions = map[string]BufferAction{
 
 	"goto":         NewBufferAction("goto", GotoLine),
 	"new":          NewBufferAction("new", NewFile),
+	"open":         NewBufferAction("open", OpenFile),
 	"save":         NewBufferAction("save", Save),
 	"delete_line":  NewBufferAction("delete_line", DeleteLine),
 	"close_buffer": NewBufferAction("close_buffer", CloseBuffer),
