@@ -17,6 +17,7 @@ import (
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/phi/lex"
 	"github.com/felixangell/strife"
+	"github.com/sqweek/dialog"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -184,6 +185,44 @@ func (s *selection) renderAt(ctx *strife.Renderer, xOff int, yOff int) {
 	}
 }
 
+func (b *Buffer) reload() {
+	// if the file doesn't exist, try to create it before reading it
+	if _, err := os.Stat(b.filePath); os.IsNotExist(err) {
+		// this shouldn't really happen, for some
+		// reason the file no longer exists?
+		log.Println("File does not exist when reloading?! " + b.filePath)
+		return
+	}
+
+	// if the file has modifications made to it
+	// ask if the user wants to reload the file or not
+	// otherwise re-load it anyway.
+	if b.modified {
+		ok := dialog.Message("This file has been modified, would you like to reload?").YesNo()
+		if !ok {
+			return
+		}
+	}
+
+	contents, err := ioutil.ReadFile(b.filePath)
+	if err != nil {
+		panic(err)
+	}
+
+	b.contents = []*rope.Rope{}
+
+	lines := strings.Split(string(contents), "\n")
+	for _, line := range lines {
+		b.appendLine(line)
+	}
+
+	// TODO perhaps when we reload the current line might not exist or something
+	// try and set the cursor to what it was before but maybe make sure its not out
+	// of bounds, etc.
+
+	b.modified = false
+}
+
 func (b *Buffer) OpenFile(filePath string) {
 	b.filePath = filePath
 
@@ -211,6 +250,9 @@ func (b *Buffer) OpenFile(filePath string) {
 	if err != nil {
 		panic(err)
 	}
+
+	// add the file to the watcher.
+	b.parent.registerFile(filePath, b)
 
 	lines := strings.Split(string(contents), "\n")
 	for _, line := range lines {

@@ -1,14 +1,34 @@
 package gui
 
 import (
+	"fmt"
 	"log"
 	"runtime"
 	"unicode"
 
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/strife"
+	"github.com/fsnotify/fsnotify"
 	"github.com/veandco/go-sdl2/sdl"
 )
+
+type bufferEvent interface {
+	Process(view *View)
+	String() string
+}
+
+type ReloadBufferEvent struct {
+	buff *Buffer
+}
+
+func (r *ReloadBufferEvent) Process(view *View) {
+	log.Println("reloading buffer", r.buff.filePath)
+	r.buff.reload()
+}
+
+func (r *ReloadBufferEvent) String() string {
+	return "reload-buffer-event"
+}
 
 // View is an array of buffers basically.
 type View struct {
@@ -18,12 +38,18 @@ type View struct {
 	buffers        []*BufferPane
 	focusedBuff    int
 	commandPalette *CommandPalette
+
+	watcher      *fsnotify.Watcher
+	bufferMap    map[string]*Buffer
+	bufferEvents chan bufferEvent
 }
 
 func NewView(width, height int, conf *cfg.TomlConfig) *View {
 	view := &View{
-		conf:    conf,
-		buffers: []*BufferPane{},
+		conf:         conf,
+		buffers:      []*BufferPane{},
+		bufferMap:    map[string]*Buffer{},
+		bufferEvents: make(chan bufferEvent),
 	}
 
 	view.Translate(width, height)
@@ -32,7 +58,63 @@ func NewView(width, height int, conf *cfg.TomlConfig) *View {
 	view.commandPalette = NewCommandPalette(*conf, view)
 	view.UnfocusBuffers()
 
+	var err error
+	view.watcher, err = fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+		// ?
+	}
+
+	// goroutine to handle all of the fsnotify events
+	// converts them into events phi can handle cleanly.
+	go func() {
+		for {
+			select {
+			case event := <-view.watcher.Events:
+				log.Println("evt: ", event)
+				if event.Op&fsnotify.Write == fsnotify.Write {
+
+					// modified so we specify a reload event
+					buff, ok := view.bufferMap[event.Name]
+					if !ok {
+						panic(fmt.Sprintf("no such buffer for file '%s'", event.Name))
+						break
+					}
+
+					view.bufferEvents <- &ReloadBufferEvent{buff}
+					log.Println("modified file:", event.Name)
+				}
+			case err := <-view.watcher.Errors:
+				log.Println("error:", err)
+			}
+		}
+	}()
+
+	// handles all of the phi events
+	go func() {
+		for {
+			event := <-view.bufferEvents
+			event.Process(view)
+		}
+	}()
+
 	return view
+}
+
+func (n *View) registerFile(path string, buff *Buffer) {
+	log.Println("Registering file ", path)
+
+	err := n.watcher.Add(path)
+	if err != nil {
+		log.Println(fmt.Sprintf("Failed to register file '%s'", path), "to buffer ", buff.index)
+		return
+	}
+
+	n.bufferMap[path] = buff
+}
+
+func (n *View) Close() {
+	n.watcher.Close()
 }
 
 func (n *View) hidePalette() {
