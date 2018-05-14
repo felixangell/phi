@@ -38,8 +38,10 @@ var pad = 6
 var halfPad = pad / 2
 
 type camera struct {
-	x int
-	y int
+	x  int
+	y  int
+	dx int
+	dy int
 }
 
 // TODO maybe have a thread that finds
@@ -153,7 +155,7 @@ func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index 
 		cfg:          config,
 		buffOpts:     buffOpts,
 		filePath:     "",
-		cam:          &camera{0, 0},
+		cam:          &camera{0, 0, 0, 0},
 		autoComplete: newAutoCompleteBox(),
 	}
 	return buff
@@ -712,14 +714,14 @@ func (b *Buffer) swapLineDown() bool {
 
 func (b *Buffer) scrollUp(lineScrollAmount int) {
 	if b.cam.y > 0 {
-		b.cam.y -= lineScrollAmount
+		b.cam.dy -= lineScrollAmount
 	}
 
 }
 
 func (b *Buffer) scrollDown(lineScrollAmount int) {
 	if b.cam.y < len(b.contents) {
-		b.cam.y += lineScrollAmount
+		b.cam.dy += lineScrollAmount
 	}
 }
 
@@ -1056,7 +1058,21 @@ var renderFlashingCursor = true
 var lastTimer = time.Now()
 var ldx, ldy = 0, 0
 
+var ySpeed = 1
+var last = time.Now()
+
 func (b *Buffer) OnUpdate() bool {
+	if "animations on" == "true" {
+		if b.cam.y < b.cam.dy {
+			b.cam.y += ySpeed
+		}
+		if b.cam.y > b.cam.dy {
+			b.cam.y -= ySpeed
+		}
+	} else {
+		b.cam.x = b.cam.dx
+		b.cam.y = b.cam.dy
+	}
 	return false
 }
 
