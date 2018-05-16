@@ -250,10 +250,7 @@ func (b *Buffer) OpenFile(filePath string) {
 	// add the file to the watcher.
 	b.parent.registerFile(filePath, b)
 
-	lines := strings.Split(string(contents), "\n")
-	for _, line := range lines {
-		b.appendLine(line)
-	}
+	b.table = piecetable.MakePieceTable(string(contents))
 
 	// because appendLine sets modified to true
 	// we should reset this to false since weve
@@ -827,7 +824,7 @@ func (b *Buffer) processActionKey(key int) bool {
 		rightPart := left[initialX:]
 
 		for i := 0; i < len(rightPart); i++ {
-			// TODO POP
+			// TODO POP in piecetable?
 			b.table.Delete(b.curs.y, len(left)-i)
 		}
 
