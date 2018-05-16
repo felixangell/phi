@@ -59,7 +59,7 @@ func Save(v *View, commands []string) bool {
 	}
 
 	var buffer bytes.Buffer
-	for idx, line := range b.contents {
+	for idx, line := range b.table.Lines {
 		if idx > 0 {
 			// TODO: this avoids a trailing newline
 			// if we handle it like this? but if we have

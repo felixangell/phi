@@ -13,9 +13,9 @@ import (
 	"unicode"
 
 	"github.com/felixangell/fuzzysearch/fuzzy"
-	"github.com/felixangell/go-rope"
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/phi/lex"
+	"github.com/felixangell/piecetable"
 	"github.com/felixangell/strife"
 	"github.com/sqweek/dialog"
 	"github.com/veandco/go-sdl2/sdl"
@@ -128,11 +128,11 @@ type Buffer struct {
 	BaseComponent
 	index        int
 	parent       *View
-	contents     []*rope.Rope
 	curs         *Cursor
 	cfg          *cfg.TomlConfig
 	buffOpts     BufferConfig
 	cam          *camera
+	table        *piecetable.PieceTable
 	filePath     string
 	languageInfo *cfg.LanguageSyntaxConfig
 	ex, ey       int
@@ -146,13 +146,12 @@ func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index 
 		config = cfg.NewDefaultConfig()
 	}
 
-	buffContents := []*rope.Rope{}
 	buff := &Buffer{
 		index:        index,
 		parent:       parent,
-		contents:     buffContents,
 		curs:         &Cursor{},
 		cfg:          config,
+		table:        piecetable.MakePieceTable(""),
 		buffOpts:     buffOpts,
 		filePath:     "",
 		cam:          &camera{0, 0, 0, 0},
@@ -176,7 +175,7 @@ func (s *selection) renderAt(ctx *strife.Renderer, xOff int, yOff int) {
 	yd := (s.ey - s.sy) + 1
 
 	for y := 0; y < yd; y++ {
-		lineLen := s.parent.contents[s.ey+y].Len() - s.sx
+		lineLen := s.parent.table.Lines[s.ey+y].Len() - s.sx
 		if y == yd-1 {
 			lineLen = xd
 		}
@@ -211,12 +210,7 @@ func (b *Buffer) reload() {
 		panic(err)
 	}
 
-	b.contents = []*rope.Rope{}
-
-	lines := strings.Split(string(contents), "\n")
-	for _, line := range lines {
-		b.appendLine(line)
-	}
+	b.table = piecetable.MakePieceTable(string(contents))
 
 	// TODO perhaps when we reload the current line might not exist or something
 	// try and set the cursor to what it was before but maybe make sure its not out
@@ -256,10 +250,7 @@ func (b *Buffer) OpenFile(filePath string) {
 	// add the file to the watcher.
 	b.parent.registerFile(filePath, b)
 
-	lines := strings.Split(string(contents), "\n")
-	for _, line := range lines {
-		b.appendLine(line)
-	}
+	b.table = piecetable.MakePieceTable(string(contents))
 
 	// because appendLine sets modified to true
 	// we should reset this to false since weve
@@ -270,22 +261,22 @@ func (b *Buffer) OpenFile(filePath string) {
 func (b *Buffer) setLine(idx int, val string) {
 	b.modified = true
 
-	b.contents[idx] = rope.New(val)
+	b.table.Lines[idx] = piecetable.NewLine(val, b.table)
 	if b.curs.y == idx {
 		b.moveToEndOfLine()
 	}
 }
 
-func (b *Buffer) appendRopeAt(val *rope.Rope, idx int) {
+func (b *Buffer) appendLineAt(val *piecetable.Line, idx int) {
 	b.modified = true
 
-	b.contents = append(b.contents, new(rope.Rope))
-	copy(b.contents[idx+1:], b.contents[idx:])
-	b.contents[idx] = val
+	b.table.Lines = append(b.table.Lines, val)
+	copy(b.table.Lines[idx+1:], b.table.Lines[idx:])
+	b.table.Lines[idx] = val
 }
 
-func (b *Buffer) appendLineAt(val string, idx int) {
-	b.appendRopeAt(rope.New(val), idx)
+func (b *Buffer) appendStringAt(val string, idx int) {
+	b.appendLineAt(piecetable.NewLine(val, b.table), idx)
 }
 
 // appendLine adds a string to the end of
@@ -293,7 +284,7 @@ func (b *Buffer) appendLineAt(val string, idx int) {
 func (b *Buffer) appendLine(val string) {
 	b.modified = true
 
-	b.contents = append(b.contents, rope.New(val))
+	b.table.Lines = append(b.table.Lines, piecetable.NewLine(val, b.table))
 	// because we've added a new line
 	// we have to set the x to the start
 	b.curs.x = 0
@@ -306,9 +297,9 @@ func (b *Buffer) insertString(idx int, val string) {
 	lines := strings.Split(val, "\n")
 
 	for _, l := range lines {
-		b.contents = append(b.contents, new(rope.Rope))
-		copy(b.contents[b.curs.y+idx+1:], b.contents[b.curs.y+idx:])
-		b.contents[b.curs.y+idx] = rope.New(l)
+		b.table.Lines = append(b.table.Lines, piecetable.NewLine("", b.table))
+		copy(b.table.Lines[b.curs.y+idx+1:], b.table.Lines[b.curs.y+idx:])
+		b.table.Lines[b.curs.y+idx] = piecetable.NewLine(l, b.table)
 		b.moveDown()
 	}
 
@@ -318,9 +309,9 @@ func (b *Buffer) insertRune(r rune) {
 	b.modified = true
 
 	log.Println("Inserting rune ", r, " into current line at ", b.curs.x, ":", b.curs.y)
-	log.Println("Line before insert> ", b.contents[b.curs.y])
+	log.Println("Line before insert> ", b.table.Lines[b.curs.y].String())
 
-	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
+	b.table.Insert(string(r), b.curs.y, b.curs.x)
 	b.moveRight()
 }
 
@@ -379,16 +370,16 @@ func (b *Buffer) deleteLine() {
 	// HACK FIXME
 	b.modified = true
 
-	if len(b.contents) > 1 {
-		b.contents = remove(b.contents, b.curs.y)
+	if len(b.table.Lines) > 1 {
+		b.table.Lines = remove(b.table.Lines, b.curs.y)
 	} else {
 		// we are on the first line
 		// and there is nothing else to delete
 		// so we just clear the line
-		b.contents[b.curs.y] = new(rope.Rope)
+		b.table.Lines[b.curs.y] = piecetable.NewLine("", b.table)
 	}
 
-	if b.curs.y >= len(b.contents) {
+	if b.curs.y >= len(b.table.Lines) {
 		if b.curs.y > 0 {
 			b.moveUp()
 		}
@@ -479,9 +470,9 @@ func (b *Buffer) processTextInput(r rune) bool {
 	// brackets.
 	if b.cfg.Editor.Match_Braces {
 		if r == ')' || r == '}' || r == ']' {
-			currLine := b.contents[b.curs.y]
+			currLine := b.table.Lines[b.curs.y]
 			if b.curs.x < currLine.Len() {
-				curr := currLine.Index(b.curs.x + 1)
+				curr := b.table.Index(b.curs.y, b.curs.x+1)
 				if curr == r {
 					b.moveRight()
 					return true
@@ -495,7 +486,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 	// HACK FIXME
 	b.modified = true
 
-	b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(r))
+	b.table.Insert(string(r), b.curs.y, b.curs.x)
 	b.moveRight()
 
 	// we don't need to match braces
@@ -520,13 +511,13 @@ func (b *Buffer) processTextInput(r rune) bool {
 		fallthrough
 	case '[':
 		matchingPair += offset
-		b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string(rune(matchingPair)))
+		b.table.Insert(string(rune(matchingPair)), b.curs.y, b.curs.x)
 	}
 
 	return true
 }
 
-func remove(slice []*rope.Rope, s int) []*rope.Rope {
+func remove(slice []*piecetable.Line, s int) []*piecetable.Line {
 	return append(slice[:s], slice[s+1:]...)
 }
 
@@ -540,27 +531,31 @@ func (b *Buffer) deletePrev() {
 	if b.curs.x > 0 {
 		offs := -1
 		if !b.cfg.Editor.Tabs_Are_Spaces {
-			if b.contents[b.curs.y].Index(b.curs.x) == '\t' {
+			if b.table.Index(b.curs.y, b.curs.x) == '\t' {
 				offs = int(-b.cfg.Editor.Tab_Size)
 			}
 		} else if b.cfg.Editor.Hungry_Backspace && b.curs.x >= int(b.cfg.Editor.Tab_Size) {
 			// cut out the last {TAB_SIZE} amount of characters
 			// and check em
 			tabSize := int(b.cfg.Editor.Tab_Size)
-			lastTabSizeChars := b.contents[b.curs.y].Substr(b.curs.x+1-tabSize, tabSize).String()
-			if strings.Compare(lastTabSizeChars, b.makeTab()) == 0 {
+
+			// render the line...
+			currLine := b.table.Lines[b.curs.y].String()
+			before := currLine[b.curs.x-tabSize:]
+
+			if strings.HasPrefix(before, b.makeTab()) {
 				// delete {TAB_SIZE} amount of characters
 				// from the cursors x pos
 				for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {
 
-					b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
+					b.table.Delete(b.curs.y, b.curs.x)
 					b.curs.move(-1, 0)
 				}
 				return
 			}
 		}
 
-		b.contents[b.curs.y] = b.contents[b.curs.y].Delete(b.curs.x, 1)
+		b.table.Delete(b.curs.y, b.curs.x)
 
 		if len(b.autoComplete.lastRunes) > 0 {
 			// pop the last word off in the auto complete
@@ -574,9 +569,12 @@ func (b *Buffer) deletePrev() {
 		// wrapping back the line?
 
 		// start of line, wrap to previous
-		prevLineLen := b.contents[b.curs.y-1].Len()
-		b.contents[b.curs.y-1] = b.contents[b.curs.y-1].Concat(b.contents[b.curs.y])
-		b.contents = append(b.contents[:b.curs.y], b.contents[b.curs.y+1:]...)
+		prevLineLen := b.table.Lines[b.curs.y-1].Len()
+
+		val := b.table.Lines[b.curs.y].String()
+		b.table.Insert(val, b.curs.y-1, b.table.Lines[b.curs.y-1].Len())
+
+		b.table.Lines = append(b.table.Lines[:b.curs.y], b.table.Lines[b.curs.y+1:]...)
 		b.curs.move(prevLineLen, -1)
 	}
 }
@@ -596,7 +594,7 @@ func (b *Buffer) deleteBeforeCursor() {
 
 func (b *Buffer) moveLeft() {
 	if b.curs.x == 0 && b.curs.y > 0 {
-		b.curs.move(b.contents[b.curs.y-1].Len(), -1)
+		b.curs.move(b.table.Lines[b.curs.y-1].Len(), -1)
 
 	} else if b.curs.x > 0 {
 		b.curs.move(-1, 0)
@@ -604,14 +602,14 @@ func (b *Buffer) moveLeft() {
 }
 
 func (b *Buffer) moveRight() {
-	currLineLength := b.contents[b.curs.y].Len()
+	currLineLength := b.table.Lines[b.curs.y].Len()
 
-	if b.curs.x >= currLineLength && b.curs.y < len(b.contents)-1 {
+	if b.curs.x >= currLineLength && b.curs.y < len(b.table.Lines)-1 {
 		// we're at the end of the line and we have
 		// some lines after, let's wrap around
 		b.curs.move(-currLineLength, 0)
 		b.moveDown()
-	} else if b.curs.x < b.contents[b.curs.y].Len() {
+	} else if b.curs.x < b.table.Lines[b.curs.y].Len() {
 		// we have characters to the right, let's move along
 		b.curs.move(1, 0)
 	}
@@ -624,7 +622,7 @@ func (b *Buffer) moveToStartOfLine() {
 }
 
 func (b *Buffer) moveToEndOfLine() {
-	lineLen := b.contents[b.curs.y].Len()
+	lineLen := b.table.Lines[b.curs.y].Len()
 
 	if b.curs.x > lineLen {
 		distToMove := b.curs.x - lineLen
@@ -654,7 +652,7 @@ func (b *Buffer) gotoLine(num int64) {
 func (b *Buffer) moveUp() {
 	if b.curs.y > 0 {
 		offs := 0
-		prevLineLen := b.contents[b.curs.y-1].Len()
+		prevLineLen := b.table.Lines[b.curs.y-1].Len()
 		if b.curs.x > prevLineLen {
 			offs = prevLineLen - b.curs.x
 		}
@@ -671,9 +669,9 @@ func (b *Buffer) moveUp() {
 }
 
 func (b *Buffer) moveDown() {
-	if b.curs.y < len(b.contents)-1 {
+	if b.curs.y < len(b.table.Lines)-1 {
 		offs := 0
-		nextLineLen := b.contents[b.curs.y+1].Len()
+		nextLineLen := b.table.Lines[b.curs.y+1].Len()
 		if b.curs.x > nextLineLen {
 			offs = nextLineLen - b.curs.x
 		}
@@ -692,21 +690,21 @@ func (b *Buffer) moveDown() {
 
 func (b *Buffer) swapLineUp() bool {
 	if b.curs.y > 0 {
-		currLine := b.contents[b.curs.y]
-		prevLine := b.contents[b.curs.y-1]
-		b.contents[b.curs.y-1] = currLine
-		b.contents[b.curs.y] = prevLine
+		currLine := b.table.Lines[b.curs.y]
+		prevLine := b.table.Lines[b.curs.y-1]
+		b.table.Lines[b.curs.y-1] = currLine
+		b.table.Lines[b.curs.y] = prevLine
 		b.moveUp()
 	}
 	return true
 }
 
 func (b *Buffer) swapLineDown() bool {
-	if b.curs.y < len(b.contents) {
-		currLine := b.contents[b.curs.y]
-		nextLine := b.contents[b.curs.y+1]
-		b.contents[b.curs.y+1] = currLine
-		b.contents[b.curs.y] = nextLine
+	if b.curs.y < len(b.table.Lines) {
+		currLine := b.table.Lines[b.curs.y]
+		nextLine := b.table.Lines[b.curs.y+1]
+		b.table.Lines[b.curs.y+1] = currLine
+		b.table.Lines[b.curs.y] = nextLine
 		b.moveDown()
 	}
 	return true
@@ -720,7 +718,7 @@ func (b *Buffer) scrollUp(lineScrollAmount int) {
 }
 
 func (b *Buffer) scrollDown(lineScrollAmount int) {
-	if b.cam.y < len(b.contents) {
+	if b.cam.y < len(b.table.Lines) {
 		b.cam.dy += lineScrollAmount
 	}
 }
@@ -802,19 +800,19 @@ func (b *Buffer) processActionKey(key int) bool {
 			// we're at the start of a line, so we want to
 			// shift the line down and insert an empty line
 			// above it!
-			b.contents = append(b.contents, new(rope.Rope))      // grow
-			copy(b.contents[b.curs.y+1:], b.contents[b.curs.y:]) // shift
-			b.contents[b.curs.y] = new(rope.Rope)                // set
+			b.table.Lines = append(b.table.Lines, piecetable.NewLine("", b.table)) // grow
+			copy(b.table.Lines[b.curs.y+1:], b.table.Lines[b.curs.y:])             // shift
+			b.table.Lines[b.curs.y] = piecetable.NewLine("", b.table)              // set
 			b.moveDown()
 			return true
 		}
 
 		initialX := b.curs.x
-		prevLineLen := b.contents[b.curs.y].Len()
+		prevLineLen := b.table.Lines[b.curs.y].Len()
 
 		// END OF LINE:
 		if initialX == prevLineLen {
-			b.appendLineAt("", b.curs.y+1)
+			b.appendStringAt("", b.curs.y+1)
 			b.moveDown()
 			b.moveToStartOfLine()
 			return true
@@ -822,9 +820,15 @@ func (b *Buffer) processActionKey(key int) bool {
 
 		// we're not at the end of the line, but we're not at
 		// the start, i.e. we're SPLITTING the line
-		left, right := b.contents[b.curs.y].Split(initialX)
-		b.contents[b.curs.y] = left
-		b.appendRopeAt(right, b.curs.y+1)
+		left := b.table.Lines[b.curs.y].String()
+		rightPart := left[initialX:]
+
+		for i := 0; i < len(rightPart); i++ {
+			// TODO POP in piecetable?
+			b.table.Delete(b.curs.y, len(left)-i)
+		}
+
+		b.appendStringAt(rightPart, b.curs.y+1)
 		b.moveDown()
 		b.moveToStartOfLine()
 
@@ -839,7 +843,7 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 
 	case sdl.K_RIGHT:
-		currLineLength := b.contents[b.curs.y].Len()
+		currLineLength := b.table.Lines[b.curs.y].Len()
 
 		if SUPER_DOWN {
 			for b.curs.x < currLineLength {
@@ -852,12 +856,12 @@ func (b *Buffer) processActionKey(key int) bool {
 		// this will move to the next blank or underscore
 		// character
 		if ALT_DOWN {
-			line := b.contents[b.curs.y]
+			line := b.table.Lines[b.curs.y]
 
 			i := b.curs.x + 1 // ?
 
 			for i < len(line.String())-1 {
-				curr := line.Index(i)
+				curr := b.table.Index(b.curs.y, i)
 
 				switch curr {
 				case ' ':
@@ -888,11 +892,9 @@ func (b *Buffer) processActionKey(key int) bool {
 			// the start of the line!
 			b.curs.gotoStart()
 		} else if ALT_DOWN {
-			currLine := b.contents[b.curs.y]
-
 			i := b.curs.x
 			for i > 0 {
-				currChar := currLine.Index(i)
+				currChar := b.table.Index(b.curs.y, i)
 
 				switch currChar {
 				case ' ':
@@ -953,17 +955,17 @@ func (b *Buffer) processActionKey(key int) bool {
 		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
 			// and insert it.
-			b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, b.makeTab())
+			b.table.Insert(b.makeTab(), b.curs.y, b.curs.x)
 			b.curs.move(int(b.cfg.Editor.Tab_Size), 0)
 		} else {
-			b.contents[b.curs.y] = b.contents[b.curs.y].Insert(b.curs.x, string('\t'))
+			b.table.Insert(string('\t'), b.curs.y, b.curs.x)
 			// the actual position is + 1, but we make it
 			// move by TAB_SIZE characters on the view.
 			b.curs.moveRender(1, 0, int(b.cfg.Editor.Tab_Size), 0)
 		}
 
 	case sdl.K_END:
-		currLine := b.contents[b.curs.y]
+		currLine := b.table.Lines[b.curs.y]
 		if b.curs.x < currLine.Len() {
 			distToMove := currLine.Len() - b.curs.x
 			b.curs.move(distToMove, 0)
@@ -1241,11 +1243,11 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 	start := b.cam.y
 	upper := b.cam.y + visibleLines
-	if start > len(b.contents) {
-		start = len(b.contents)
+	if start > len(b.table.Lines) {
+		start = len(b.table.Lines)
 	}
-	if upper > len(b.contents) {
-		upper = len(b.contents)
+	if upper > len(b.table.Lines) {
+		upper = len(b.table.Lines)
 	}
 
 	// render the selection if any
@@ -1253,10 +1255,10 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		lastSelection.renderAt(ctx, b.x+b.ex, b.y+b.ey)
 	}
 
-	numLines := len(b.contents)
+	numLines := len(b.table.Lines)
 
 	var y_col int
-	for lineNum, rope := range b.contents[start:upper] {
+	for lineNum, rope := range b.table.Lines[start:upper] {
 		currLine := []rune(rope.String())
 
 		// slice the visible characters only.
