@@ -823,8 +823,15 @@ func (b *Buffer) processActionKey(key int) bool {
 
 		// we're not at the end of the line, but we're not at
 		// the start, i.e. we're SPLITTING the line
-		right := b.table.Lines[b.curs.y].Split(initialX)
-		b.appendStringAt(right, b.curs.y+1)
+		left := b.table.Lines[b.curs.y].String()
+		rightPart := left[initialX:]
+
+		for i := 0; i < len(rightPart); i++ {
+			// TODO POP
+			b.table.Delete(b.curs.y, len(left)-i)
+		}
+
+		b.appendStringAt(rightPart, b.curs.y+1)
 		b.moveDown()
 		b.moveToStartOfLine()
 
