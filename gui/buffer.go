@@ -541,8 +541,12 @@ func (b *Buffer) deletePrev() {
 			// cut out the last {TAB_SIZE} amount of characters
 			// and check em
 			tabSize := int(b.cfg.Editor.Tab_Size)
-			lastTabSizeChars := b.table.Lines[b.curs.y].Substr(b.curs.x+1-tabSize, tabSize)
-			if strings.Compare(lastTabSizeChars, b.makeTab()) == 0 {
+
+			// render the line...
+			currLine := b.table.Lines[b.curs.y].String()
+			before := currLine[b.curs.x-tabSize:]
+
+			if strings.HasPrefix(before, b.makeTab()) {
 				// delete {TAB_SIZE} amount of characters
 				// from the cursors x pos
 				for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {
