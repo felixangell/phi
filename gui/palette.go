@@ -132,7 +132,7 @@ func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 }
 
 func (b *CommandPalette) processCommand() {
-	input := b.buff.contents[0].String()
+	input := b.buff.table.Lines[0].String()
 	input = strings.TrimSpace(input)
 	tokenizedLine := strings.Split(input, " ")
 
@@ -162,7 +162,7 @@ func (b *CommandPalette) processCommand() {
 }
 
 func (b *CommandPalette) calculateCommandSuggestions() {
-	input := b.buff.contents[0].String()
+	input := b.buff.table.Lines[0].String()
 	input = strings.TrimSpace(input)
 
 	tokenizedLine := strings.Split(input, " ")
@@ -209,7 +209,7 @@ func (b *CommandPalette) calculateCommandSuggestions() {
 }
 
 func (b *CommandPalette) calculateSuggestions() {
-	input := b.buff.contents[0].String()
+	input := b.buff.table.Lines[0].String()
 	input = strings.TrimSpace(input)
 
 	if len(input) == 0 {
