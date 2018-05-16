@@ -62,6 +62,12 @@ draw = true
 flash = true
 
 [commands]
+[commands.undo]
+shortcut = "super+z"
+
+[commands.redo]
+shortcut = "super+y"
+
 [commands.exit]
 shortcut = "super+q"
 

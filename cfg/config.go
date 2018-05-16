@@ -2,10 +2,11 @@ package cfg
 
 import (
 	"errors"
-	"github.com/felixangell/strife"
 	"log"
 	"regexp"
 	"strconv"
+
+	"github.com/felixangell/strife"
 )
 
 type TomlConfig struct {

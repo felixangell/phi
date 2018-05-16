@@ -37,6 +37,24 @@ func Paste(v *View, commands []string) bool {
 	return false
 }
 
+func Undo(v *View, commands []string) bool {
+	b := v.getCurrentBuff()
+	if b == nil {
+		return false
+	}
+	b.table.Undo()
+	return false
+}
+
+func Redo(v *View, commands []string) bool {
+	b := v.getCurrentBuff()
+	if b == nil {
+		return false
+	}
+	b.table.Redo()
+	return false
+}
+
 func genFileName(dir, prefix, suffix string) string {
 	randBytes := make([]byte, 16)
 	rand.Read(randBytes)

@@ -62,6 +62,12 @@ draw = true
 flash = true
 
 [commands]
+[commands.undo]
+shortcut = "ctrl+z"
+
+[commands.redo]
+shortcut = "ctrl+y"
+
 [commands.save]
 shortcut = "ctrl+s"
 
