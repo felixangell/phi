@@ -1071,12 +1071,24 @@ var last = time.Now()
 func (b *Buffer) processLeftClick() {
 	// here we set the cursor y position
 	// based off the click location
-	yPos := strife.MouseCoords()[1]
+	coords := strife.MouseCoords()
+	xPos, yPos := coords[0], coords[1]
 
-	yPosToLine := ((yPos / (last_h + pad)) + 1) + b.cam.y
+	yPosToLine := (((yPos) / (last_h + pad)) + 1) + b.cam.y
+	xPosToLine := ((xPos - b.ex) / (last_w)) + b.cam.x
 
-	fmt.Println(yPos, " line ", yPosToLine)
+	fmt.Println(yPos, " line ", yPosToLine, " - ", xPos, " char ", xPosToLine)
+
 	b.gotoLine(int64(yPosToLine))
+
+	// we should be at the start of the line but lets
+	// move there anyways just to make sure
+
+	b.moveToStartOfLine()
+
+	for i := 0; i < xPosToLine; i++ {
+		b.moveRight()
+	}
 }
 
 func (b *Buffer) OnUpdate() bool {
