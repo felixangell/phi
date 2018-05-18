@@ -4,9 +4,9 @@
 Phi is a minimal code editor designed to look pretty, run fast, and be easy
 to configure and use. It's primary function is for editing code.
 
-Note that this is a work in progress and is very buggy! The editor is written as if it's a game,
-so it will probably **eat up your battery**, as well as **run possibly quite slow** - especially
-if you dont have a dedicated GPU - and probably **crash frequently**.
+Note that this is a work in progress and is very buggy! The editor is still a work in progress,
+there is a chance it will **eat up your battery**, **run possibly quite slow**, 
+and probably **crash frequently**.
 
 **Do not edit your precious files with this editor!**
 
