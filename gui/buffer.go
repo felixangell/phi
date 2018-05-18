@@ -1298,6 +1298,27 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		lastSelection.renderAt(ctx, b.x+b.ex, b.y+b.ey)
 	}
 
+	cursorHeight := last_h + pad
+
+	// render the ol' cursor
+	if b.HasFocus() && (renderFlashingCursor || b.curs.moving) && b.cfg.Cursor.Draw {
+		cursorWidth := b.cfg.Cursor.GetCaretWidth()
+		if cursorWidth == -1 {
+			cursorWidth = last_w
+		}
+
+		xPos := b.ex + (rx + b.curs.rx*last_w) - (b.cam.x * last_w)
+		yPos := b.ey + (ry + b.curs.ry*cursorHeight) - (b.cam.y * cursorHeight)
+
+		ctx.SetColor(strife.HexRGB(b.buffOpts.cursor))
+		ctx.Rect(xPos, yPos, cursorWidth, cursorHeight, strife.Fill)
+
+		if DEBUG_MODE {
+			ctx.SetColor(strife.HexRGB(0xff00ff))
+			ctx.Rect(xPos, yPos, cursorWidth, cursorHeight, strife.Line)
+		}
+	}
+
 	numLines := len(b.table.Lines)
 
 	var y_col int
@@ -1336,13 +1357,6 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 			ctx.SetColor(strife.HexRGB(b.buffOpts.foreground))
 
-			// if we're currently over a character then set
-			// the font colour to something else
-			// ONLY SET THE COLOUR IF WE HAVE FOCUS ALSO!
-			if b.HasFocus() && b.curs.x+1 == x_col && b.curs.y == y_col && should_draw {
-				ctx.SetColor(strife.HexRGB(b.buffOpts.cursorInvert))
-			}
-
 			if info, ok := matches[idx]; ok {
 				for i := 0; i < info.length; i++ {
 					colorStack = append(colorStack, info.background)
@@ -1353,6 +1367,14 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 				var a int32
 				a, colorStack = int32(colorStack[len(colorStack)-1]), colorStack[:len(colorStack)-1]
 				ctx.SetColor(strife.HexRGB(a))
+			}
+
+			// if we're currently over a character then set
+			// the font colour to something else
+			// ONLY SET THE COLOUR IF WE HAVE FOCUS ALSO!
+			if b.HasFocus() && b.curs.x+1 == x_col && b.curs.y == y_col {
+				// fixme!
+				ctx.SetColor(strife.HexRGB(b.buffOpts.cursorInvert))
 			}
 
 			lineHeight := last_h + pad
@@ -1394,27 +1416,6 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		}
 
 		y_col += 1
-	}
-
-	cursorHeight := last_h + pad
-
-	// render the ol' cursor
-	if b.HasFocus() && (renderFlashingCursor || b.curs.moving) && b.cfg.Cursor.Draw {
-		cursorWidth := b.cfg.Cursor.GetCaretWidth()
-		if cursorWidth == -1 {
-			cursorWidth = last_w
-		}
-
-		xPos := b.ex + (rx + b.curs.rx*last_w) - (b.cam.x * last_w)
-		yPos := b.ey + (ry + b.curs.ry*cursorHeight) - (b.cam.y * cursorHeight)
-
-		ctx.SetColor(strife.HexRGB(b.buffOpts.cursor))
-		ctx.Rect(xPos, yPos, cursorWidth, cursorHeight, strife.Fill)
-
-		if DEBUG_MODE {
-			ctx.SetColor(strife.HexRGB(0xff00ff))
-			ctx.Rect(xPos, yPos, cursorWidth, cursorHeight, strife.Line)
-		}
 	}
 
 	if b.autoComplete.hasSuggestions() {
