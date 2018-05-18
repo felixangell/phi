@@ -1092,6 +1092,14 @@ func (b *Buffer) OnUpdate() bool {
 		b.cam.y = b.cam.dy
 	}
 
+	// clamp camera
+	if b.cam.y <= 0 {
+		b.cam.y = 0
+	}
+	if b.cam.x <= 0 {
+		b.cam.x = 0
+	}
+
 	switch strife.MouseButtonsState() {
 	case strife.LeftMouseButton:
 		b.processLeftClick()
@@ -1268,6 +1276,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	if start > len(b.table.Lines) {
 		start = len(b.table.Lines)
 	}
+
 	if upper > len(b.table.Lines) {
 		upper = len(b.table.Lines)
 	}
