@@ -146,6 +146,11 @@ func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index 
 		config = cfg.NewDefaultConfig()
 	}
 
+	curs := sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_IBEAM)
+
+	// TODO do this only if we are hovering over the buffer
+	sdl.SetCursor(curs)
+
 	buff := &Buffer{
 		index:        index,
 		parent:       parent,
@@ -639,7 +644,7 @@ func (b *Buffer) moveToEndOfLine() {
 
 // TODO make this scroll auto magically.
 func (b *Buffer) gotoLine(num int64) {
-	distToMove := float64(num - int64(b.curs.y))
+	distToMove := float64((num - 1) - int64(b.curs.y))
 	for i := int64(0); i < int64(math.Abs(distToMove)); i++ {
 		if distToMove < 0 {
 			b.moveUp()
@@ -1063,6 +1068,17 @@ var ldx, ldy = 0, 0
 var ySpeed = 1
 var last = time.Now()
 
+func (b *Buffer) processLeftClick() {
+	// here we set the cursor y position
+	// based off the click location
+	yPos := strife.MouseCoords()[1]
+
+	yPosToLine := ((yPos / (last_h + pad)) + 1) + b.cam.y
+
+	fmt.Println(yPos, " line ", yPosToLine)
+	b.gotoLine(int64(yPosToLine))
+}
+
 func (b *Buffer) OnUpdate() bool {
 	if "animations on" == "true" {
 		if b.cam.y < b.cam.dy {
@@ -1075,6 +1091,12 @@ func (b *Buffer) OnUpdate() bool {
 		b.cam.x = b.cam.dx
 		b.cam.y = b.cam.dy
 	}
+
+	switch strife.MouseButtonsState() {
+	case strife.LeftMouseButton:
+		b.processLeftClick()
+	}
+
 	return false
 }
 

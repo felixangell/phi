@@ -316,8 +316,10 @@ func (n *View) OnRender(ctx *strife.Renderer) {
 
 	if DEBUG_MODE {
 		ctx.SetColor(strife.HexRGB(0xff00ff))
-		mPos := strife.MouseState()
-		ctx.Rect(mPos[0], mPos[1], 16, 24, strife.Line)
+		mPos := strife.MouseCoords()
+		ctx.Rect(mPos[0], mPos[1], 16, 16, strife.Line)
+
+		renderDebugPane(ctx, 10, 10)
 	}
 }
 
