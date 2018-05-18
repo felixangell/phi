@@ -7,9 +7,7 @@ to configure and use. It's primary function is for editing code.
 The editor is still a work in progress. There is a chance it will **eat up your battery**, **run quite slowly**, 
 and probably **crash frequently**.
 
-**Do not edit your precious files with this editor!**
-
-<br>
+<p align="center">**Do not edit your precious files with this editor!**</p>
 
 Here's a screenshot of Phi in action:
 
