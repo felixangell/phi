@@ -17,6 +17,7 @@ show_line_numbers = true
 aliased = true
 accelerated = true
 throttle_cpu_usage = true
+vertical_sync = false
 always_render = true
 syntax_highlighting = true
 

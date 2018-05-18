@@ -72,7 +72,13 @@ func main() {
 	config := cfg.Setup()
 
 	ww, wh := 1280, 720
-	window := strife.SetupRenderWindow(ww, wh, strife.DefaultConfig())
+
+	windowConfig := strife.DefaultConfig()
+	windowConfig.Accelerated = config.Render.Accelerated
+	windowConfig.Alias = config.Render.Aliased
+	windowConfig.VerticalSync = config.Render.Vertical_Sync
+
+	window := strife.SetupRenderWindow(ww, wh, windowConfig)
 	window.SetTitle("Hello world!")
 	window.SetResizable(true)
 

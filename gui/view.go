@@ -261,7 +261,7 @@ func (n *View) OnUpdate() bool {
 
 		r := rune(strife.PopKey())
 
-		if r == sdl.K_F12 {
+		if r == 'l' {
 			DEBUG_MODE = !DEBUG_MODE
 		}
 
@@ -313,6 +313,12 @@ func (n *View) OnRender(ctx *strife.Renderer) {
 	}
 
 	n.commandPalette.OnRender(ctx)
+
+	if DEBUG_MODE {
+		ctx.SetColor(strife.HexRGB(0xff00ff))
+		mPos := strife.MouseState()
+		ctx.Rect(mPos[0], mPos[1], 16, 24, strife.Line)
+	}
 }
 
 func (n *View) OnDispose() {}

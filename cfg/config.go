@@ -75,6 +75,7 @@ type RenderConfig struct {
 	Accelerated         bool
 	Throttle_Cpu_Usage  bool
 	Always_Render       bool
+	Vertical_Sync       bool
 	Syntax_Highlighting bool
 }
 
