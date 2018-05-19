@@ -1334,7 +1334,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			matches = b.syntaxHighlightLine(string(currLine))
 		}
 
-		colorStack := []int{}
+		var colorStack []int32
 
 		var x_col int
 		for idx, char := range currLine {
@@ -1355,11 +1355,12 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 			x_col += 1
 
-			ctx.SetColor(strife.HexRGB(b.buffOpts.foreground))
-
 			if info, ok := matches[idx]; ok {
-				for i := 0; i < info.length; i++ {
-					colorStack = append(colorStack, info.background)
+				if colorStack == nil || len(colorStack) == 0 {
+					colorStack = make([]int32, info.length)
+					for i := 0; i < info.length; i++ {
+						colorStack[i] = int32(info.background)
+					}
 				}
 			}
 
@@ -1367,12 +1368,15 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 				var a int32
 				a, colorStack = int32(colorStack[len(colorStack)-1]), colorStack[:len(colorStack)-1]
 				ctx.SetColor(strife.HexRGB(a))
+			} else {
+				ctx.SetColor(strife.HexRGB(b.buffOpts.foreground))
 			}
 
-			// if we're currently over a character then set
-			// the font colour to something else
-			// ONLY SET THE COLOUR IF WE HAVE FOCUS ALSO!
-			if b.HasFocus() && b.curs.x+1 == x_col && b.curs.y == y_col {
+			if b.HasFocus() && (b.curs.x-b.cam.x) == (x_col-1) && (b.curs.y-b.cam.y) == y_col {
+				log.Println("char we are over is ", string(char))
+				// if we're currently over a character then set
+				// the font colour to something else
+				// ONLY SET THE COLOUR IF WE HAVE FOCUS ALSO!
 				// fixme!
 				ctx.SetColor(strife.HexRGB(b.buffOpts.cursorInvert))
 			}
