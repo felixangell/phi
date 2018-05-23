@@ -82,17 +82,23 @@ func configureAndValidate(conf *TomlConfig) {
 	// fonts
 	log.Println("Configuring fonts")
 	{
-		switch runtime.GOOS {
-		case "windows":
-			FONT_FOLDER = filepath.Join(os.Getenv("WINDIR"), "fonts")
-		case "darwin":
-			FONT_FOLDER = "/Library/Fonts/"
-		case "linux":
-			FONT_FOLDER = findFontFolder()
+		// the font path has not been set
+		// so we have to figure out what it is.
+		if len(conf.Editor.Font_Path) == 0 {
+			switch runtime.GOOS {
+			case "windows":
+				FONT_FOLDER = filepath.Join(os.Getenv("WINDIR"), "fonts")
+			case "darwin":
+				FONT_FOLDER = "/Library/Fonts/"
+			case "linux":
+				FONT_FOLDER = findFontFolder()
+			}
+			// and set it accordingly.
+			conf.Editor.Font_Path = FONT_FOLDER
 		}
 
 		// we only support ttf at the moment.
-		fontPath := filepath.Join(FONT_FOLDER, conf.Editor.Font_Face) + ".ttf"
+		fontPath := filepath.Join(conf.Editor.Font_Path, conf.Editor.Font_Face) + ".ttf"
 		if _, err := os.Stat(fontPath); os.IsNotExist(err) {
 			log.Fatal("No such font '" + fontPath + "'")
 			// TODO cool error messages for the toml format?

@@ -116,6 +116,7 @@ type EditorConfig struct {
 	Match_Braces         bool
 	Maintain_Indentation bool
 	Highlight_Line       bool
+	Font_Path            string
 	Font_Face            string
 	Font_Size            int
 	Show_Line_Numbers    bool
