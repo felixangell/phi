@@ -29,7 +29,7 @@ var (
 )
 
 const (
-	DEFAULT_SCROLL_AMOUNT = 50
+	DEFAULT_SCROLL_AMOUNT = 10
 )
 
 // TODO move into config
@@ -119,6 +119,7 @@ type BufferConfig struct {
 	foreground        uint32
 	cursor            uint32
 	cursorInvert      uint32
+	highlightLine     uint32
 	lineNumBackground uint32
 	lineNumForeground uint32
 	font              *strife.Font
@@ -1249,7 +1250,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
 
 	if b.cfg.Editor.Highlight_Line && b.HasFocus() {
-		ctx.SetColor(strife.Black) // highlight_line_col?
+		ctx.SetColor(strife.HexRGB(b.buffOpts.highlightLine)) // highlight_line_col?
 
 		highlightLinePosY := b.ey + (ry + b.curs.ry*(last_h+pad)) - (b.cam.y * (last_h + pad))
 		highlightLinePosX := b.ex + rx

@@ -41,6 +41,7 @@ cursor = 0xf2f4f6
 cursor_invert = 0x000000
 gutter_background = 0x002649
 gutter_foreground = 0xf2f4f6
+highlight_line_background = 0x000000
 
 [theme.palette]
 outline = 0xebedef

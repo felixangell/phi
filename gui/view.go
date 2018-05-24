@@ -334,6 +334,7 @@ func (n *View) AddBuffer() *Buffer {
 		cfg.Theme.Foreground,
 		cfg.Theme.Cursor,
 		cfg.Theme.Cursor_Invert,
+		cfg.Theme.Highlight_Line_Background,
 		cfg.Theme.Gutter_Background,
 		cfg.Theme.Gutter_Foreground,
 		cfg.Editor.Loaded_Font,

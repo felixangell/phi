@@ -85,13 +85,14 @@ type RenderConfig struct {
 // the default theme in the EditorConfig
 // instead.
 type ThemeConfig struct {
-	Background        uint32
-	Foreground        uint32
-	Cursor            uint32
-	Cursor_Invert     uint32
-	Palette           PaletteConfig
-	Gutter_Background uint32
-	Gutter_Foreground uint32
+	Background                uint32
+	Foreground                uint32
+	Cursor                    uint32
+	Cursor_Invert             uint32
+	Palette                   PaletteConfig
+	Gutter_Background         uint32
+	Gutter_Foreground         uint32
+	Highlight_Line_Background uint32
 }
 
 type PaletteConfig struct {

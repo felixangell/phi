@@ -102,9 +102,12 @@ func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 			conf.Theme.Palette.Cursor,
 			conf.Theme.Palette.Cursor, // TODO invert
 
+			conf.Theme.Highlight_Line_Background,
+
 			// we dont show line numbers
 			// so these aren't necessary
 			0x0, 0x0,
+
 			conf.Editor.Loaded_Font,
 		}, nil, 0),
 		parentBuff: nil,

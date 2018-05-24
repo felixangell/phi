@@ -48,10 +48,12 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 	focused := b.Buff.index == b.Buff.parent.focusedBuff
 
 	colour := strife.HexRGB(conf.Suggestion.Background)
+
 	if focused {
-		colour.R *= 2
-		colour.G *= 2
-		colour.B *= 2
+		nr := int(colour.R) + 10
+		ng := int(colour.G) + 10
+		nb := int(colour.B) + 10
+		colour = strife.RGB(nr, ng, nb)
 	}
 
 	// panel backdrop
