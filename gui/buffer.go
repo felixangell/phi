@@ -29,7 +29,7 @@ var (
 )
 
 const (
-	DEFAULT_SCROLL_AMOUNT = 10
+	DEFAULT_SCROLL_AMOUNT = 50
 )
 
 // TODO move into config
@@ -115,12 +115,12 @@ func newAutoCompleteBox() *AutoCompleteBox {
 }
 
 type BufferConfig struct {
-	background        int32
-	foreground        int32
-	cursor            int32
-	cursorInvert      int32
-	lineNumBackground int32
-	lineNumForeground int32
+	background        uint32
+	foreground        uint32
+	cursor            uint32
+	cursorInvert      uint32
+	lineNumBackground uint32
+	lineNumForeground uint32
 	font              *strife.Font
 }
 
@@ -1367,8 +1367,8 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			characterColor := b.buffOpts.foreground
 
 			if len(colorStack) > 0 {
-				var a int32
-				a, colorStack = int32(colorStack[len(colorStack)-1]), colorStack[:len(colorStack)-1]
+				var a uint32
+				a, colorStack = uint32(colorStack[len(colorStack)-1]), colorStack[:len(colorStack)-1]
 				characterColor = a
 			}
 

@@ -256,7 +256,7 @@ func (n *View) OnUpdate() bool {
 				shortcutName = "control"
 			}
 		} else {
-			source = cfg.Shortcuts.Supers
+			source = cfg.Shortcuts.Controls
 		}
 
 		r := rune(strife.PopKey())
