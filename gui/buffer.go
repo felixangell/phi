@@ -768,19 +768,38 @@ func (b *Buffer) processSelection(key int) bool {
 
 	switch key {
 	case sdl.K_LEFT:
-		lastSelection.ex--
+		if lastSelection.ex == 0 {
+			lastSelection.ey--
+			lineLen := b.table.Lines[lastSelection.ey].Len()
+			lastSelection.ex = lineLen
+		} else {
+			lastSelection.ex--
+		}
+
 		b.moveLeft()
 		break
 	case sdl.K_RIGHT:
-		lastSelection.ex++
+		lineLen := b.table.Lines[lastSelection.ey].Len()
+		if lastSelection.ex == lineLen {
+			lastSelection.ey++
+			lastSelection.ex = 0
+		} else {
+			lastSelection.ex++
+		}
+
 		b.moveRight()
 		break
 	case sdl.K_UP:
 		lastSelection.ey--
+		lineLen := b.table.Lines[lastSelection.ey].Len()
+		lastSelection.ex = lineLen
 		b.moveUp()
+		b.moveToEndOfLine()
 		break
 	case sdl.K_DOWN:
 		lastSelection.ey++
+		lastSelection.ex = 0
+
 		b.moveDown()
 		break
 	}
