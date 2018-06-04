@@ -791,16 +791,13 @@ func (b *Buffer) processSelection(key int) bool {
 		break
 	case sdl.K_UP:
 		lastSelection.ey--
-		lineLen := b.table.Lines[lastSelection.ey].Len()
-		lastSelection.ex = lineLen
 		b.moveUp()
-		b.moveToEndOfLine()
+		lastSelection.ex = b.curs.x
 		break
 	case sdl.K_DOWN:
 		lastSelection.ey++
-		lastSelection.ex = 0
-
 		b.moveDown()
+		lastSelection.ex = b.curs.x
 		break
 	}
 
