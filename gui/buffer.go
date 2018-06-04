@@ -175,20 +175,46 @@ type selection struct {
 }
 
 func (s *selection) renderAt(ctx *strife.Renderer, xOff int, yOff int) {
-	ctx.SetColor(strife.Red)
+	ctx.SetColor(strife.Blue)
 
-	xd := (s.ex - s.sx) + 1
 	yd := (s.ey - s.sy) + 1
 
+	b := s.parent
+
+	/*
+
+		highlightLinePosY := b.ey + (ry + b.curs.ry*(last_h+pad)) - (b.cam.y * (last_h + pad))
+		highlightLinePosX := b.ex + rx
+
+		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w-b.ex, (last_h+pad)-b.ey, strife.Fill)
+
+	*/
+
+	// renders the highlighting for a line.
 	for y := 0; y < yd; y++ {
-		lineLen := s.parent.table.Lines[s.ey+y].Len() - s.sx
-		if y == yd-1 {
-			lineLen = xd
+		lineLen := s.parent.table.Lines[s.sy+y].Len()
+
+		// purely for the aesthetics?
+		// feel like this will create bugs.
+		if lineLen == 0 {
+			lineLen = 1
 		}
 
+		height := (last_h + pad) - b.ey
+
+		// width of box should be entire line
 		width := lineLen * last_w
 
-		ctx.Rect(xOff+(s.sx*last_w), yOff+((s.sy+y)*last_h), width, last_h, strife.Fill)
+		// UNLESS we are on the current line
+		if y == yd-1 {
+			width = s.ex * last_w
+		}
+
+		xPos := (s.sx)
+		yPos := ((s.sy + y) * (last_h + pad))
+
+		ctx.SetColor(strife.Blue)
+		ctx.Rect(b.ex+xPos, b.ey+yPos, width, height, strife.Fill)
 	}
 }
 
@@ -1148,11 +1174,8 @@ func (b *Buffer) processInput(pred func(r int) bool) bool {
 			// check if we need to remove the selection
 			// or not, this is if we moved the cursor somehow
 			if lastSelection != nil {
-				if b.curs.x != lastSelection.ex {
-					lastSelection = nil
-				} else if b.curs.y != lastSelection.ey {
-					lastSelection = nil
-				}
+				// TODO invalidate selection when necessary
+
 			}
 
 			return true
