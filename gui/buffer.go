@@ -210,7 +210,7 @@ func (s *selection) renderAt(ctx *strife.Renderer, xOff int, yOff int) {
 			width = s.ex * last_w
 		}
 
-		xPos := (s.sx)
+		xPos := (s.sx * last_w)
 		yPos := ((s.sy + y) * (last_h + pad))
 
 		ctx.SetColor(strife.Blue)
@@ -1114,8 +1114,7 @@ var last = time.Now()
 func (b *Buffer) processLeftClick() {
 	// here we set the cursor y position
 	// based off the click location
-	coords := strife.MouseCoords()
-	xPos, yPos := coords[0], coords[1]
+	xPos, yPos := strife.MouseCoords()
 
 	yPosToLine := (((yPos) / (last_h + pad)) + 1) + b.cam.y
 	xPosToLine := ((xPos - b.ex) / (last_w)) + b.cam.x
