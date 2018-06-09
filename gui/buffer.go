@@ -629,7 +629,12 @@ func (b *Buffer) moveLeft() {
 		b.curs.move(b.table.Lines[b.curs.y-1].Len(), -1)
 
 	} else if b.curs.x > 0 {
-		b.curs.move(-1, 0)
+		charWidth := 1
+		str := b.table.Lines[b.curs.y].String()[b.curs.x-1]
+		if str == '\t' {
+			charWidth = 4
+		}
+		b.curs.moveRender(-1, 0, -charWidth, 0)
 	}
 }
 
@@ -643,7 +648,14 @@ func (b *Buffer) moveRight() {
 		b.moveDown()
 	} else if b.curs.x < b.table.Lines[b.curs.y].Len() {
 		// we have characters to the right, let's move along
-		b.curs.move(1, 0)
+
+		charWidth := 1
+		str := b.table.Lines[b.curs.y].String()[b.curs.x]
+		if str == '\t' {
+			charWidth = 4
+		}
+
+		b.curs.moveRender(1, 0, charWidth, 0)
 	}
 }
 
@@ -1375,7 +1387,12 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 		var colorStack []int32
 
+		// TODO move this into a struct
+		// or something.
+
+		// the x position of the _character_
 		var x_col int
+
 		for idx, char := range currLine {
 			switch char {
 
@@ -1385,7 +1402,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 			case '\n':
 				x_col = 0
-				y_col += 1
+				y_col++
 				continue
 			case '\t':
 				x_col += b.cfg.Editor.Tab_Size
