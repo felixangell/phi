@@ -307,6 +307,29 @@ func (n *View) OnUpdate() bool {
 	return dirty
 }
 
+func (n *View) Resize(w, h int) {
+	n.BaseComponent.Resize(w, h)
+
+	// dont resize any buffer panes
+	// because there are none.
+	if len(n.buffers) == 0 {
+		return
+	}
+
+	// work out the size of the buffer and set it
+	// note that we +1 the components because
+	// we haven't yet added the panel
+	bufferWidth := n.w / len(n.buffers)
+
+	// translate all the buffers accordingly.
+	idx := 0
+	for _, buffPane := range n.buffers {
+		buffPane.Resize(bufferWidth, n.h)
+		buffPane.SetPosition(bufferWidth*idx, 0)
+		idx++
+	}
+}
+
 func (n *View) OnRender(ctx *strife.Renderer) {
 	for _, buffPane := range n.buffers {
 		buffPane.OnRender(ctx)
@@ -342,23 +365,9 @@ func (n *View) AddBuffer() *Buffer {
 
 	c.SetFocus(true)
 
-	// work out the size of the buffer and set it
-	// note that we +1 the components because
-	// we haven't yet added the panel
-	var bufferWidth int
-	bufferWidth = n.w / (c.index + 1)
-
 	n.focusedBuff = c.index
-
 	n.buffers = append(n.buffers, NewBufferPane(c))
-
-	// translate all the buffers accordingly.
-	idx := 0
-	for _, buffPane := range n.buffers {
-		buffPane.Resize(bufferWidth, n.h)
-		buffPane.SetPosition(bufferWidth*idx, 0)
-		idx++
-	}
+	n.Resize(n.w, n.h)
 
 	return c
 }

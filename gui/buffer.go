@@ -155,7 +155,7 @@ func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index 
 	buff := &Buffer{
 		index:        index,
 		parent:       parent,
-		curs:         &Cursor{},
+		curs:         nil,
 		cfg:          config,
 		table:        piecetable.MakePieceTable(""),
 		buffOpts:     buffOpts,
@@ -163,6 +163,7 @@ func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index 
 		cam:          &camera{0, 0, 0, 0},
 		autoComplete: newAutoCompleteBox(),
 	}
+	buff.curs = newCursor(buff)
 	return buff
 }
 
@@ -561,12 +562,7 @@ func (b *Buffer) deleteNext() {
 // FIXME clean this up!
 func (b *Buffer) deletePrev() {
 	if b.curs.x > 0 {
-		offs := -1
-		if !b.cfg.Editor.Tabs_Are_Spaces {
-			if b.table.Index(b.curs.y, b.curs.x) == '\t' {
-				offs = int(-b.cfg.Editor.Tab_Size)
-			}
-		} else if b.cfg.Editor.Hungry_Backspace && b.curs.x >= int(b.cfg.Editor.Tab_Size) {
+		if b.cfg.Editor.Hungry_Backspace && b.curs.x >= int(b.cfg.Editor.Tab_Size) {
 			// cut out the last {TAB_SIZE} amount of characters
 			// and check em
 			tabSize := int(b.cfg.Editor.Tab_Size)
@@ -581,7 +577,10 @@ func (b *Buffer) deletePrev() {
 				for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {
 
 					b.table.Delete(b.curs.y, b.curs.x)
-					b.curs.move(-1, 0)
+
+					// FIXME this was -1, maybe we dont
+					// want to handle tabs?
+					b.moveLeft()
 				}
 				return
 			}
@@ -594,20 +593,22 @@ func (b *Buffer) deletePrev() {
 			b.autoComplete.lastRunes = b.autoComplete.lastRunes[:len(b.autoComplete.lastRunes)-1]
 		}
 
-		b.curs.moveRender(-1, 0, offs, 0)
+		b.moveLeft()
 	} else if b.curs.x == 0 && b.curs.y > 0 {
+		// FIXME
+
 		// TODO this should set the previous word
 		// in the auto complete to the word before the cursor after
 		// wrapping back the line?
 
 		// start of line, wrap to previous
-		prevLineLen := b.table.Lines[b.curs.y-1].Len()
-
 		val := b.table.Lines[b.curs.y].String()
 		b.table.Insert(val, b.curs.y-1, b.table.Lines[b.curs.y-1].Len())
 
 		b.table.Lines = append(b.table.Lines[:b.curs.y], b.table.Lines[b.curs.y+1:]...)
-		b.curs.move(prevLineLen, -1)
+
+		b.moveUp()
+		b.moveToEndOfLine()
 	}
 }
 
@@ -627,9 +628,16 @@ func (b *Buffer) deleteBeforeCursor() {
 func (b *Buffer) moveLeft() {
 	if b.curs.x == 0 && b.curs.y > 0 {
 		b.curs.move(b.table.Lines[b.curs.y-1].Len(), -1)
-
 	} else if b.curs.x > 0 {
-		b.curs.move(-1, 0)
+		str := b.table.Lines[b.curs.y].String()
+		inBounds := (b.curs.x-1 >= 0 && b.curs.x-1 < len(str))
+
+		charWidth := 1
+		if inBounds && str[b.curs.x-1] == '\t' {
+			charWidth = 4
+		}
+
+		b.curs.moveRender(-1, 0, -charWidth, 0)
 	}
 }
 
@@ -643,7 +651,14 @@ func (b *Buffer) moveRight() {
 		b.moveDown()
 	} else if b.curs.x < b.table.Lines[b.curs.y].Len() {
 		// we have characters to the right, let's move along
-		b.curs.move(1, 0)
+
+		charWidth := 1
+		str := b.table.Lines[b.curs.y].String()[b.curs.x]
+		if str == '\t' {
+			charWidth = 4
+		}
+
+		b.curs.moveRender(1, 0, charWidth, 0)
 	}
 }
 
@@ -1003,25 +1018,28 @@ func (b *Buffer) processActionKey(key int) bool {
 		if b.cfg.Editor.Tabs_Are_Spaces {
 			// make an empty rune array of TAB_SIZE, cast to string
 			// and insert it.
-			b.table.Insert(b.makeTab(), b.curs.y, b.curs.x)
-			b.curs.move(int(b.cfg.Editor.Tab_Size), 0)
+			tab := b.makeTab()
+			b.table.Insert(tab, b.curs.y, b.curs.x)
+			for i := 0; i < len(tab); i++ {
+				b.moveRight()
+			}
 		} else {
 			b.table.Insert(string('\t'), b.curs.y, b.curs.x)
-			// the actual position is + 1, but we make it
-			// move by TAB_SIZE characters on the view.
-			b.curs.moveRender(1, 0, int(b.cfg.Editor.Tab_Size), 0)
+			b.moveRight()
 		}
 
 	case sdl.K_END:
 		currLine := b.table.Lines[b.curs.y]
 		if b.curs.x < currLine.Len() {
 			distToMove := currLine.Len() - b.curs.x
-			b.curs.move(distToMove, 0)
+			for i := 0; i < distToMove; i++ {
+				b.moveRight()
+			}
 		}
 
 	case sdl.K_HOME:
 		if b.curs.x > 0 {
-			b.curs.move(-b.curs.x, 0)
+			b.moveToStartOfLine()
 		}
 
 		// TODO remove since this is handled in the keymap!
@@ -1337,25 +1355,21 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		lastSelection.renderAt(ctx, b.x+b.ex, b.y+b.ey)
 	}
 
-	cursorHeight := last_h + pad
-
-	// render the ol' cursor
-	if b.HasFocus() && (renderFlashingCursor || b.curs.moving) && b.cfg.Cursor.Draw {
+	// calculate cursor sizes... does
+	// this have to be done every frame?
+	{
 		cursorWidth := b.cfg.Cursor.GetCaretWidth()
 		if cursorWidth == -1 {
 			cursorWidth = last_w
 		}
+		cursorHeight := last_h + pad
 
-		xPos := b.ex + (rx + b.curs.rx*last_w) - (b.cam.x * last_w)
-		yPos := b.ey + (ry + b.curs.ry*cursorHeight) - (b.cam.y * cursorHeight)
+		b.curs.SetSize(cursorWidth, cursorHeight)
+	}
 
-		ctx.SetColor(strife.HexRGB(b.buffOpts.cursor))
-		ctx.Rect(xPos, yPos, cursorWidth, cursorHeight, strife.Fill)
-
-		if DEBUG_MODE {
-			ctx.SetColor(strife.HexRGB(0xff00ff))
-			ctx.Rect(xPos, yPos, cursorWidth, cursorHeight, strife.Line)
-		}
+	// render the ol' cursor
+	if b.HasFocus() && (renderFlashingCursor || b.curs.moving) && b.cfg.Cursor.Draw {
+		b.curs.Render(ctx, rx, ry)
 	}
 
 	numLines := len(b.table.Lines)
@@ -1375,7 +1389,12 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 		var colorStack []int32
 
+		// TODO move this into a struct
+		// or something.
+
+		// the x position of the _character_
 		var x_col int
+
 		for idx, char := range currLine {
 			switch char {
 
@@ -1385,7 +1404,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 			case '\n':
 				x_col = 0
-				y_col += 1
+				y_col++
 				continue
 			case '\t':
 				x_col += b.cfg.Editor.Tab_Size
@@ -1460,9 +1479,9 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	if b.autoComplete.hasSuggestions() {
 
 		xPos := b.ex + (rx + b.curs.rx*last_w) - (b.cam.x * last_w)
-		yPos := b.ey + (ry + b.curs.ry*cursorHeight) - (b.cam.y * cursorHeight)
+		yPos := b.ey + (ry + b.curs.ry*b.curs.height) - (b.cam.y * b.curs.height)
 
-		autoCompleteBoxHeight := len(b.autoComplete.suggestions) * cursorHeight
+		autoCompleteBoxHeight := len(b.autoComplete.suggestions) * b.curs.height
 		yPos = yPos - autoCompleteBoxHeight
 
 		b.autoComplete.renderAt(xPos, yPos, ctx)

@@ -24,6 +24,10 @@ type PhiEditor struct {
 	mainView    *gui.View
 }
 
+func (n *PhiEditor) resize(w, h int) {
+	n.mainView.Resize(w, h)
+}
+
 func (n *PhiEditor) handleEvent(evt strife.StrifeEvent) {
 
 }
@@ -84,9 +88,11 @@ func main() {
 
 	editor := &PhiEditor{running: true}
 	window.HandleEvents(func(evt strife.StrifeEvent) {
-		switch evt.(type) {
+		switch event := evt.(type) {
 		case *strife.CloseEvent:
 			window.Close()
+		case *strife.WindowResizeEvent:
+			editor.resize(event.Width, event.Height)
 		default:
 			editor.handleEvent(evt)
 		}
