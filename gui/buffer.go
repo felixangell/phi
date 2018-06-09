@@ -627,13 +627,15 @@ func (b *Buffer) deleteBeforeCursor() {
 func (b *Buffer) moveLeft() {
 	if b.curs.x == 0 && b.curs.y > 0 {
 		b.curs.move(b.table.Lines[b.curs.y-1].Len(), -1)
-
 	} else if b.curs.x > 0 {
+		str := b.table.Lines[b.curs.y].String()
+		inBounds := (b.curs.x-1 >= 0 && b.curs.x-1 < len(str))
+
 		charWidth := 1
-		str := b.table.Lines[b.curs.y].String()[b.curs.x-1]
-		if str == '\t' {
+		if inBounds && str[b.curs.x-1] == '\t' {
 			charWidth = 4
 		}
+
 		b.curs.moveRender(-1, 0, -charWidth, 0)
 	}
 }
