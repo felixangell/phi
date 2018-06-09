@@ -1,10 +1,32 @@
 package gui
 
+import (
+	"github.com/felixangell/strife"
+)
+
 type Cursor struct {
-	x, y   int
-	rx, ry int
-	dx, dy int
-	moving bool
+	parent        *Buffer
+	x, y          int
+	rx, ry        int
+	dx, dy        int
+	moving        bool
+	width, height int
+}
+
+func newCursor(parent *Buffer) *Cursor {
+	return &Cursor{
+		parent,
+		0, 0,
+		0, 0,
+		0, 0,
+		false,
+		0, 0,
+	}
+}
+
+func (c *Cursor) SetSize(w, h int) {
+	c.width = w
+	c.height = h
 }
 
 func (c *Cursor) gotoStart() {
@@ -39,4 +61,19 @@ func (c *Cursor) moveRender(x, y, rx, ry int) {
 
 	c.rx += rx
 	c.ry += ry
+}
+
+func (c *Cursor) Render(ctx *strife.Renderer, xOff, yOff int) {
+	b := c.parent
+
+	xPos := b.ex + (xOff + c.rx*last_w) - (b.cam.x * last_w)
+	yPos := b.ey + (yOff + c.ry*c.height) - (b.cam.y * c.height)
+
+	ctx.SetColor(strife.HexRGB(b.buffOpts.cursor))
+	ctx.Rect(xPos, yPos, c.width, c.height, strife.Fill)
+
+	if DEBUG_MODE {
+		ctx.SetColor(strife.HexRGB(0xff00ff))
+		ctx.Rect(xPos, yPos, c.width, c.height, strife.Line)
+	}
 }

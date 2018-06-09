@@ -155,7 +155,7 @@ func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index 
 	buff := &Buffer{
 		index:        index,
 		parent:       parent,
-		curs:         &Cursor{},
+		curs:         nil,
 		cfg:          config,
 		table:        piecetable.MakePieceTable(""),
 		buffOpts:     buffOpts,
@@ -163,6 +163,7 @@ func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index 
 		cam:          &camera{0, 0, 0, 0},
 		autoComplete: newAutoCompleteBox(),
 	}
+	buff.curs = newCursor(buff)
 	return buff
 }
 
@@ -1354,25 +1355,21 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		lastSelection.renderAt(ctx, b.x+b.ex, b.y+b.ey)
 	}
 
-	cursorHeight := last_h + pad
-
-	// render the ol' cursor
-	if b.HasFocus() && (renderFlashingCursor || b.curs.moving) && b.cfg.Cursor.Draw {
+	// calculate cursor sizes... does
+	// this have to be done every frame?
+	{
 		cursorWidth := b.cfg.Cursor.GetCaretWidth()
 		if cursorWidth == -1 {
 			cursorWidth = last_w
 		}
+		cursorHeight := last_h + pad
 
-		xPos := b.ex + (rx + b.curs.rx*last_w) - (b.cam.x * last_w)
-		yPos := b.ey + (ry + b.curs.ry*cursorHeight) - (b.cam.y * cursorHeight)
+		b.curs.SetSize(cursorWidth, cursorHeight)
+	}
 
-		ctx.SetColor(strife.HexRGB(b.buffOpts.cursor))
-		ctx.Rect(xPos, yPos, cursorWidth, cursorHeight, strife.Fill)
-
-		if DEBUG_MODE {
-			ctx.SetColor(strife.HexRGB(0xff00ff))
-			ctx.Rect(xPos, yPos, cursorWidth, cursorHeight, strife.Line)
-		}
+	// render the ol' cursor
+	if b.HasFocus() && (renderFlashingCursor || b.curs.moving) && b.cfg.Cursor.Draw {
+		b.curs.Render(ctx, rx, ry)
 	}
 
 	numLines := len(b.table.Lines)
@@ -1482,9 +1479,9 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	if b.autoComplete.hasSuggestions() {
 
 		xPos := b.ex + (rx + b.curs.rx*last_w) - (b.cam.x * last_w)
-		yPos := b.ey + (ry + b.curs.ry*cursorHeight) - (b.cam.y * cursorHeight)
+		yPos := b.ey + (ry + b.curs.ry*b.curs.height) - (b.cam.y * b.curs.height)
 
-		autoCompleteBoxHeight := len(b.autoComplete.suggestions) * cursorHeight
+		autoCompleteBoxHeight := len(b.autoComplete.suggestions) * b.curs.height
 		yPos = yPos - autoCompleteBoxHeight
 
 		b.autoComplete.renderAt(xPos, yPos, ctx)
