@@ -115,7 +115,7 @@ func Save(v *View, commands []string) bool {
 		filePath = genFileName(dir, "", ext)
 	}
 
-	err := ioutil.WriteFile(filePath, buffer.Bytes(), 0775)
+	err := ioutil.WriteFile(filePath, buffer.Bytes(), 0644)
 	if err != nil {
 		log.Println(err.Error())
 	}
