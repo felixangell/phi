@@ -16,23 +16,23 @@ func init() {
 	// TOML
 	RegisterSyntax("toml", `[syntax.toml]
 [syntax.declaration]
-colouring = 0xf8f273
+foreground = 0xf8f273
 pattern = '(\[)(.*)(\])'
 
 [syntax.identifier]
-colouring = 0xf0a400
+foreground = 0xf0a400
 pattern = '\b([a-z]|[A-Z])+(_|([a-z]|[A-Z])+)*\b'
 
 [syntax.symbol]
 match = ["="]
-colouring = 0xf8f273
+foreground = 0xf8f273
 `)
 
 	// C LANGUAGE SYNTAX HIGHLIGHTING
 
 	RegisterSyntax("c", `[syntax.c]
 [syntax.type]
-colouring = 0xf8f273
+foreground = 0xf8f273
 match = [
 	"int", "char", "bool", "float", "double", "void",
 	"uint8_t", "uint16_t", "uint32_t", "uint64_t",
@@ -40,7 +40,7 @@ match = [
 ]
 
 [syntax.keyword]
-colouring = 0xf0a400
+foreground = 0xf0a400
 match = [
 	"for", "break", "if", "else", "continue", "return",
 	"goto", "extern", "const", "typedef",
@@ -50,15 +50,15 @@ match = [
 ]
 
 [syntax.string_literal]
-colouring = 0x4b79fc
+foreground = 0x4b79fc
 pattern = "\"([^\\\"]|\\.)*\""
 
 [syntax.directive]
-colouring = 0xf0a400
+foreground = 0xf0a400
 pattern = "^\\s*#\\s*include\\s+(?:<[^>]*>|\"[^\"]*\")\\s*"
 
 [syntax.symbol]
-colouring = 0xf0a400
+foreground = 0xf0a400
 match = [
 	"+=", "-=", "*=", "/=", ">>", "<<", "==", "!=",
 	">=", "<=", "||", "&&",
@@ -67,14 +67,14 @@ match = [
 ]
 
 [syntax.comment]
-colouring = 0x4b79fc
+foreground = 0x4b79fc
 pattern = '//.*'`)
 
 	// GO LANGUAGE SYNTAX HIGHLIGHTING
 
 	RegisterSyntax("go", `[syntax.go]
 [syntax.keyword]
-colouring = 0xf0a400
+foreground = 0xf0a400
 match = [
 	"break", "default", "func", "interface", "select",
 	"case", "defer", "go", "map", "struct",
@@ -84,7 +84,7 @@ match = [
 ]
 
 [syntax.type]
-colouring = 0xf8f273
+foreground = 0xf8f273
 match = [
 	"int", "string", "uint", "rune",
 	"int8", "int16", "int32", "int64",
@@ -94,15 +94,15 @@ match = [
 ]
 
 [syntax.comment]
-colouring = 0x4b79fc
+foreground = 0x4b79fc
 pattern = '//.*'
 
 [syntax.string_literal]
-colouring = 0x4b79fc
+foreground = 0x4b79fc
 pattern = "\"([^\\\"]|\\.)*\""
 
 [syntax.symbol]
-colouring = 0xf0a400
+foreground = 0xf0a400
 match = [
 	"+=", "-=", "*=", "/=", ">>", "<<", "==", "!=", ":=",
 	">=", "<=", "||", "&&",
@@ -112,7 +112,7 @@ match = [
 
 	RegisterSyntax("md", `[syntax.md]
 [syntax.header]
-colouring = 0xff00ff
+foreground = 0xff00ff
 pattern = '(?m)^#{1,6}.*'
 `)
 

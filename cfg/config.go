@@ -35,9 +35,10 @@ type FileAssociations struct {
 }
 
 type SyntaxCriteria struct {
-	Colour  int      `toml:"colouring"`
-	Match   []string `toml:"match"`
-	Pattern string   `toml:"pattern"`
+	Foreground uint32   `toml:"foreground"`
+	Background uint32   `toml:"background"`
+	Match      []string `toml:"match"`
+	Pattern    string   `toml:"pattern"`
 
 	CompiledPattern *regexp.Regexp
 	MatchList       map[string]bool

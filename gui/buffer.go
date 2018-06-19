@@ -1236,8 +1236,8 @@ func (b *Buffer) processInput(pred func(r int) bool) bool {
 }
 
 type syntaxRuneInfo struct {
-	background int
-	foreground int
+	background uint32
+	foreground uint32
 	length     int
 }
 
@@ -1245,7 +1245,7 @@ type syntaxRuneInfo struct {
 var last_w, last_h int
 
 // runs up a lexer instance
-func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch map[string]bool, bg int, fg int) {
+func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch map[string]bool, bg uint32, fg uint32) {
 	// start up a lexer instance and
 	// lex the line.
 	lexer := lex.New(currLine)
@@ -1254,20 +1254,28 @@ func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch ma
 
 	for _, tok := range tokenStream {
 		if _, ok := toMatch[tok.Lexeme]; ok {
-			(*matches)[tok.Start] = syntaxRuneInfo{bg, -1, len(tok.Lexeme)}
+			(*matches)[tok.Start] = syntaxRuneInfo{bg, fg, len(tok.Lexeme)}
 		}
 	}
+}
+
+type charColouring struct {
+	bg uint32
+	fg uint32
 }
 
 func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 	matches := map[int]syntaxRuneInfo{}
 
 	subjects := make([]*cfg.SyntaxCriteria, len(b.languageInfo.Syntax))
-	colours := make([]int, len(b.languageInfo.Syntax))
+	colours := make([]charColouring, len(b.languageInfo.Syntax))
 
 	idx := 0
 	for _, criteria := range b.languageInfo.Syntax {
-		colours[idx] = criteria.Colour
+		colours[idx] = charColouring{
+			criteria.Background,
+			criteria.Foreground,
+		}
 		subjects[idx] = criteria
 		idx++
 	}
@@ -1282,16 +1290,22 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 				if matched != nil {
 					if _, ok := matches[charIndex]; !ok {
 						matchedStrLen := (matched[1] - matched[0])
-						matches[charIndex+matched[0]] = syntaxRuneInfo{colours[syntaxIndex], -1, matchedStrLen}
+
+						colouring := colours[syntaxIndex]
+						matches[charIndex+matched[0]] = syntaxRuneInfo{
+							colouring.bg,
+							colouring.fg,
+							matchedStrLen,
+						}
+
 						charIndex += matchedStrLen
 						continue
 					}
 				}
 			}
 		} else {
-			background := colours[syntaxIndex]
-			foreground := 0
-			lexFindMatches(&matches, currLine, syntax.MatchList, background, foreground)
+			colouring := colours[syntaxIndex]
+			lexFindMatches(&matches, currLine, syntax.MatchList, colouring.bg, colouring.fg)
 		}
 	}
 
@@ -1387,7 +1401,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			matches = b.syntaxHighlightLine(string(currLine))
 		}
 
-		var colorStack []int32
+		var colorStack []charColouring
 
 		// TODO move this into a struct
 		// or something.
@@ -1415,30 +1429,32 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 			if info, ok := matches[idx]; ok {
 				if colorStack == nil || len(colorStack) == 0 {
-					colorStack = make([]int32, info.length)
+					colorStack = make([]charColouring, info.length)
 					for i := 0; i < info.length; i++ {
-						colorStack[i] = int32(info.background)
+						colorStack[i] = charColouring{info.background, info.foreground}
 					}
 				}
 			}
 
-			characterColor := b.buffOpts.foreground
+			characterColor := charColouring{0, b.buffOpts.foreground}
 
 			if len(colorStack) > 0 {
-				var a uint32
-				a, colorStack = uint32(colorStack[len(colorStack)-1]), colorStack[:len(colorStack)-1]
+				a := colorStack[len(colorStack)-1]
+				colorStack = colorStack[:len(colorStack)-1]
 				characterColor = a
 			}
 
 			if b.HasFocus() && (b.curs.x-b.cam.x) == (x_col-1) && (b.curs.y-b.cam.y) == y_col {
-				characterColor = b.buffOpts.cursorInvert
+				characterColor = charColouring{0, b.buffOpts.cursorInvert}
 			}
 
 			lineHeight := last_h + pad
 			xPos := b.ex + (rx + ((x_col - 1) * last_w))
 			yPos := b.ey + (ry + (y_col * lineHeight)) + halfPad
 
-			ctx.SetColor(strife.HexRGB(characterColor))
+			// todo render background
+
+			ctx.SetColor(strife.HexRGB(characterColor.fg))
 			last_w, last_h = ctx.String(string(char), xPos, yPos)
 
 			if DEBUG_MODE {
