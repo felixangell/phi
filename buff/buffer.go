@@ -473,17 +473,14 @@ func (b *Buffer) processTextInput(r rune) bool {
 			key = string(unicode.ToLower(r))
 		}
 
-		log.Println("warning, unimplemented shortcut", shortcutName, "+", unicode.ToLower(r), "#", int(r), actionName)
-
-		/*
-			actionName, actionExists := source[key]
-					if actionExists {
-						if action, ok := action.Register[actionName]; ok {
-							return action.proc(b.parent, []string{})
-						}
-					} else {
-					}
-		*/
+		actionName, actionExists := source[key]
+		if actionExists {
+			if action, ok := register[actionName]; ok {
+				return action.proc(b.parent, []string{})
+			}
+		} else {
+			log.Println("warning, unimplemented shortcut", shortcutName, "+", unicode.ToLower(r), "#", int(r), actionName)
+		}
 	}
 
 	if shiftDown {

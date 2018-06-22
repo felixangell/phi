@@ -1,13 +1,11 @@
-package action
+package buff
 
 import (
 	"log"
 	"os"
-
-	"github.com/felixangell/phi/buff"
 )
 
-func ExitPhi(v *buff.BufferView, commands []string) bool {
+func ExitPhi(v *BufferView, commands []string) bool {
 	// todo this probably wont work...
 	// would also be nice to have a thing
 	// that asks if we want to save all buffers

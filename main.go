@@ -11,7 +11,6 @@ import (
 
 	"github.com/felixangell/phi/buff"
 	"github.com/felixangell/phi/cfg"
-	"github.com/felixangell/phi/gui"
 	"github.com/felixangell/strife"
 )
 
@@ -34,7 +33,7 @@ func (n *PhiEditor) handleEvent(evt strife.StrifeEvent) {
 }
 
 func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
-	mainView := gui.NewView(1280, 720, cfg)
+	mainView := buff.NewView(1280, 720, cfg)
 
 	args := os.Args
 	if len(args) > 1 {

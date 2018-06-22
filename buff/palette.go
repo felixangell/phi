@@ -115,7 +115,7 @@ func NewCommandPalette(conf cfg.TomlConfig, view *BufferView) *CommandPalette {
 	}
 	palette.buff.appendLine("")
 
-	vW, vH := view.GetSize()
+	vW, _ := view.GetSize()
 	pW, pH := palette.GetSize()
 
 	palette.Resize(vW/3, 48)
@@ -154,14 +154,12 @@ func (b *CommandPalette) processCommand() {
 
 		log.Println("command palette: ", tokenizedLine)
 
-		/*
-			action, exists := action.Register[command]
-			if !exists {
-				return
-			}
+		action, exists := register[command]
+		if !exists {
+			return
+		}
 
-			action.proc(b.parent, tokenizedLine[1:])
-		*/
+		action.proc(b.parent, tokenizedLine[1:])
 		return
 	}
 

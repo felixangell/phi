@@ -1,15 +1,12 @@
-package action
+package buff
 
-const Register = map[string]BufferAction{
-	"page_down": NewBufferAction("page_down", pageDown),
-	"page_up":   NewBufferAction("page_up", pageUp),
-
-	"undo": NewBufferAction("undo", Undo),
-	"redo": NewBufferAction("redo", Redo),
-
-	"focus_left":  NewBufferAction("focus_left", focusLeft),
-	"focus_right": NewBufferAction("focus_right", focusRight),
-
+var register = map[string]BufferAction{
+	"page_down":    NewBufferAction("page_down", pageDown),
+	"page_up":      NewBufferAction("page_up", pageUp),
+	"undo":         NewBufferAction("undo", Undo),
+	"redo":         NewBufferAction("redo", Redo),
+	"focus_left":   NewBufferAction("focus_left", focusLeft),
+	"focus_right":  NewBufferAction("focus_right", focusRight),
 	"goto":         NewBufferAction("goto", GotoLine),
 	"new":          NewBufferAction("new", NewFile),
 	"open":         NewBufferAction("open", OpenFile),

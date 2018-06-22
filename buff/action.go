@@ -1,20 +1,18 @@
-package action
+package buff
 
 import (
 	"log"
 	"strconv"
 	"strings"
-
-	"github.com/felixangell/phi/buff"
 )
 
 type BufferAction struct {
 	name          string
-	proc          func(*buff.BufferView, []string) bool
+	proc          func(*BufferView, []string) bool
 	showInPalette bool
 }
 
-func NewBufferAction(name string, proc func(*buff.BufferView, []string) bool) BufferAction {
+func NewBufferAction(name string, proc func(*BufferView, []string) bool) BufferAction {
 	return BufferAction{
 		name:          name,
 		proc:          proc,
@@ -22,7 +20,7 @@ func NewBufferAction(name string, proc func(*buff.BufferView, []string) bool) Bu
 	}
 }
 
-func OpenFile(v *buff.BufferView, commands []string) bool {
+func OpenFile(v *BufferView, commands []string) bool {
 	path := ""
 	if path == "" {
 		panic("unimplemented")
@@ -44,7 +42,7 @@ func OpenFile(v *buff.BufferView, commands []string) bool {
 	return false
 }
 
-func NewFile(v *buff.BufferView, commands []string) bool {
+func NewFile(v *BufferView, commands []string) bool {
 	// TODO some nice error stuff
 	// have an error roll thing in the view?
 
@@ -57,7 +55,7 @@ func NewFile(v *buff.BufferView, commands []string) bool {
 	return false
 }
 
-func GotoLine(v *buff.BufferView, commands []string) bool {
+func GotoLine(v *BufferView, commands []string) bool {
 	if len(commands) == 0 {
 		return false
 	}
@@ -77,7 +75,7 @@ func GotoLine(v *buff.BufferView, commands []string) bool {
 	return false
 }
 
-func focusLeft(v *buff.BufferView, commands []string) bool {
+func focusLeft(v *BufferView, commands []string) bool {
 	if v == nil {
 		return false
 	}
@@ -85,7 +83,7 @@ func focusLeft(v *buff.BufferView, commands []string) bool {
 	return false
 }
 
-func focusRight(v *buff.BufferView, commands []string) bool {
+func focusRight(v *BufferView, commands []string) bool {
 	if v == nil {
 		return false
 	}
@@ -93,7 +91,7 @@ func focusRight(v *buff.BufferView, commands []string) bool {
 	return false
 }
 
-func pageDown(v *buff.BufferView, commands []string) bool {
+func pageDown(v *BufferView, commands []string) bool {
 	if v == nil {
 		return false
 	}
@@ -109,7 +107,7 @@ func pageDown(v *buff.BufferView, commands []string) bool {
 	return false
 }
 
-func pageUp(v *buff.BufferView, commands []string) bool {
+func pageUp(v *BufferView, commands []string) bool {
 	if v == nil {
 		return false
 	}

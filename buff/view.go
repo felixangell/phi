@@ -304,17 +304,15 @@ func (n *BufferView) OnUpdate() bool {
 			key = string(unicode.ToLower(r))
 		}
 
-		/*
-			actionName, actionExists := source[key]
-					if actionExists {
-						if action, ok := action.Register[actionName]; ok {
-							log.Println("Executing action '" + actionName + "'")
-							return action.proc(n, []string{})
-						}
-					} else {
-						log.Println("view: unimplemented shortcut", shortcutName, "+", string(unicode.ToLower(r)), "#", int(r), actionName, key)
-					}
-		*/
+		actionName, actionExists := source[key]
+		if actionExists {
+			if action, ok := register[actionName]; ok {
+				log.Println("Executing action '" + actionName + "'")
+				return action.proc(n, []string{})
+			}
+		} else {
+			log.Println("view: unimplemented shortcut", shortcutName, "+", string(unicode.ToLower(r)), "#", int(r), actionName, key)
+		}
 	}
 
 	buff := n.getCurrentBuffPane()
