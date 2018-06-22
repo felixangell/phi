@@ -21,14 +21,14 @@ import (
 )
 
 var (
-	timer        int64 = 0
-	reset_timer  int64 = 0
-	should_draw  bool  = true
-	should_flash bool
+	timer       = 0
+	resetTimer  = 0
+	shouldDraw  = true
+	shouldFlash = false
 )
 
 const (
-	DEFAULT_SCROLL_AMOUNT = 10
+	DefaultScrollAmount = 10
 )
 
 // TODO move into config
@@ -43,6 +43,7 @@ type camera struct {
 	dy int
 }
 
+// AutoCompleteBox ...
 // TODO maybe have a thread that finds
 // words in the current file
 // and adds them to the vocabulary.
@@ -124,6 +125,8 @@ type BufferConfig struct {
 	font              *strife.Font
 }
 
+// Buffer is a structure representing
+// a buffer of text.
 type Buffer struct {
 	BaseComponent
 	index        int
@@ -140,6 +143,7 @@ type Buffer struct {
 	autoComplete *AutoCompleteBox
 }
 
+// NewBuffer creates a new buffer with the given configurations
 func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index int) *Buffer {
 	config := conf
 	if config == nil {
@@ -249,6 +253,8 @@ func (b *Buffer) reload() {
 	b.modified = false
 }
 
+// OpenFile will open the given file path into this buffer.
+// This also handles loading of syntax stuff for syntax highlighting.
 func (b *Buffer) OpenFile(filePath string) {
 	b.filePath = filePath
 
@@ -506,8 +512,6 @@ func (b *Buffer) processTextInput(r rune) bool {
 				if curr == r {
 					b.moveRight()
 					return true
-				} else {
-					log.Print("no it's ", curr)
 				}
 			}
 		}
@@ -1041,13 +1045,13 @@ func (b *Buffer) processActionKey(key int) bool {
 
 		// TODO remove since this is handled in the keymap!
 	case strife.KEY_PAGEUP:
-		b.scrollUp(DEFAULT_SCROLL_AMOUNT)
-		for i := 0; i < DEFAULT_SCROLL_AMOUNT; i++ {
+		b.scrollUp(DefaultScrollAmount)
+		for i := 0; i < DefaultScrollAmount; i++ {
 			b.moveUp()
 		}
 	case strife.KEY_PAGEDOWN:
-		b.scrollDown(DEFAULT_SCROLL_AMOUNT)
-		for i := 0; i < DEFAULT_SCROLL_AMOUNT; i++ {
+		b.scrollDown(DefaultScrollAmount)
+		for i := 0; i < DefaultScrollAmount; i++ {
 			b.moveDown()
 		}
 
@@ -1109,10 +1113,10 @@ func (b *Buffer) HandleEvent(evt strife.StrifeEvent) {
 	switch event := evt.(type) {
 	case *strife.MouseWheelEvent:
 		if event.Y > 0 {
-			b.scrollDown(DEFAULT_SCROLL_AMOUNT)
+			b.scrollDown(DefaultScrollAmount)
 		}
 		if event.Y < 0 {
-			b.scrollUp(DEFAULT_SCROLL_AMOUNT)
+			b.scrollUp(DefaultScrollAmount)
 		}
 	}
 }

@@ -100,8 +100,8 @@ func pageDown(v *View, commands []string) bool {
 		return false
 	}
 
-	buff.scrollDown(DEFAULT_SCROLL_AMOUNT)
-	for i := 0; i < DEFAULT_SCROLL_AMOUNT; i++ {
+	buff.scrollDown(DefaultScrollAmount)
+	for i := 0; i < DefaultScrollAmount; i++ {
 		buff.moveDown()
 	}
 	return false
@@ -116,8 +116,8 @@ func pageUp(v *View, commands []string) bool {
 		return false
 	}
 
-	buff.scrollUp(DEFAULT_SCROLL_AMOUNT)
-	for i := 0; i < DEFAULT_SCROLL_AMOUNT; i++ {
+	buff.scrollUp(DefaultScrollAmount)
+	for i := 0; i < DefaultScrollAmount; i++ {
 		buff.moveUp()
 	}
 	return false

@@ -17,16 +17,16 @@ type bufferEvent interface {
 	String() string
 }
 
-type ReloadBufferEvent struct {
+type reloadBufferEvent struct {
 	buff *Buffer
 }
 
-func (r *ReloadBufferEvent) Process(view *View) {
+func (r *reloadBufferEvent) Process(view *View) {
 	log.Println("reloading buffer", r.buff.filePath)
 	r.buff.reload()
 }
 
-func (r *ReloadBufferEvent) String() string {
+func (r *reloadBufferEvent) String() string {
 	return "reload-buffer-event"
 }
 
@@ -44,6 +44,8 @@ type View struct {
 	bufferEvents chan bufferEvent
 }
 
+// NewView creaets a new view with the given width and height
+// as well as configurations.
 func NewView(width, height int, conf *cfg.TomlConfig) *View {
 	view := &View{
 		conf:         conf,
@@ -57,6 +59,8 @@ func NewView(width, height int, conf *cfg.TomlConfig) *View {
 
 	view.commandPalette = NewCommandPalette(*conf, view)
 	view.UnfocusBuffers()
+
+	// TODO handle the fsnotify stuff properly.
 
 	var err error
 	view.watcher, err = fsnotify.NewWatcher()
@@ -80,7 +84,7 @@ func NewView(width, height int, conf *cfg.TomlConfig) *View {
 						break
 					}
 
-					view.bufferEvents <- &ReloadBufferEvent{buff}
+					view.bufferEvents <- &reloadBufferEvent{buff}
 					log.Println("modified file:", event.Name)
 				}
 			case err := <-view.watcher.Errors:
@@ -112,6 +116,7 @@ func (n *View) registerFile(path string, buff *Buffer) {
 	n.bufferMap[path] = buff
 }
 
+// Close will close the view and all of the components
 func (n *View) Close() {
 	n.watcher.Close()
 }
@@ -134,6 +139,8 @@ func (n *View) focusPalette(buff *Buffer) {
 	p.parentBuff = buff
 }
 
+// UnfocusBuffers will remove focus
+// from all of the buffers in this view.
 func (n *View) UnfocusBuffers() {
 	// clear focus from buffers
 	for _, buffPane := range n.buffers {
@@ -188,7 +195,14 @@ func (n *View) setFocusTo(index int) {
 	buff.SetFocus(true)
 }
 
-// FIXME
+// ChangeFocus will change the focus from the given
+// buffer in this view to another buffer. It takes a
+// `dir` (direction), e.g. -1, or 1 which tells what
+// way to change focus to. For example, -1, will change
+// focus to the left.
+//
+// NOTE: if we have no buffers to the left, we will
+// wrap around to the buffer on the far right.
 func (n *View) ChangeFocus(dir int) {
 	// we cant change focus if there are no
 	// buffers to focus to
@@ -233,9 +247,11 @@ func (n *View) getCurrentBuff() *Buffer {
 	return nil
 }
 
+// OnInit ...
 func (n *View) OnInit() {
 }
 
+// OnUpdate ...
 func (n *View) OnUpdate() bool {
 	dirty := false
 
@@ -306,6 +322,12 @@ func (n *View) OnUpdate() bool {
 	return dirty
 }
 
+// Resize will resize all of the components in the view
+// The algorithm here used is basically to resize all of the
+// components so that they evenly fit into the view. This is
+// simply:
+//
+// 		viewWidth / bufferCount
 func (n *View) Resize(w, h int) {
 	n.BaseComponent.Resize(w, h)
 
@@ -329,6 +351,7 @@ func (n *View) Resize(w, h int) {
 	}
 }
 
+// OnRender ...
 func (n *View) OnRender(ctx *strife.Renderer) {
 	for _, buffPane := range n.buffers {
 		buffPane.OnRender(ctx)
@@ -345,8 +368,12 @@ func (n *View) OnRender(ctx *strife.Renderer) {
 	}
 }
 
+// OnDispose ...
 func (n *View) OnDispose() {}
 
+// AddBuffer will unfocus all of the buffers
+// and insert a new buffer. Focus is given to this
+// new buffer, which is then returned from this function.
 func (n *View) AddBuffer() *Buffer {
 	n.UnfocusBuffers()
 
