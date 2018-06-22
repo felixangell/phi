@@ -1,18 +1,20 @@
-package gui
+package action
 
 import (
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/felixangell/phi/buff"
 )
 
 type BufferAction struct {
 	name          string
-	proc          func(*View, []string) bool
+	proc          func(*buff.BufferView, []string) bool
 	showInPalette bool
 }
 
-func NewBufferAction(name string, proc func(*View, []string) bool) BufferAction {
+func NewBufferAction(name string, proc func(*buff.BufferView, []string) bool) BufferAction {
 	return BufferAction{
 		name:          name,
 		proc:          proc,
@@ -20,7 +22,7 @@ func NewBufferAction(name string, proc func(*View, []string) bool) BufferAction 
 	}
 }
 
-func OpenFile(v *View, commands []string) bool {
+func OpenFile(v *buff.BufferView, commands []string) bool {
 	path := ""
 	if path == "" {
 		panic("unimplemented")
@@ -42,7 +44,7 @@ func OpenFile(v *View, commands []string) bool {
 	return false
 }
 
-func NewFile(v *View, commands []string) bool {
+func NewFile(v *buff.BufferView, commands []string) bool {
 	// TODO some nice error stuff
 	// have an error roll thing in the view?
 
@@ -55,7 +57,7 @@ func NewFile(v *View, commands []string) bool {
 	return false
 }
 
-func GotoLine(v *View, commands []string) bool {
+func GotoLine(v *buff.BufferView, commands []string) bool {
 	if len(commands) == 0 {
 		return false
 	}
@@ -75,7 +77,7 @@ func GotoLine(v *View, commands []string) bool {
 	return false
 }
 
-func focusLeft(v *View, commands []string) bool {
+func focusLeft(v *buff.BufferView, commands []string) bool {
 	if v == nil {
 		return false
 	}
@@ -83,7 +85,7 @@ func focusLeft(v *View, commands []string) bool {
 	return false
 }
 
-func focusRight(v *View, commands []string) bool {
+func focusRight(v *buff.BufferView, commands []string) bool {
 	if v == nil {
 		return false
 	}
@@ -91,7 +93,7 @@ func focusRight(v *View, commands []string) bool {
 	return false
 }
 
-func pageDown(v *View, commands []string) bool {
+func pageDown(v *buff.BufferView, commands []string) bool {
 	if v == nil {
 		return false
 	}
@@ -107,7 +109,7 @@ func pageDown(v *View, commands []string) bool {
 	return false
 }
 
-func pageUp(v *View, commands []string) bool {
+func pageUp(v *buff.BufferView, commands []string) bool {
 	if v == nil {
 		return false
 	}
@@ -121,25 +123,4 @@ func pageUp(v *View, commands []string) bool {
 		buff.moveUp()
 	}
 	return false
-}
-
-var actions = map[string]BufferAction{
-	"page_down": NewBufferAction("page_down", pageDown),
-	"page_up":   NewBufferAction("page_up", pageUp),
-
-	"undo": NewBufferAction("undo", Undo),
-	"redo": NewBufferAction("redo", Redo),
-
-	"focus_left":  NewBufferAction("focus_left", focusLeft),
-	"focus_right": NewBufferAction("focus_right", focusRight),
-
-	"goto":         NewBufferAction("goto", GotoLine),
-	"new":          NewBufferAction("new", NewFile),
-	"open":         NewBufferAction("open", OpenFile),
-	"save":         NewBufferAction("save", Save),
-	"delete_line":  NewBufferAction("delete_line", DeleteLine),
-	"close_buffer": NewBufferAction("close_buffer", CloseBuffer),
-	"paste":        NewBufferAction("paste", Paste),
-	"show_palette": NewBufferAction("show_palette", ShowPalette),
-	"exit":         NewBufferAction("exit", ExitPhi),
 }

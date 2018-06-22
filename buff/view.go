@@ -1,4 +1,4 @@
-package gui
+package buff
 
 import (
 	"fmt"
@@ -7,13 +7,14 @@ import (
 	"unicode"
 
 	"github.com/felixangell/phi/cfg"
+	"github.com/felixangell/phi/gui"
 	"github.com/felixangell/strife"
 	"github.com/fsnotify/fsnotify"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 type bufferEvent interface {
-	Process(view *View)
+	Process(view *BufferView)
 	String() string
 }
 
@@ -21,7 +22,7 @@ type reloadBufferEvent struct {
 	buff *Buffer
 }
 
-func (r *reloadBufferEvent) Process(view *View) {
+func (r *reloadBufferEvent) Process(view *BufferView) {
 	log.Println("reloading buffer", r.buff.filePath)
 	r.buff.reload()
 }
@@ -31,8 +32,8 @@ func (r *reloadBufferEvent) String() string {
 }
 
 // View is an array of buffers basically.
-type View struct {
-	BaseComponent
+type BufferView struct {
+	gui.BaseComponent
 
 	conf           *cfg.TomlConfig
 	buffers        []*BufferPane
@@ -46,8 +47,8 @@ type View struct {
 
 // NewView creaets a new view with the given width and height
 // as well as configurations.
-func NewView(width, height int, conf *cfg.TomlConfig) *View {
-	view := &View{
+func NewView(width, height int, conf *cfg.TomlConfig) *BufferView {
+	view := &BufferView{
 		conf:         conf,
 		buffers:      []*BufferPane{},
 		bufferMap:    map[string]*Buffer{},
@@ -104,7 +105,7 @@ func NewView(width, height int, conf *cfg.TomlConfig) *View {
 	return view
 }
 
-func (n *View) registerFile(path string, buff *Buffer) {
+func (n *BufferView) registerFile(path string, buff *Buffer) {
 	log.Println("Registering file ", path)
 
 	err := n.watcher.Add(path)
@@ -117,11 +118,11 @@ func (n *View) registerFile(path string, buff *Buffer) {
 }
 
 // Close will close the view and all of the components
-func (n *View) Close() {
+func (n *BufferView) Close() {
 	n.watcher.Close()
 }
 
-func (n *View) hidePalette() {
+func (n *BufferView) hidePalette() {
 	p := n.commandPalette
 	p.clearInput()
 	p.SetFocus(false)
@@ -130,7 +131,7 @@ func (n *View) hidePalette() {
 	p.buff.SetFocus(false)
 }
 
-func (n *View) focusPalette(buff *Buffer) {
+func (n *BufferView) focusPalette(buff *Buffer) {
 	p := n.commandPalette
 	p.SetFocus(true)
 
@@ -141,7 +142,7 @@ func (n *View) focusPalette(buff *Buffer) {
 
 // UnfocusBuffers will remove focus
 // from all of the buffers in this view.
-func (n *View) UnfocusBuffers() {
+func (n *BufferView) UnfocusBuffers() {
 	// clear focus from buffers
 	for _, buffPane := range n.buffers {
 		buffPane.SetFocus(false)
@@ -157,23 +158,25 @@ func sign(dir int) int {
 	return 0
 }
 
-func (n *View) removeBuffer(index int) {
+func (n *BufferView) removeBuffer(index int) {
 	log.Println("Removing buffer index:", index)
 	log.Println("num buffs before delete: ", len(n.buffers))
 
 	n.buffers = append(n.buffers[:index], n.buffers[index+1:]...)
 
+	w, h := n.GetSize()
+
 	// only resize the buffers if we have
 	// some remaining in the window
 	if len(n.buffers) > 0 {
-		bufferWidth := n.w / len(n.buffers)
+		bufferWidth := w / len(n.buffers)
 
 		// translate all the components accordingly.
 		for idx, buffPane := range n.buffers {
 			// re-write the index.
 			buffPane.Buff.index = idx
 
-			buffPane.Resize(bufferWidth, n.h)
+			buffPane.Resize(bufferWidth, h)
 			buffPane.SetPosition(bufferWidth*idx, 0)
 		}
 	}
@@ -186,7 +189,7 @@ func (n *View) removeBuffer(index int) {
 	n.ChangeFocus(dir)
 }
 
-func (n *View) setFocusTo(index int) {
+func (n *BufferView) setFocusTo(index int) {
 	log.Println("Moving focus from ", n.focusedBuff, " to ", index)
 
 	n.UnfocusBuffers()
@@ -203,7 +206,7 @@ func (n *View) setFocusTo(index int) {
 //
 // NOTE: if we have no buffers to the left, we will
 // wrap around to the buffer on the far right.
-func (n *View) ChangeFocus(dir int) {
+func (n *BufferView) ChangeFocus(dir int) {
 	// we cant change focus if there are no
 	// buffers to focus to
 	if len(n.buffers) == 0 {
@@ -228,7 +231,7 @@ func (n *View) ChangeFocus(dir int) {
 	n.setFocusTo(newFocus)
 }
 
-func (n *View) getCurrentBuffPane() *BufferPane {
+func (n *BufferView) getCurrentBuffPane() *BufferPane {
 	if len(n.buffers) == 0 {
 		return nil
 	}
@@ -239,7 +242,7 @@ func (n *View) getCurrentBuffPane() *BufferPane {
 	return nil
 }
 
-func (n *View) getCurrentBuff() *Buffer {
+func (n *BufferView) getCurrentBuff() *Buffer {
 	buff := n.getCurrentBuffPane()
 	if buff != nil {
 		return buff.Buff
@@ -248,11 +251,11 @@ func (n *View) getCurrentBuff() *Buffer {
 }
 
 // OnInit ...
-func (n *View) OnInit() {
+func (n *BufferView) OnInit() {
 }
 
 // OnUpdate ...
-func (n *View) OnUpdate() bool {
+func (n *BufferView) OnUpdate() bool {
 	dirty := false
 
 	controlDown = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
@@ -277,7 +280,7 @@ func (n *View) OnUpdate() bool {
 		r := rune(strife.PopKey())
 
 		if r == 'l' {
-			DEBUG_MODE = !DEBUG_MODE
+			cfg.DebugMode = !cfg.DebugMode
 		}
 
 		left := sdl.K_LEFT
@@ -301,15 +304,17 @@ func (n *View) OnUpdate() bool {
 			key = string(unicode.ToLower(r))
 		}
 
-		actionName, actionExists := source[key]
-		if actionExists {
-			if action, ok := actions[actionName]; ok {
-				log.Println("Executing action '" + actionName + "'")
-				return action.proc(n, []string{})
-			}
-		} else {
-			log.Println("view: unimplemented shortcut", shortcutName, "+", string(unicode.ToLower(r)), "#", int(r), actionName, key)
-		}
+		/*
+			actionName, actionExists := source[key]
+					if actionExists {
+						if action, ok := action.Register[actionName]; ok {
+							log.Println("Executing action '" + actionName + "'")
+							return action.proc(n, []string{})
+						}
+					} else {
+						log.Println("view: unimplemented shortcut", shortcutName, "+", string(unicode.ToLower(r)), "#", int(r), actionName, key)
+					}
+		*/
 	}
 
 	buff := n.getCurrentBuffPane()
@@ -328,7 +333,7 @@ func (n *View) OnUpdate() bool {
 // simply:
 //
 // 		viewWidth / bufferCount
-func (n *View) Resize(w, h int) {
+func (n *BufferView) Resize(w, h int) {
 	n.BaseComponent.Resize(w, h)
 
 	// dont resize any buffer panes
@@ -337,44 +342,47 @@ func (n *View) Resize(w, h int) {
 		return
 	}
 
+	oldWidth, oldHeight := n.GetSize()
+
 	// work out the size of the buffer and set it
 	// note that we +1 the components because
 	// we haven't yet added the panel
-	bufferWidth := n.w / len(n.buffers)
+	bufferWidth := oldWidth / len(n.buffers)
 
 	// translate all the buffers accordingly.
 	idx := 0
 	for _, buffPane := range n.buffers {
-		buffPane.Resize(bufferWidth, n.h)
+		buffPane.Resize(bufferWidth, oldHeight)
 		buffPane.SetPosition(bufferWidth*idx, 0)
 		idx++
 	}
 }
 
 // OnRender ...
-func (n *View) OnRender(ctx *strife.Renderer) {
+func (n *BufferView) OnRender(ctx *strife.Renderer) {
 	for _, buffPane := range n.buffers {
 		buffPane.OnRender(ctx)
 	}
 
 	n.commandPalette.OnRender(ctx)
 
-	if DEBUG_MODE {
+	if cfg.DebugMode {
 		ctx.SetColor(strife.HexRGB(0xff00ff))
 		mx, my := strife.MouseCoords()
 		ctx.Rect(mx, my, 16, 16, strife.Line)
 
-		renderDebugPane(ctx, 10, 10)
+		// FIXME
+		// renderDebugPane(ctx, 10, 10)
 	}
 }
 
 // OnDispose ...
-func (n *View) OnDispose() {}
+func (n *BufferView) OnDispose() {}
 
 // AddBuffer will unfocus all of the buffers
 // and insert a new buffer. Focus is given to this
 // new buffer, which is then returned from this function.
-func (n *View) AddBuffer() *Buffer {
+func (n *BufferView) AddBuffer() *Buffer {
 	n.UnfocusBuffers()
 
 	cfg := n.conf
@@ -391,9 +399,11 @@ func (n *View) AddBuffer() *Buffer {
 
 	c.SetFocus(true)
 
+	w, h := n.GetSize()
+
 	n.focusedBuff = c.index
 	n.buffers = append(n.buffers, NewBufferPane(c))
-	n.Resize(n.w, n.h)
+	n.Resize(w, h)
 
 	return c
 }

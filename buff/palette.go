@@ -1,4 +1,4 @@
-package gui
+package buff
 
 import (
 	"log"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/felixangell/fuzzysearch/fuzzy"
 	"github.com/felixangell/phi/cfg"
+	"github.com/felixangell/phi/gui"
 	"github.com/felixangell/strife"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -13,20 +14,20 @@ import (
 var commandSet []string
 
 func init() {
-	commandSet = make([]string, len(actions))
-	idx := 0
-	for _, action := range actions {
-		commandSet[idx] = action.name
-		idx++
-	}
+	// commandSet = make([]string, len(action.Register))
+	// idx := 0
+	// for _, action := range action.Register {
+	// 	commandSet[idx] = action.name
+	// 	idx++
+	// }
 }
 
 type CommandPalette struct {
-	BaseComponent
+	gui.BaseComponent
 	buff       *Buffer
 	parentBuff *Buffer
 	conf       *cfg.TomlConfig
-	parent     *View
+	parent     *BufferView
 
 	pathToIndex map[string]int
 
@@ -88,7 +89,7 @@ func (s *suggestion) render(x, y int, ctx *strife.Renderer) {
 	ctx.Text(s.name, x+border, y+yOffs)
 }
 
-func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
+func NewCommandPalette(conf cfg.TomlConfig, view *BufferView) *CommandPalette {
 	conf.Editor.Show_Line_Numbers = false
 	conf.Editor.Highlight_Line = false
 
@@ -114,13 +115,16 @@ func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 	}
 	palette.buff.appendLine("")
 
-	palette.Resize(view.w/3, 48)
-	palette.Translate((view.w/2)-(palette.w/2), 10)
+	vW, vH := view.GetSize()
+	pW, pH := palette.GetSize()
+
+	palette.Resize(vW/3, 48)
+	palette.Translate((vW/2)-(pW/2), 10)
 
 	// the buffer is not rendered
 	// relative to the palette so we have to set its position
-	palette.buff.Resize(palette.w, palette.h)
-	palette.buff.Translate((view.w/2)-(palette.w/2), 10)
+	palette.buff.Resize(pW, pH)
+	palette.buff.Translate((vW/2)-(pW/2), 10)
 
 	// this is technically a hack. this ex is an xoffset
 	// for the line numbers but we're going to use it for
@@ -129,7 +133,7 @@ func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
 	palette.buff.ex = 5
 	palette.buff.ey = 0
 
-	suggestionBoxWidth = palette.w
+	suggestionBoxWidth = pW
 
 	return palette
 }
@@ -150,12 +154,14 @@ func (b *CommandPalette) processCommand() {
 
 		log.Println("command palette: ", tokenizedLine)
 
-		action, exists := actions[command]
-		if !exists {
-			return
-		}
+		/*
+			action, exists := action.Register[command]
+			if !exists {
+				return
+			}
 
-		action.proc(b.parent, tokenizedLine[1:])
+			action.proc(b.parent, tokenizedLine[1:])
+		*/
 		return
 	}
 
@@ -333,11 +339,14 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 
 	conf := b.conf.Theme.Palette
 
+	x, y := b.GetPos()
+	w, h := b.GetSize()
+
 	border := 5
-	xPos := b.x - border
-	yPos := b.y - border
-	paletteWidth := b.w + (border * 2)
-	paletteHeight := b.h + (border * 2)
+	xPos := x - border
+	yPos := y - border
+	paletteWidth := w + (border * 2)
+	paletteHeight := h + (border * 2)
 
 	ctx.SetColor(strife.HexRGB(conf.Outline))
 	ctx.Rect(xPos, yPos, paletteWidth, paletteHeight, strife.Fill)
@@ -350,14 +359,14 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 	if b.recentSuggestions != nil {
 		for i, sugg := range *b.recentSuggestions {
 			if b.suggestionIndex != i {
-				sugg.render(b.x, b.y+((i+1)*(suggestionBoxHeight+border)), ctx)
+				sugg.render(x, y+((i+1)*(suggestionBoxHeight+border)), ctx)
 			} else {
-				sugg.renderHighlighted(b.x, b.y+((i+1)*(suggestionBoxHeight+border)), ctx)
+				sugg.renderHighlighted(x, y+((i+1)*(suggestionBoxHeight+border)), ctx)
 			}
 		}
 	}
 
-	if DEBUG_MODE {
+	if cfg.DebugMode {
 		ctx.SetColor(strife.HexRGB(0xff00ff))
 		ctx.Rect(xPos, yPos, paletteWidth, paletteHeight, strife.Line)
 	}

@@ -1,4 +1,4 @@
-package gui
+package buff
 
 import (
 	"fmt"
@@ -14,6 +14,7 @@ import (
 
 	"github.com/felixangell/fuzzysearch/fuzzy"
 	"github.com/felixangell/phi/cfg"
+	"github.com/felixangell/phi/gui"
 	"github.com/felixangell/phi/lex"
 	"github.com/felixangell/phi/piecetable"
 	"github.com/felixangell/strife"
@@ -128,9 +129,9 @@ type BufferConfig struct {
 // Buffer is a structure representing
 // a buffer of text.
 type Buffer struct {
-	BaseComponent
+	gui.BaseComponent
 	index        int
-	parent       *View
+	parent       *BufferView
 	curs         *Cursor
 	cfg          *cfg.TomlConfig
 	buffOpts     BufferConfig
@@ -144,7 +145,7 @@ type Buffer struct {
 }
 
 // NewBuffer creates a new buffer with the given configurations
-func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *View, index int) *Buffer {
+func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *BufferView, index int) *Buffer {
 	config := conf
 	if config == nil {
 		config = cfg.NewDefaultConfig()
@@ -472,14 +473,17 @@ func (b *Buffer) processTextInput(r rune) bool {
 			key = string(unicode.ToLower(r))
 		}
 
-		actionName, actionExists := source[key]
-		if actionExists {
-			if action, ok := actions[actionName]; ok {
-				return action.proc(b.parent, []string{})
-			}
-		} else {
-			log.Println("warning, unimplemented shortcut", shortcutName, "+", unicode.ToLower(r), "#", int(r), actionName)
-		}
+		log.Println("warning, unimplemented shortcut", shortcutName, "+", unicode.ToLower(r), "#", int(r), actionName)
+
+		/*
+			actionName, actionExists := source[key]
+					if actionExists {
+						if action, ok := action.Register[actionName]; ok {
+							return action.proc(b.parent, []string{})
+						}
+					} else {
+					}
+		*/
 	}
 
 	if shiftDown {
@@ -728,7 +732,8 @@ func (b *Buffer) moveDown() {
 
 		b.curs.move(offs, 1)
 
-		visibleLines := int(math.Ceil(float64(b.h-b.ey) / float64(lastCharH+pad)))
+		_, h := b.GetSize()
+		visibleLines := int(math.Ceil(float64(h-b.ey) / float64(lastCharH+pad)))
 
 		if b.curs.y >= visibleLines && b.curs.y-b.cam.y == visibleLines {
 			b.scrollDown(1)
@@ -1316,9 +1321,12 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	// TODO load this from config files!
 
+	x, y := b.GetPos()
+	w, h := b.GetSize()
+
 	// BACKGROUND
 	ctx.SetColor(strife.HexRGB(b.buffOpts.background))
-	ctx.Rect(b.x, b.y, b.w, b.h, strife.Fill)
+	ctx.Rect(x, y, w, h, strife.Fill)
 
 	if b.cfg.Editor.Highlight_Line && b.HasFocus() {
 		ctx.SetColor(strife.HexRGB(b.buffOpts.highlightLine)) // highlight_line_col?
@@ -1326,7 +1334,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		highlightLinePosY := b.ey + (ry + b.curs.ry*(lastCharH+pad)) - (b.cam.y * (lastCharH + pad))
 		highlightLinePosX := b.ex + rx
 
-		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w-b.ex, (lastCharH+pad)-b.ey, strife.Fill)
+		ctx.Rect(highlightLinePosX, highlightLinePosY, w-b.ex, (lastCharH+pad)-b.ey, strife.Fill)
 	}
 
 	var visibleLines, visibleChars int = 50, -1
@@ -1342,17 +1350,17 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 	// lastCharH > 0 means we have done
 	// a render.
-	if int(lastCharH) > 0 && int(b.h) != 0 {
+	if int(lastCharH) > 0 && int(h) != 0 {
 		// render an extra three lines just
 		// so we dont cut anything off if its
 		// not evenly divisible
-		visibleLines = (int(b.h-b.ey) / int(lastCharH)) + 3
+		visibleLines = (int(h-b.ey) / int(lastCharH)) + 3
 	}
 
 	// calculate how many chars we can fit
 	// on the screen.
-	if int(lastCharW) > 0 && int(b.w) != 0 {
-		visibleChars = (int(b.w-b.ex) / int(lastCharW)) - 3
+	if int(lastCharW) > 0 && int(w) != 0 {
+		visibleChars = (int(w-b.ex) / int(lastCharW)) - 3
 	}
 
 	start := b.cam.y
@@ -1367,7 +1375,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 	// render the selection if any
 	if lastSelection != nil {
-		lastSelection.renderAt(ctx, b.x+b.ex, b.y+b.ey)
+		lastSelection.renderAt(ctx, x+b.ex, y+b.ey)
 	}
 
 	// calculate cursor sizes... does
@@ -1458,7 +1466,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			ctx.SetColor(strife.HexRGB(characterColor.fg))
 			lastCharW, lastCharH = ctx.Text(string(char), xPos, yPos)
 
-			if DEBUG_MODE {
+			if cfg.DebugMode {
 				ctx.SetColor(strife.HexRGB(0xff00ff))
 				ctx.Rect(xPos, yPos, lastCharW, lastCharH, strife.Line)
 			}
@@ -1477,11 +1485,11 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 			// render the line numbers
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumBackground))
-			ctx.Rect(rx, yPos, gutterWidth, b.h, strife.Fill)
+			ctx.Rect(rx, yPos, gutterWidth, h, strife.Fill)
 
-			if DEBUG_MODE {
+			if cfg.DebugMode {
 				ctx.SetColor(strife.HexRGB(0xff00ff))
-				ctx.Rect(rx, yPos, gutterWidth, b.h, strife.Line)
+				ctx.Rect(rx, yPos, gutterWidth, h, strife.Line)
 			}
 
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumForeground))
@@ -1504,13 +1512,15 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		b.autoComplete.renderAt(xPos, yPos, ctx)
 	}
 
-	if DEBUG_MODE {
+	if cfg.DebugMode {
 		ctx.SetColor(strife.HexRGB(0xff00ff))
-		ctx.Rect(b.ex+rx, b.ey+ry, b.w-b.ex, b.h-b.ey, strife.Line)
+		ctx.Rect(b.ex+rx, b.ey+ry, w-b.ex, h-b.ey, strife.Line)
 	}
 }
 
 func (b *Buffer) OnRender(ctx *strife.Renderer) {
+	x, y := b.GetPos()
+
 	ctx.SetFont(b.buffOpts.font)
-	b.renderAt(ctx, b.x, b.y)
+	b.renderAt(ctx, x, y)
 }

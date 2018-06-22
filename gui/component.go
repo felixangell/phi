@@ -4,12 +4,13 @@ import (
 	"github.com/felixangell/strife"
 )
 
-var DEBUG_MODE = false
-
 type Component interface {
 	SetPosition(x, y int)
 	Translate(x, y int)
 	Resize(w, h int)
+
+	GetPos() (int, int)
+	GetSize() (int, int)
 
 	OnInit()
 	OnUpdate() bool
@@ -30,6 +31,14 @@ type BaseComponent struct {
 	x, y    int
 	w, h    int
 	focused bool
+}
+
+func (b *BaseComponent) GetPos() (int, int) {
+	return b.x, b.y
+}
+
+func (b *BaseComponent) GetSize() (int, int) {
+	return b.w, b.h
 }
 
 func (b *BaseComponent) SetFocus(focus bool) {

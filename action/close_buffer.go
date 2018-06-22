@@ -1,10 +1,12 @@
-package gui
+package action
 
 import (
 	"fmt"
+
+	"github.com/felixangell/phi/buff"
 )
 
-func CloseBuffer(v *View, commands []string) bool {
+func CloseBuffer(v *buff.BufferView, commands []string) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false

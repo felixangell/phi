@@ -1,6 +1,7 @@
-package gui
+package buff
 
 import (
+	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/strife"
 )
 
@@ -72,7 +73,7 @@ func (c *Cursor) Render(ctx *strife.Renderer, xOff, yOff int) {
 	ctx.SetColor(strife.HexRGB(b.buffOpts.cursor))
 	ctx.Rect(xPos, yPos, c.width, c.height, strife.Fill)
 
-	if DEBUG_MODE {
+	if cfg.DebugMode {
 		ctx.SetColor(strife.HexRGB(0xff00ff))
 		ctx.Rect(xPos, yPos, c.width, c.height, strife.Line)
 	}

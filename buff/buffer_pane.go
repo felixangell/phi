@@ -1,4 +1,4 @@
-package gui
+package buff
 
 import (
 	"fmt"
@@ -6,13 +6,14 @@ import (
 	"path/filepath"
 
 	"github.com/felixangell/phi/cfg"
+	"github.com/felixangell/phi/gui"
 	"github.com/felixangell/strife"
 )
 
 var metaPanelHeight = 32
 
 type BufferPane struct {
-	BaseComponent
+	gui.BaseComponent
 	Buff *Buffer
 	font *strife.Font
 }
@@ -26,7 +27,7 @@ func NewBufferPane(buff *Buffer) *BufferPane {
 	}
 
 	return &BufferPane{
-		BaseComponent{},
+		gui.BaseComponent{},
 		buff,
 		metaPanelFont,
 	}
@@ -42,8 +43,11 @@ func (b *BufferPane) SetFocus(focus bool) {
 func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 	conf := b.Buff.cfg.Theme.Palette
 
+	x, y := b.GetPos()
+	w, h := b.GetSize()
+
 	pad := 6
-	mpY := (b.y + b.h) - (metaPanelHeight)
+	mpY := (y + h) - (metaPanelHeight)
 
 	focused := b.Buff.index == b.Buff.parent.focusedBuff
 
@@ -58,7 +62,7 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 
 	// panel backdrop
 	ctx.SetColor(colour)
-	ctx.Rect(b.x, mpY, b.w, metaPanelHeight, strife.Fill)
+	ctx.Rect(x, mpY, w, metaPanelHeight, strife.Fill)
 
 	// tab info etc. on right hand side
 	{
@@ -71,7 +75,7 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 		ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
 
 		ctx.SetFont(b.font)
-		lastWidth, _ = ctx.Text(infoLine, ((b.x + b.w) - (lastWidth + (pad))), mpY+(pad/2))
+		lastWidth, _ = ctx.Text(infoLine, ((x + w) - (lastWidth + (pad))), mpY+(pad/2))
 	}
 
 	{
@@ -82,19 +86,19 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 
 		infoLine := fmt.Sprintf("%s%c Line %d, Column %d", b.Buff.filePath, modified, b.Buff.curs.y+1, b.Buff.curs.x)
 
-		if DEBUG_MODE {
+		if cfg.DebugMode {
 			infoLine = fmt.Sprintf("%s, BuffIndex: %d", infoLine, b.Buff.index)
 		}
 
 		ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
 
 		ctx.SetFont(b.font)
-		_, strHeight := ctx.Text(infoLine, b.x+pad, mpY+(pad/2)+1)
+		_, strHeight := ctx.Text(infoLine, x+pad, mpY+(pad/2)+1)
 		metaPanelHeight = strHeight + pad
 	}
 
 	// resize to match new height if any
-	b.Buff.Resize(b.w, b.h-metaPanelHeight)
+	b.Buff.Resize(w, h-metaPanelHeight)
 }
 
 func (b *BufferPane) Resize(w, h int) {

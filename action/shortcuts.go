@@ -1,4 +1,4 @@
-package gui
+package action
 
 import (
 	"bytes"
@@ -10,16 +10,17 @@ import (
 	"path/filepath"
 
 	"github.com/atotto/clipboard"
+	"github.com/felixangell/phi/buff"
 )
 
-func ShowPalette(v *View, commands []string) bool {
+func ShowPalette(v *buff.BufferView, commands []string) bool {
 	b := v.getCurrentBuff()
 	v.UnfocusBuffers()
 	v.focusPalette(b)
 	return true
 }
 
-func Paste(v *View, commands []string) bool {
+func Paste(v *buff.BufferView, commands []string) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false
@@ -37,7 +38,7 @@ func Paste(v *View, commands []string) bool {
 	return false
 }
 
-func Undo(v *View, commands []string) bool {
+func Undo(v *buff.BufferView, commands []string) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false
@@ -46,7 +47,7 @@ func Undo(v *View, commands []string) bool {
 	return false
 }
 
-func Redo(v *View, commands []string) bool {
+func Redo(v *buff.BufferView, commands []string) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false
@@ -67,7 +68,7 @@ func genFileName(dir, prefix, suffix string) string {
 // if the buffer is modified it will be
 // re-rendered.
 
-func Save(v *View, commands []string) bool {
+func Save(v *buff.BufferView, commands []string) bool {
 	// TODO Config option for this.
 	atomicFileSave := true
 
