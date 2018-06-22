@@ -34,7 +34,7 @@ func TestBadRedo(t *testing.T) {
 document i want to see how it fares
 and all of that fun
 stuff`
-	output := `this is my piece foo table testing
+	output := `this is my piece table testing
 document i want to see how it fares
 and all of that fun
 stuff`
