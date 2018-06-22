@@ -77,7 +77,6 @@ func NewView(width, height int, conf *cfg.TomlConfig) *View {
 					// modified so we specify a reload event
 					buff, ok := view.bufferMap[event.Name]
 					if !ok {
-						panic(fmt.Sprintf("no such buffer for file '%s'", event.Name))
 						break
 					}
 
@@ -240,18 +239,18 @@ func (n *View) OnInit() {
 func (n *View) OnUpdate() bool {
 	dirty := false
 
-	CONTROL_DOWN = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
-	SUPER_DOWN = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
+	controlDown = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
+	superDown = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
 
 	shortcutName := "ctrl"
 	source := cfg.Shortcuts.Controls
 
-	if strife.PollKeys() && (SUPER_DOWN || CONTROL_DOWN) {
+	if strife.PollKeys() && (superDown || controlDown) {
 		if runtime.GOOS == "darwin" {
-			if SUPER_DOWN {
+			if superDown {
 				source = cfg.Shortcuts.Supers
 				shortcutName = "super"
-			} else if CONTROL_DOWN {
+			} else if controlDown {
 				source = cfg.Shortcuts.Controls
 				shortcutName = "control"
 			}

@@ -65,8 +65,8 @@ you will need the following libraries:
 
 If you're on Linux, you will need:
 
-* xsel
 * xclip
+* xsel
 
 Either works. This is for copying/pasting.
 

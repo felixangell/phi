@@ -92,7 +92,7 @@ func (a *AutoCompleteBox) process(r rune) {
 }
 
 func (a *AutoCompleteBox) renderAt(x, y int, ctx *strife.Renderer) {
-	height := last_h + pad
+	height := lastCharH + pad
 	itemCount := len(a.suggestions)
 
 	ctx.SetColor(strife.HexRGB(0x000000))
@@ -200,18 +200,18 @@ func (s *selection) renderAt(ctx *strife.Renderer, xOff int, yOff int) {
 			lineLen = 1
 		}
 
-		height := (last_h + pad) - b.ey
+		height := (lastCharH + pad) - b.ey
 
 		// width of box should be entire line
-		width := lineLen * last_w
+		width := lineLen * lastCharW
 
 		// UNLESS we are on the current line
 		if y == yd-1 {
-			width = s.ex * last_w
+			width = s.ex * lastCharW
 		}
 
-		xPos := (s.sx * last_w)
-		yPos := ((s.sy + y) * (last_h + pad))
+		xPos := (s.sx * lastCharW)
+		yPos := ((s.sy + y) * (lastCharH + pad))
 
 		ctx.SetColor(strife.Blue)
 		ctx.Rect(b.ex+xPos, b.ey+yPos, width, height, strife.Fill)
@@ -419,7 +419,7 @@ func (b *Buffer) deleteLine() {
 }
 
 func (b *Buffer) processTextInput(r rune) bool {
-	if ALT_DOWN && r == '\t' {
+	if altDown && r == '\t' {
 		// nop, we dont want to
 		// insert tabs when we
 		// alt tab out of view of this app
@@ -431,22 +431,22 @@ func (b *Buffer) processTextInput(r rune) bool {
 	// only do the alt alternatives on mac osx
 	// todo change this so it's not checking on every
 	// input
-	if runtime.GOOS == "darwin" && ALT_DOWN {
+	if runtime.GOOS == "darwin" && altDown {
 		if val, ok := altAlternative[r]; ok {
 			r = val
 		}
 	}
 
-	if CAPS_LOCK {
+	if capsLockDown {
 		if unicode.IsLetter(r) {
 			r = unicode.ToUpper(r)
 		}
 	}
 
-	mainSuper, shortcutName := CONTROL_DOWN, "ctrl"
+	mainSuper, shortcutName := controlDown, "ctrl"
 	source := cfg.Shortcuts.Controls
 	if runtime.GOOS == "darwin" {
-		mainSuper, shortcutName = SUPER_DOWN, "super"
+		mainSuper, shortcutName = superDown, "super"
 		source = cfg.Shortcuts.Supers
 	}
 
@@ -476,7 +476,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 		}
 	}
 
-	if SHIFT_DOWN {
+	if shiftDown {
 		// if it's a letter convert to uppercase
 		if unicode.IsLetter(r) {
 			r = unicode.ToUpper(r)
@@ -724,7 +724,7 @@ func (b *Buffer) moveDown() {
 
 		b.curs.move(offs, 1)
 
-		visibleLines := int(math.Ceil(float64(b.h-b.ey) / float64(last_h+pad)))
+		visibleLines := int(math.Ceil(float64(b.h-b.ey) / float64(lastCharH+pad)))
 
 		if b.curs.y >= visibleLines && b.curs.y-b.cam.y == visibleLines {
 			b.scrollDown(1)
@@ -821,28 +821,28 @@ func (b *Buffer) processSelection(key int) bool {
 // which is not an action key, therefore we return false
 // because it was not processed.
 func (b *Buffer) processActionKey(key int) bool {
-	if SHIFT_DOWN {
+	if shiftDown {
 		switch key {
-		case sdl.K_LEFT:
+		case strife.KEY_LEFT:
 			fallthrough
-		case sdl.K_RIGHT:
+		case strife.KEY_RIGHT:
 			fallthrough
-		case sdl.K_DOWN:
+		case strife.KEY_DOWN:
 			fallthrough
-		case sdl.K_UP:
+		case strife.KEY_UP:
 			return b.processSelection(key)
 		}
 	}
 
 	switch key {
-	case sdl.K_CAPSLOCK:
-		CAPS_LOCK = !CAPS_LOCK
+	case strife.KEY_CAPSLOCK:
+		capsLockDown = !capsLockDown
 
-	case sdl.K_ESCAPE:
+	case strife.KEY_ESCAPE:
 		return true
 
-	case sdl.K_RETURN:
-		if SUPER_DOWN {
+	case strife.KEY_RETURN:
+		if superDown {
 			// in sublime this goes
 			// into the next block
 			// nicely indented!
@@ -892,20 +892,20 @@ func (b *Buffer) processActionKey(key int) bool {
 		b.moveDown()
 		b.moveToStartOfLine()
 
-	case sdl.K_BACKSPACE:
+	case strife.KEY_BACKSPACE:
 		// HACK FIXME
 		b.modified = true
 
-		if SUPER_DOWN {
+		if superDown {
 			b.deleteBeforeCursor()
 		} else {
 			b.deletePrev()
 		}
 
-	case sdl.K_RIGHT:
+	case strife.KEY_RIGHT:
 		currLineLength := b.table.Lines[b.curs.y].Len()
 
-		if SUPER_DOWN {
+		if superDown {
 			for b.curs.x < currLineLength {
 				b.moveLeft()
 			}
@@ -915,7 +915,7 @@ func (b *Buffer) processActionKey(key int) bool {
 		// FIXME this is weird!
 		// this will move to the next blank or underscore
 		// character
-		if ALT_DOWN {
+		if altDown {
 			line := b.table.Lines[b.curs.y]
 
 			i := b.curs.x + 1 // ?
@@ -945,13 +945,13 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 
 		b.moveRight()
-	case sdl.K_LEFT:
-		if SUPER_DOWN {
+	case strife.KEY_LEFT:
+		if superDown {
 			// TODO go to the nearest \t
 			// if no \t (i.e. start of line) go to
 			// the start of the line!
 			b.curs.gotoStart()
-		} else if ALT_DOWN {
+		} else if altDown {
 			i := b.curs.x
 			for i > 0 {
 				currChar := b.table.Index(b.curs.y, i)
@@ -986,29 +986,29 @@ func (b *Buffer) processActionKey(key int) bool {
 		}
 
 		b.moveLeft()
-	case sdl.K_UP:
-		if ALT_DOWN {
+	case strife.KEY_UP:
+		if altDown {
 			return b.swapLineUp()
 		}
 
-		if SUPER_DOWN {
+		if superDown {
 			// go to the start of the file
 		}
 
 		b.moveUp()
 
-	case sdl.K_DOWN:
-		if ALT_DOWN {
+	case strife.KEY_DOWN:
+		if altDown {
 			return b.swapLineDown()
 		}
 
-		if SUPER_DOWN {
+		if superDown {
 			// go to the end of the file
 		}
 
 		b.moveDown()
 
-	case sdl.K_TAB:
+	case strife.KEY_TAB:
 		// HACK FIXME
 		b.modified = true
 
@@ -1025,7 +1025,7 @@ func (b *Buffer) processActionKey(key int) bool {
 			b.moveRight()
 		}
 
-	case sdl.K_END:
+	case strife.KEY_END:
 		currLine := b.table.Lines[b.curs.y]
 		if b.curs.x < currLine.Len() {
 			distToMove := currLine.Len() - b.curs.x
@@ -1034,44 +1034,44 @@ func (b *Buffer) processActionKey(key int) bool {
 			}
 		}
 
-	case sdl.K_HOME:
+	case strife.KEY_HOME:
 		if b.curs.x > 0 {
 			b.moveToStartOfLine()
 		}
 
 		// TODO remove since this is handled in the keymap!
-	case sdl.K_PAGEUP:
+	case strife.KEY_PAGEUP:
 		b.scrollUp(DEFAULT_SCROLL_AMOUNT)
 		for i := 0; i < DEFAULT_SCROLL_AMOUNT; i++ {
 			b.moveUp()
 		}
-	case sdl.K_PAGEDOWN:
+	case strife.KEY_PAGEDOWN:
 		b.scrollDown(DEFAULT_SCROLL_AMOUNT)
 		for i := 0; i < DEFAULT_SCROLL_AMOUNT; i++ {
 			b.moveDown()
 		}
 
-	case sdl.K_DELETE:
+	case strife.KEY_DELETE:
 		b.deleteNext()
 
-	case sdl.K_LGUI:
+	case strife.KEY_LGUI:
 		fallthrough
-	case sdl.K_RGUI:
-		fallthrough
-
-	case sdl.K_LALT:
-		fallthrough
-	case sdl.K_RALT:
+	case strife.KEY_RGUI:
 		fallthrough
 
-	case sdl.K_LCTRL:
+	case strife.KEY_LALT:
 		fallthrough
-	case sdl.K_RCTRL:
+	case strife.KEY_RALT:
 		fallthrough
 
-	case sdl.K_LSHIFT:
+	case strife.KEY_LCTRL:
 		fallthrough
-	case sdl.K_RSHIFT:
+	case strife.KEY_RCTRL:
+		fallthrough
+
+	case strife.KEY_LSHIFT:
+		fallthrough
+	case strife.KEY_RSHIFT:
 		return true
 
 	default:
@@ -1082,11 +1082,11 @@ func (b *Buffer) processActionKey(key int) bool {
 }
 
 var (
-	SHIFT_DOWN   bool = false
-	SUPER_DOWN        = false // cmd on mac, ctrl on windows
-	CONTROL_DOWN      = false // what is this on windows?
-	ALT_DOWN          = false // option on mac
-	CAPS_LOCK         = false
+	shiftDown    = false
+	superDown    = false // cmd on mac, ctrl on windows
+	controlDown  = false // what is this on windows?
+	altDown      = false // option on mac
+	capsLockDown = false
 )
 
 func min(a, b int) int {
@@ -1131,8 +1131,8 @@ func (b *Buffer) processLeftClick() {
 	// based off the click location
 	xPos, yPos := strife.MouseCoords()
 
-	yPosToLine := (((yPos) / (last_h + pad)) + 1) + b.cam.y
-	xPosToLine := ((xPos - b.ex) / (last_w)) + b.cam.x
+	yPosToLine := (((yPos) / (lastCharH + pad)) + 1) + b.cam.y
+	xPosToLine := ((xPos - b.ex) / (lastCharW)) + b.cam.x
 
 	fmt.Println(yPos, " line ", yPosToLine, " - ", xPos, " char ", xPosToLine)
 
@@ -1182,10 +1182,10 @@ func (b *Buffer) processInput(pred func(r int) bool) bool {
 		return false
 	}
 
-	SHIFT_DOWN = strife.KeyPressed(sdl.K_LSHIFT) || strife.KeyPressed(sdl.K_RSHIFT)
-	SUPER_DOWN = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
-	ALT_DOWN = strife.KeyPressed(sdl.K_LALT) || strife.KeyPressed(sdl.K_RALT)
-	CONTROL_DOWN = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
+	shiftDown = strife.KeyPressed(sdl.K_LSHIFT) || strife.KeyPressed(sdl.K_RSHIFT)
+	superDown = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
+	altDown = strife.KeyPressed(sdl.K_LALT) || strife.KeyPressed(sdl.K_RALT)
+	controlDown = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
 
 	if strife.PollKeys() {
 		keyCode := strife.PopKey()
@@ -1239,7 +1239,7 @@ type syntaxRuneInfo struct {
 }
 
 // dimensions of the last character we rendered
-var last_w, last_h int
+var lastCharW, lastCharH int
 
 // runs up a lexer instance
 func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch map[string]bool, bg uint32, fg uint32) {
@@ -1319,10 +1319,10 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	if b.cfg.Editor.Highlight_Line && b.HasFocus() {
 		ctx.SetColor(strife.HexRGB(b.buffOpts.highlightLine)) // highlight_line_col?
 
-		highlightLinePosY := b.ey + (ry + b.curs.ry*(last_h+pad)) - (b.cam.y * (last_h + pad))
+		highlightLinePosY := b.ey + (ry + b.curs.ry*(lastCharH+pad)) - (b.cam.y * (lastCharH + pad))
 		highlightLinePosX := b.ex + rx
 
-		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w-b.ex, (last_h+pad)-b.ey, strife.Fill)
+		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w-b.ex, (lastCharH+pad)-b.ey, strife.Fill)
 	}
 
 	var visibleLines, visibleChars int = 50, -1
@@ -1331,24 +1331,24 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	// force a render off screen
 	// so we can calculate the size of characters
 	{
-		if int(last_h) == 0 || int(last_w) == 0 {
-			last_w, last_h = ctx.Text("_", -50, -50)
+		if int(lastCharH) == 0 || int(lastCharW) == 0 {
+			lastCharW, lastCharH = ctx.Text("_", -50, -50)
 		}
 	}
 
-	// last_h > 0 means we have done
+	// lastCharH > 0 means we have done
 	// a render.
-	if int(last_h) > 0 && int(b.h) != 0 {
+	if int(lastCharH) > 0 && int(b.h) != 0 {
 		// render an extra three lines just
 		// so we dont cut anything off if its
 		// not evenly divisible
-		visibleLines = (int(b.h-b.ey) / int(last_h)) + 3
+		visibleLines = (int(b.h-b.ey) / int(lastCharH)) + 3
 	}
 
 	// calculate how many chars we can fit
 	// on the screen.
-	if int(last_w) > 0 && int(b.w) != 0 {
-		visibleChars = (int(b.w-b.ex) / int(last_w)) - 3
+	if int(lastCharW) > 0 && int(b.w) != 0 {
+		visibleChars = (int(b.w-b.ex) / int(lastCharW)) - 3
 	}
 
 	start := b.cam.y
@@ -1371,9 +1371,9 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	{
 		cursorWidth := b.cfg.Cursor.GetCaretWidth()
 		if cursorWidth == -1 {
-			cursorWidth = last_w
+			cursorWidth = lastCharW
 		}
-		cursorHeight := last_h + pad
+		cursorHeight := lastCharH + pad
 
 		b.curs.SetSize(cursorWidth, cursorHeight)
 	}
@@ -1445,18 +1445,18 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 				characterColor = charColouring{0, b.buffOpts.cursorInvert}
 			}
 
-			lineHeight := last_h + pad
-			xPos := b.ex + (rx + ((x_col - 1) * last_w))
+			lineHeight := lastCharH + pad
+			xPos := b.ex + (rx + ((x_col - 1) * lastCharW))
 			yPos := b.ey + (ry + (y_col * lineHeight)) + halfPad
 
 			// todo render background
 
 			ctx.SetColor(strife.HexRGB(characterColor.fg))
-			last_w, last_h = ctx.Text(string(char), xPos, yPos)
+			lastCharW, lastCharH = ctx.Text(string(char), xPos, yPos)
 
 			if DEBUG_MODE {
 				ctx.SetColor(strife.HexRGB(0xff00ff))
-				ctx.Rect(xPos, yPos, last_w, last_h, strife.Line)
+				ctx.Rect(xPos, yPos, lastCharW, lastCharH, strife.Line)
 			}
 		}
 
@@ -1466,9 +1466,9 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			// how many chars we need
 			numLinesCharWidth := len(string(numLines)) + 2
 
-			gutterWidth := last_w*numLinesCharWidth + (gutterPadPx * 2)
+			gutterWidth := lastCharW*numLinesCharWidth + (gutterPadPx * 2)
 
-			lineHeight := last_h + pad
+			lineHeight := lastCharH + pad
 			yPos := ((ry + y_col) * lineHeight) + halfPad
 
 			// render the line numbers
@@ -1491,7 +1491,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 	if b.autoComplete.hasSuggestions() {
 
-		xPos := b.ex + (rx + b.curs.rx*last_w) - (b.cam.x * last_w)
+		xPos := b.ex + (rx + b.curs.rx*lastCharW) - (b.cam.x * lastCharW)
 		yPos := b.ey + (ry + b.curs.ry*b.curs.height) - (b.cam.y * b.curs.height)
 
 		autoCompleteBoxHeight := len(b.autoComplete.suggestions) * b.curs.height

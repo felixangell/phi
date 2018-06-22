@@ -25,7 +25,7 @@ func CloseBuffer(v *View, commands []string) bool {
 		// }
 
 		// save the buffer!
-		Save(v, []string{})
+		// Save(v, []string{})
 	}
 
 	v.removeBuffer(b.index)

@@ -66,7 +66,7 @@ func (c *Cursor) moveRender(x, y, rx, ry int) {
 func (c *Cursor) Render(ctx *strife.Renderer, xOff, yOff int) {
 	b := c.parent
 
-	xPos := b.ex + (xOff + c.rx*last_w) - (b.cam.x * last_w)
+	xPos := b.ex + (xOff + c.rx*lastCharW) - (b.cam.x * lastCharW)
 	yPos := b.ey + (yOff + c.ry*c.height) - (b.cam.y * c.height)
 
 	ctx.SetColor(strife.HexRGB(b.buffOpts.cursor))

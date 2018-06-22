@@ -19,5 +19,5 @@ func NewToken(lexeme string, kind TokenType, start int) *Token {
 }
 
 func (t *Token) String() string {
-	return fmt.Sprintf("lexeme: %s, type %s, at pos %d", t.Lexeme, t.Type, t.Start)
+	return fmt.Sprintf("lexeme: %s, type %s, at pos %d", t.Lexeme, string(t.Type), t.Start)
 }
