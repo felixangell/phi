@@ -17,7 +17,6 @@ import (
 	"github.com/felixangell/phi/lex"
 	"github.com/felixangell/phi/piecetable"
 	"github.com/felixangell/strife"
-	"github.com/sqweek/dialog"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -101,7 +100,7 @@ func (a *AutoCompleteBox) renderAt(x, y int, ctx *strife.Renderer) {
 
 	ctx.SetColor(strife.HexRGB(0xffffff))
 	for idx, sugg := range a.suggestions {
-		ctx.String(sugg, x, y+(idx*height))
+		ctx.Text(sugg, x, y+(idx*height))
 	}
 }
 
@@ -232,10 +231,8 @@ func (b *Buffer) reload() {
 	// ask if the user wants to reload the file or not
 	// otherwise re-load it anyway.
 	if b.modified {
-		ok := dialog.Message("This file has been modified, would you like to reload?").YesNo()
-		if !ok {
-			return
-		}
+		// ok := dialog.Message("This file has been modified, would you like to reload?").YesNo()
+		panic("this should show a file modified thing but this has been removed for now!")
 	}
 
 	contents, err := ioutil.ReadFile(b.filePath)
@@ -1335,7 +1332,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	// so we can calculate the size of characters
 	{
 		if int(last_h) == 0 || int(last_w) == 0 {
-			last_w, last_h = ctx.String("_", -50, -50)
+			last_w, last_h = ctx.Text("_", -50, -50)
 		}
 	}
 
@@ -1455,7 +1452,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			// todo render background
 
 			ctx.SetColor(strife.HexRGB(characterColor.fg))
-			last_w, last_h = ctx.String(string(char), xPos, yPos)
+			last_w, last_h = ctx.Text(string(char), xPos, yPos)
 
 			if DEBUG_MODE {
 				ctx.SetColor(strife.HexRGB(0xff00ff))
@@ -1484,7 +1481,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			}
 
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumForeground))
-			ctx.String(fmt.Sprintf("%*d", numLinesCharWidth, (start+lineNum)+1), rx+gutterPadPx, yPos)
+			ctx.Text(fmt.Sprintf("%*d", numLinesCharWidth, (start+lineNum)+1), rx+gutterPadPx, yPos)
 
 			b.ex = gutterWidth
 		}

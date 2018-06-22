@@ -4,8 +4,6 @@ import (
 	"log"
 	"strconv"
 	"strings"
-
-	"github.com/sqweek/dialog"
 )
 
 type BufferAction struct {
@@ -23,10 +21,13 @@ func NewBufferAction(name string, proc func(*View, []string) bool) BufferAction 
 }
 
 func OpenFile(v *View, commands []string) bool {
-	path, err := dialog.File().Title("Open file").Load()
-	if err != nil {
-		log.Println(err)
-		return false
+	path := ""
+	if path == "" {
+		panic("unimplemented")
+		// ive removed this since the cross platform
+		// thing causes too much hassle on diff. platforms
+		// going to wriet my own file open viewer thing built
+		// into the editor instead.
 	}
 
 	buff := v.AddBuffer()

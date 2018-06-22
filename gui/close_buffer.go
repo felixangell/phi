@@ -2,8 +2,6 @@ package gui
 
 import (
 	"fmt"
-
-	"github.com/sqweek/dialog"
 )
 
 func CloseBuffer(v *View, commands []string) bool {
@@ -18,10 +16,13 @@ func CloseBuffer(v *View, commands []string) bool {
 		// TODO basename?
 		text := fmt.Sprintf("Do you want to save the changes you made to %s?", b.filePath)
 
-		dontSave := dialog.Message("%s", text).YesNo()
-		if !dontSave {
-			return false
-		}
+		// TODO
+		panic(text)
+
+		// dontSave := dialog.Message("%s", text).YesNo()
+		// if !dontSave {
+		// 	return false
+		// }
 
 		// save the buffer!
 		Save(v, []string{})

@@ -71,7 +71,7 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 		ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
 
 		ctx.SetFont(b.font)
-		lastWidth, _ = ctx.String(infoLine, ((b.x + b.w) - (lastWidth + (pad))), mpY+(pad/2))
+		lastWidth, _ = ctx.Text(infoLine, ((b.x + b.w) - (lastWidth + (pad))), mpY+(pad/2))
 	}
 
 	{
@@ -89,7 +89,7 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 		ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
 
 		ctx.SetFont(b.font)
-		_, strHeight := ctx.String(infoLine, b.x+pad, mpY+(pad/2)+1)
+		_, strHeight := ctx.Text(infoLine, b.x+pad, mpY+(pad/2)+1)
 		metaPanelHeight = strHeight + pad
 	}
 

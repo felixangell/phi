@@ -61,10 +61,10 @@ func (s *suggestion) renderHighlighted(x, y int, ctx *strife.Renderer) {
 
 	// FIXME strife library needs something to get
 	// text width and heights... for now we render offscreen to measure... lol
-	_, h := ctx.String("foo", -500000, -50000)
+	_, h := ctx.Text("foo", -500000, -50000)
 
 	yOffs := (suggestionBoxHeight / 2) - (h / 2)
-	ctx.String(s.name, x+border, y+yOffs)
+	ctx.Text(s.name, x+border, y+yOffs)
 }
 
 func (s *suggestion) render(x, y int, ctx *strife.Renderer) {
@@ -82,10 +82,10 @@ func (s *suggestion) render(x, y int, ctx *strife.Renderer) {
 
 	// FIXME strife library needs something to get
 	// text width and heights... for now we render offscreen to measure... lol
-	_, h := ctx.String("foo", -500000, -50000)
+	_, h := ctx.Text("foo", -500000, -50000)
 
 	yOffs := (suggestionBoxHeight / 2) - (h / 2)
-	ctx.String(s.name, x+border, y+yOffs)
+	ctx.Text(s.name, x+border, y+yOffs)
 }
 
 func NewCommandPalette(conf cfg.TomlConfig, view *View) *CommandPalette {
@@ -342,7 +342,7 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 	ctx.SetColor(strife.HexRGB(conf.Outline))
 	ctx.Rect(xPos, yPos, paletteWidth, paletteHeight, strife.Fill)
 
-	_, charHeight := ctx.String("foo", -5000, -5000)
+	_, charHeight := ctx.Text("foo", -5000, -5000)
 	b.buff.ey = (suggestionBoxHeight / 2) - (charHeight / 2)
 
 	b.buff.OnRender(ctx)

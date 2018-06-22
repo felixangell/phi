@@ -150,7 +150,7 @@ func main() {
 			// this is only printed on each
 			// render...
 			ctx.SetColor(strife.White)
-			ctx.String(fmt.Sprintf("fps: %d, ups %d", fps, ups), ww-256, wh-128)
+			ctx.Text(fmt.Sprintf("fps: %d, ups %d", fps, ups), ww-256, wh-128)
 
 			ctx.Display()
 			frames += 1
