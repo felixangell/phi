@@ -1398,8 +1398,10 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	for lineNum, rope := range b.table.Lines[start:upper] {
 		currLine := []rune(rope.String())
 
-		// slice the visible characters only.
-		currLine = currLine[:min(visibleChars, len(currLine))]
+		if visibleChars >= 0 {
+			// slice the visible characters only.
+			currLine = currLine[:min(visibleChars, len(currLine))]
+		}
 
 		// char index => colour
 		var matches map[int]syntaxRuneInfo
