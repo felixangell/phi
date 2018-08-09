@@ -146,6 +146,12 @@ func (b *CommandPalette) processCommand() {
 	// command
 	if strings.Compare(tokenizedLine[0], "!") == 0 {
 
+		// no commands to process, just the
+		// bang.
+		if len(tokenizedLine) == 1 {
+			return
+		}
+
 		// slice off the command token
 		tokenizedLine := strings.Split(input, " ")[1:]
 
