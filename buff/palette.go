@@ -149,7 +149,7 @@ func (b *CommandPalette) processCommand() {
 		// slice off the command token
 		tokenizedLine := strings.Split(input, " ")[1:]
 
-		log.Println("COMMAND TING '", input, "', ", tokenizedLine)
+		log.Println("Command Entered: '", input, "', ", tokenizedLine)
 		command := tokenizedLine[0]
 
 		log.Println("command palette: ", tokenizedLine)
