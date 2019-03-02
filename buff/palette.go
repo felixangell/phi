@@ -117,9 +117,10 @@ func NewCommandPalette(conf cfg.TomlConfig, view *BufferView) *CommandPalette {
 	palette.buff.appendLine("")
 
 	vW, _ := view.GetSize()
-	pW, pH := palette.GetSize()
 
 	palette.Resize(vW/3, 48)
+	pW, pH := palette.GetSize()
+
 	palette.Translate((vW/2)-(pW/2), 10)
 
 	// the buffer is not rendered
