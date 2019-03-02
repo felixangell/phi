@@ -1,12 +1,13 @@
 package buff
 
 import (
-	"log"
+	"fmt"
 	"strings"
 
 	"github.com/felixangell/fuzzysearch/fuzzy"
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/phi/gui"
+	"github.com/felixangell/phi/lex"
 	"github.com/felixangell/strife"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -140,33 +141,27 @@ func NewCommandPalette(conf cfg.TomlConfig, view *BufferView) *CommandPalette {
 
 func (b *CommandPalette) processCommand() {
 	input := b.buff.table.Lines[0].String()
-	input = strings.TrimSpace(input)
-	tokenizedLine := strings.Split(input, " ")
+	fmt.Println("raw comand palette input is ", input)
 
-	// command
-	if strings.Compare(tokenizedLine[0], "!") == 0 {
+	tokens := lex.New(input).Tokenize()
+	fmt.Println("tokenized to", tokens)
 
-		// no commands to process, just the
-		// bang.
-		if len(tokenizedLine) == 1 {
-			return
-		}
+	// FIXME
+	if len(tokens) <= 1 {
+		return
+	}
 
-		// slice off the command token
-		tokenizedLine := strings.Split(input, " ")[1:]
-
-		log.Println("Command Entered: '", input, "', ", tokenizedLine)
-		command := tokenizedLine[0]
-
-		log.Println("command palette: ", tokenizedLine)
-
+	if tokens[0].Equals("!") && tokens[1].IsType(lex.Word) {
+		command := tokens[1].Lexeme
 		action, exists := register[command]
 		if !exists {
+			fmt.Println("No such action ", command)
 			return
 		}
 
-		action.proc(b.parent, tokenizedLine[1:])
-		return
+		args := tokens[2:]
+		fmt.Println("executing action", command, "with arguments", args)
+		action.proc(b.parent, args)
 	}
 
 	if index, ok := b.pathToIndex[input]; ok {

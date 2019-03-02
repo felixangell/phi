@@ -2,9 +2,11 @@ package buff
 
 import (
 	"fmt"
+
+	"github.com/felixangell/phi/lex"
 )
 
-func CloseBuffer(v *BufferView, commands []string) bool {
+func CloseBuffer(v *BufferView, commands []*lex.Token) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false

@@ -10,16 +10,17 @@ import (
 	"path/filepath"
 
 	"github.com/atotto/clipboard"
+	"github.com/felixangell/phi/lex"
 )
 
-func ShowPalette(v *BufferView, commands []string) bool {
+func ShowPalette(v *BufferView, commands []*lex.Token) bool {
 	b := v.getCurrentBuff()
 	v.UnfocusBuffers()
 	v.focusPalette(b)
 	return true
 }
 
-func Paste(v *BufferView, commands []string) bool {
+func Paste(v *BufferView, commands []*lex.Token) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false
@@ -37,7 +38,7 @@ func Paste(v *BufferView, commands []string) bool {
 	return false
 }
 
-func Undo(v *BufferView, commands []string) bool {
+func Undo(v *BufferView, commands []*lex.Token) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false
@@ -46,7 +47,7 @@ func Undo(v *BufferView, commands []string) bool {
 	return false
 }
 
-func Redo(v *BufferView, commands []string) bool {
+func Redo(v *BufferView, commands []*lex.Token) bool {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false
@@ -67,7 +68,7 @@ func genFileName(dir, prefix, suffix string) string {
 // if the buffer is modified it will be
 // re-rendered.
 
-func Save(v *BufferView, commands []string) bool {
+func Save(v *BufferView, commands []*lex.Token) bool {
 	// TODO Config option for this.
 	atomicFileSave := true
 

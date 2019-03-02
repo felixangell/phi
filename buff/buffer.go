@@ -476,7 +476,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 		actionName, actionExists := source[key]
 		if actionExists {
 			if action, ok := register[actionName]; ok {
-				return action.proc(b.parent, []string{})
+				return action.proc(b.parent, []*lex.Token{})
 			}
 		} else {
 			log.Println("warning, unimplemented shortcut", shortcutName, "+", unicode.ToLower(r), "#", int(r), actionName)

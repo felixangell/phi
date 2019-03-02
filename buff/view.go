@@ -8,6 +8,7 @@ import (
 
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/phi/gui"
+	"github.com/felixangell/phi/lex"
 	"github.com/felixangell/strife"
 	"github.com/fsnotify/fsnotify"
 	"github.com/veandco/go-sdl2/sdl"
@@ -308,7 +309,7 @@ func (n *BufferView) OnUpdate() bool {
 		if actionExists {
 			if action, ok := register[actionName]; ok {
 				log.Println("Executing action '" + actionName + "'")
-				return action.proc(n, []string{})
+				return action.proc(n, []*lex.Token{})
 			}
 		} else {
 			log.Println("view: unimplemented shortcut", shortcutName, "+", string(unicode.ToLower(r)), "#", int(r), actionName, key)
