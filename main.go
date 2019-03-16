@@ -100,8 +100,7 @@ func main() {
 		case *strife.CloseEvent:
 			window.Close()
 		case *strife.WindowResizeEvent:
-			// FIXME.
-			editor.resize(event.Width, event.Height)
+			fmt.Println("window resize is unimplemented: size", event.Width, event.Height)
 		default:
 			editor.handleEvent(evt)
 		}
