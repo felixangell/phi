@@ -94,6 +94,12 @@ func NewCommandPalette(conf cfg.TomlConfig, view *BufferView) *CommandPalette {
 	conf.Editor.Show_Line_Numbers = false
 	conf.Editor.Highlight_Line = false
 
+	newSize := int(float64(conf.Editor.Font_Size) * cfg.ScaleFactor)
+	paletteFont, err := conf.Editor.Loaded_Font.DeriveFont(newSize)
+	if err != nil {
+		panic(err)
+	}
+
 	palette := &CommandPalette{
 		conf:   &conf,
 		parent: view,
@@ -110,7 +116,7 @@ func NewCommandPalette(conf cfg.TomlConfig, view *BufferView) *CommandPalette {
 			// so these aren't necessary
 			0x0, 0x0,
 
-			conf.Editor.Loaded_Font,
+			paletteFont,
 		}, nil, 0),
 		parentBuff: nil,
 	}

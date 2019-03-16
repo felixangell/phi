@@ -12,9 +12,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/felixangell/strife"
-
 	// fork of BurntSushi with hexadecimal support.
+	"github.com/felixangell/strife"
 	"github.com/felixangell/toml"
 )
 
@@ -111,6 +110,7 @@ func configureAndValidate(conf *TomlConfig) {
 			panic(err)
 		}
 		conf.Editor.Loaded_Font = font
+
 	}
 
 	// config & validate the keyboard shortcuts

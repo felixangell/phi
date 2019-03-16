@@ -32,8 +32,8 @@ func (n *PhiEditor) handleEvent(evt strife.StrifeEvent) {
 
 }
 
-func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
-	mainView := buff.NewView(1280, 720, cfg)
+func (n *PhiEditor) init(conf *cfg.TomlConfig) {
+	mainView := buff.NewView(int(1280.0*cfg.ScaleFactor), int(720.0*cfg.ScaleFactor), conf)
 
 	args := os.Args
 	if len(args) > 1 {
@@ -54,7 +54,7 @@ func (n *PhiEditor) init(cfg *cfg.TomlConfig) {
 	}
 
 	n.mainView = mainView
-	n.defaultFont = cfg.Editor.Loaded_Font
+	n.defaultFont = conf.Editor.Loaded_Font
 }
 
 func (n *PhiEditor) dispose() {
@@ -75,14 +75,22 @@ func main() {
 
 	config := cfg.Setup()
 
-	ww, wh := 1280, 720
-
 	windowConfig := strife.DefaultConfig()
 	windowConfig.Accelerated = config.Render.Accelerated
 	windowConfig.Alias = config.Render.Aliased
 	windowConfig.VerticalSync = config.Render.Vertical_Sync
 
-	window := strife.SetupRenderWindow(ww, wh, windowConfig)
+	ww, wh := float32(640.0), float32(360.0)
+
+	dpi, defDpi := strife.GetDisplayDPI(0)
+
+	cfg.ScaleFactor = float64(dpi / defDpi)
+
+	scaledWidth := int((ww * dpi) / defDpi)
+	scaledHeight := int((wh * dpi) / defDpi)
+
+	window := strife.SetupRenderWindow(scaledWidth, scaledHeight, windowConfig)
+	window.AllowHighDPI()
 	window.SetTitle("Hello world!")
 	window.SetResizable(true)
 
@@ -92,6 +100,7 @@ func main() {
 		case *strife.CloseEvent:
 			window.Close()
 		case *strife.WindowResizeEvent:
+			// FIXME.
 			editor.resize(event.Width, event.Height)
 		default:
 			editor.handleEvent(evt)
@@ -150,12 +159,12 @@ func main() {
 			// this is only printed on each
 			// render...
 			ctx.SetColor(strife.White)
-			ctx.Text(fmt.Sprintf("fps: %d, ups %d", fps, ups), ww-256, wh-128)
+			ctx.Text(fmt.Sprintf("fps: %d, ups %d", fps, ups), int(scaledWidth-256), int(scaledHeight-128))
 
 			ctx.Display()
-			frames += 1
+			frames++
 		}
-		updates += 1
+		updates++
 
 		if time.Now().Sub(lastDebugRender) >= time.Second {
 			lastDebugRender = time.Now()

@@ -20,7 +20,8 @@ type BufferPane struct {
 
 func NewBufferPane(buff *Buffer) *BufferPane {
 	fontPath := filepath.Join(cfg.FONT_FOLDER, buff.cfg.Editor.Font_Face+".ttf")
-	metaPanelFont, err := strife.LoadFont(fontPath, 14)
+	// FIXME DPI
+	metaPanelFont, err := strife.LoadFont(fontPath, int(14.0*cfg.ScaleFactor))
 	if err != nil {
 		log.Println("Note: failed to load meta panel font ", fontPath)
 		metaPanelFont = buff.buffOpts.font

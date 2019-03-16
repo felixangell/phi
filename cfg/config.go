@@ -10,10 +10,10 @@ import (
 )
 
 type TomlConfig struct {
-	Editor       EditorConfig                `toml:"editor"`
-	Cursor       CursorConfig                `toml:"cursor"`
-	Render       RenderConfig                `toml:"render"`
-	Theme        ThemeConfig                 `toml:"theme"`
+	Editor       *EditorConfig               `toml:"editor"`
+	Cursor       *CursorConfig               `toml:"cursor"`
+	Render       *RenderConfig               `toml:"render"`
+	Theme        *ThemeConfig                `toml:"theme"`
 	Associations map[string]FileAssociations `toml:"file_associations"`
 	Commands     map[string]Command          `toml:"commands"`
 
@@ -128,8 +128,8 @@ type EditorConfig struct {
 func NewDefaultConfig() *TomlConfig {
 	log.Println("Loading default configuration... this should never happen")
 	return &TomlConfig{
-		Editor: EditorConfig{},
-		Theme: ThemeConfig{
+		Editor: &EditorConfig{},
+		Theme: &ThemeConfig{
 			Background:    0x002649,
 			Foreground:    0xf2f4f6,
 			Cursor:        0xf2f4f6,

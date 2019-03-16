@@ -151,6 +151,17 @@ func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *BufferView, 
 		config = cfg.NewDefaultConfig()
 	}
 
+	// TODO we load the font in config, instead
+	// we should load it when used, for example here.
+	// DPI FIX.
+	newSize := int(float64(config.Editor.Font_Size) * cfg.ScaleFactor)
+	scaledFont, err := config.Editor.Loaded_Font.DeriveFont(newSize)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("loading new font thing")
+	config.Editor.Loaded_Font = scaledFont
+
 	curs := sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_IBEAM)
 
 	// TODO do this only if we are hovering over the buffer
@@ -1331,7 +1342,9 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		highlightLinePosY := b.ey + (ry + b.curs.ry*(lastCharH+pad)) - (b.cam.y * (lastCharH + pad))
 		highlightLinePosX := b.ex + rx
 
-		ctx.Rect(highlightLinePosX, highlightLinePosY, w-b.ex, (lastCharH+pad)-b.ey, strife.Fill)
+		width := w - b.ex
+		height := (lastCharH + pad) - b.ey
+		ctx.Rect(highlightLinePosX, highlightLinePosY, width, height, strife.Fill)
 	}
 
 	var visibleLines, visibleChars int = 50, -1
@@ -1433,7 +1446,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 				continue
 			}
 
-			x_col += 1
+			x_col++
 
 			if info, ok := matches[idx]; ok {
 				if colorStack == nil || len(colorStack) == 0 {

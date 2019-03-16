@@ -1,5 +1,6 @@
 package cfg
 
 var (
-	DebugMode = false
+	DebugMode   = false
+	ScaleFactor = 1.0
 )
