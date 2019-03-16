@@ -124,7 +124,10 @@ func NewCommandPalette(conf cfg.TomlConfig, view *BufferView) *CommandPalette {
 
 	vW, _ := view.GetSize()
 
-	palette.Resize(vW/3, 48)
+	// set the palette to be 1/3rd of the size of the view
+	palette.Resize(vW/3, int(float64(newSize)*1.5))
+
+	// translate it to the centre of the view.
 	pW, pH := palette.GetSize()
 
 	palette.Translate((vW/2)-(pW/2), 10)
