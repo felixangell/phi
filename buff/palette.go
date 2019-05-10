@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/felixangell/fuzzysearch/fuzzy"
 	"github.com/felixangell/phi/cfg"
 	"github.com/felixangell/phi/gui"
 	"github.com/felixangell/phi/lex"
 	"github.com/felixangell/strife"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -215,7 +215,7 @@ func (b *CommandPalette) calculateCommandSuggestions() {
 	suggestions := []suggestion{}
 
 	for _, r := range ranks {
-		cmdName := commandSet[r.Index]
+		cmdName := commandSet[r.OriginalIndex]
 		if cmdName == "" {
 			continue
 		}
@@ -254,7 +254,7 @@ func (b *CommandPalette) calculateSuggestions() {
 	ranks := fuzzy.RankFind(input, openFiles)
 	suggestions := []suggestion{}
 	for _, r := range ranks {
-		pane := b.parent.buffers[r.Index]
+		pane := b.parent.buffers[r.OriginalIndex]
 		if pane != nil {
 			sugg := suggestion{
 				b,
