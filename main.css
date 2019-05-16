@@ -13,48 +13,31 @@ body {
 }
 
 header {
-	display: block;
-	width: 100%;
-	margin-bottom: 40px;
+	display: grid;
+	grid-template-columns: 30% 70%;
 }
 
-header nav {
-	display: inline-block;
-	width: 100%;
+h1.title {
+	margin: 1em 0;
 }
 
-header nav ul li {
-	display: block;
-	float: left;
-	margin: 15px;
+.logoContainer {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+.logoContainer img {
+	width: 65%;
 }
 
-a {
-	color: #f8f273;;
-}
-
-.section {
-	display: block;
-	margin: 20px 0 20px 0;
-}
-
-.logo {
-	display: block;
-	margin: 40px auto;
-	width: 10%;
-}
-
-.text-center {
-	text-align: center;
-}
-
-img.fit {
-	display: block;
-	max-width: 100%;
-}
-
-.wrapper {
+main {
 	display: block;
 	width: 800px;
-	margin: 0 auto;
+	margin: 5em auto;
+}
+
+.screenshotContainer img {
+	display: block;
+	width: 100%;
 }
