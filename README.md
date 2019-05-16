@@ -14,7 +14,7 @@ and probably **crash frequently**.
 
 Here's a screenshot of Phi in action:
 
-<p align="center"><img src="screenshot.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/felixangell/phi/gh-pages/images/screenshot.png"></p>
 
 # goals
 The editor must:
