@@ -355,10 +355,6 @@ func (b *Buffer) insertString(idx int, val string) {
 
 func (b *Buffer) insertRune(r rune) {
 	b.modified = true
-
-	log.Println("Inserting rune ", r, " into current line at ", b.curs.x, ":", b.curs.y)
-	log.Println("Line before insert> ", b.table.Lines[b.curs.y].String())
-
 	b.table.Insert(string(r), b.curs.y, b.curs.x)
 	b.moveRight()
 }
@@ -446,6 +442,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 
 	b.autoComplete.process(r)
 
+	// FIXME
 	// only do the alt alternatives on mac osx
 	// todo change this so it's not checking on every
 	// input
@@ -469,6 +466,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 	}
 
 	if mainSuper {
+		// FIXME magic numbers!
 		left := 1073741903
 		right := 1073741904
 
@@ -1278,7 +1276,34 @@ type charColouring struct {
 	fg uint32
 }
 
+const syntaxCacheEvictionTime = time.Second * 30
+
+type syntaxInfo struct {
+	data      map[int]syntaxRuneInfo
+	cacheTime time.Time
+}
+
+// hacky. FIXME with a proper solution.
+var syntaxCache = map[string]syntaxInfo{}
+var syntaxHighlights = 0
+
+// syntaxHighlightLine will highlight the given string
+// it returns a map of column positions -> bg/fg colours + the length of the colouring information.
+//
+// this could do with a lot of optimisation. this is executed pretty much constantly
+// and will run a regex on the line
+//
+// just as I wrote this comment though I added some very naive caching that will probably
+// break in a few edge cases!
 func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
+	if info, ok := syntaxCache[currLine]; ok {
+		if time.Now().Sub(info.cacheTime) < syntaxCacheEvictionTime {
+			return info.data
+		}
+	}
+
+	syntaxHighlights++
+
 	matches := map[int]syntaxRuneInfo{}
 
 	subjects := make([]*cfg.SyntaxCriteria, len(b.languageInfo.Syntax))
@@ -1321,6 +1346,11 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 			colouring := colours[syntaxIndex]
 			lexFindMatches(&matches, currLine, syntax.MatchList, colouring.bg, colouring.fg)
 		}
+	}
+
+	syntaxCache[currLine] = syntaxInfo{
+		data:      matches,
+		cacheTime: time.Now(),
 	}
 
 	return matches
@@ -1407,7 +1437,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 
 	numLines := len(b.table.Lines)
 
-	var y_col int
+	var yCol int
 	for lineNum, rope := range b.table.Lines[start:upper] {
 		currLine := []rune(rope.String())
 
@@ -1428,7 +1458,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		// or something.
 
 		// the x position of the _character_
-		var x_col int
+		var xCol int
 
 		for idx, char := range currLine {
 			switch char {
@@ -1438,15 +1468,15 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 				continue
 
 			case '\n':
-				x_col = 0
-				y_col++
+				xCol = 0
+				yCol++
 				continue
 			case '\t':
-				x_col += b.cfg.Editor.Tab_Size
+				xCol += b.cfg.Editor.Tab_Size
 				continue
 			}
 
-			x_col++
+			xCol++
 
 			if info, ok := matches[idx]; ok {
 				if colorStack == nil || len(colorStack) == 0 {
@@ -1465,13 +1495,13 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 				characterColor = a
 			}
 
-			if b.HasFocus() && (b.curs.x-b.cam.x) == (x_col-1) && (b.curs.y-b.cam.y) == y_col {
+			if b.HasFocus() && (b.curs.x-b.cam.x) == (xCol-1) && (b.curs.y-b.cam.y) == yCol {
 				characterColor = charColouring{0, b.buffOpts.cursorInvert}
 			}
 
 			lineHeight := lastCharH + pad
-			xPos := b.ex + (rx + ((x_col - 1) * lastCharW))
-			yPos := b.ey + (ry + (y_col * lineHeight)) + halfPad
+			xPos := b.ex + (rx + ((xCol - 1) * lastCharW))
+			yPos := b.ey + (ry + (yCol * lineHeight)) + halfPad
 
 			// todo render background
 
@@ -1493,7 +1523,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			gutterWidth := lastCharW*numLinesCharWidth + (gutterPadPx * 2)
 
 			lineHeight := lastCharH + pad
-			yPos := ((ry + y_col) * lineHeight) + halfPad
+			yPos := ((ry + yCol) * lineHeight) + halfPad
 
 			// render the line numbers
 			ctx.SetColor(strife.HexRGB(b.buffOpts.lineNumBackground))
@@ -1510,11 +1540,10 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			b.ex = gutterWidth
 		}
 
-		y_col += 1
+		yCol++
 	}
 
 	if b.autoComplete.hasSuggestions() {
-
 		xPos := b.ex + (rx + b.curs.rx*lastCharW) - (b.cam.x * lastCharW)
 		yPos := b.ey + (ry + b.curs.ry*b.curs.height) - (b.cam.y * b.curs.height)
 

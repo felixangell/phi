@@ -25,6 +25,16 @@ func newCursor(parent *Buffer) *Cursor {
 	}
 }
 
+// SetPos will set the cursor position
+// FIXME this should update the rx, ry:
+// there are two ways to do this (as far as I know):
+// - re-process the line somehow?
+// - 'simulate' what steps to move the cursor from old pos to new pos.
+// using the move() func which updates rx, ry for us.
+func (c *Cursor) SetPos(x, y int) {
+	// STUB!
+}
+
 func (c *Cursor) SetSize(w, h int) {
 	c.width = w
 	c.height = h

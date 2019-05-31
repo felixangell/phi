@@ -29,9 +29,9 @@ func MakePieceTable(data string) *PieceTable {
 	return table
 }
 
-func (p *PieceTable) Redo() {
+func (p *PieceTable) Redo() *PieceNode {
 	if len(p.redoList) == 0 {
-		return
+		return nil
 	}
 
 	action := p.redoList[len(p.redoList)-1]
@@ -42,11 +42,13 @@ func (p *PieceTable) Redo() {
 
 	line := p.Lines[action.Index]
 	line.mods[actionIndex] = true
+
+	return action
 }
 
-func (p *PieceTable) Undo() {
+func (p *PieceTable) Undo() *PieceNode {
 	if len(p.nodes) == 0 {
-		return
+		return nil
 	}
 
 	nodeIndex := len(p.nodes) - 1
@@ -65,6 +67,8 @@ func (p *PieceTable) Undo() {
 
 	// append it so we can redo it later if necessary
 	p.redoList = append(p.redoList, change)
+
+	return p.nodes[nodeIndex-1]
 }
 
 func (p *PieceTable) Delete(line int, idx int) {

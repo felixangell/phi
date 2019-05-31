@@ -43,7 +43,10 @@ func Undo(v *BufferView, commands []*lex.Token) bool {
 	if b == nil {
 		return false
 	}
-	b.table.Undo()
+	node := b.table.Undo()
+	if node != nil {
+		b.curs.SetPos(node.Start, node.Index)
+	}
 	return false
 }
 
@@ -52,7 +55,10 @@ func Redo(v *BufferView, commands []*lex.Token) bool {
 	if b == nil {
 		return false
 	}
-	b.table.Redo()
+	node := b.table.Redo()
+	if node != nil {
+		b.curs.SetPos(node.Start, node.Index)
+	}
 	return false
 }
 
