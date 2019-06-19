@@ -12,9 +12,8 @@ import (
 	"runtime"
 	"strings"
 
-	// fork of BurntSushi with hexadecimal support.
 	"github.com/felixangell/strife"
-	"github.com/felixangell/toml"
+	"github.com/pelletier/go-toml"
 )
 
 // TODO:
@@ -63,8 +62,8 @@ func loadSyntaxDef(lang string) *LanguageSyntaxConfig {
 		return nil
 	}
 
-	var conf = &LanguageSyntaxConfig{}
-	if _, err := toml.Decode(string(syntaxTomlData), conf); err != nil {
+	conf := &LanguageSyntaxConfig{}
+	if err := toml.Unmarshal(syntaxTomlData, conf); err != nil {
 		panic(err)
 	}
 
@@ -310,8 +309,8 @@ func Setup() TomlConfig {
 		panic(err)
 	}
 
-	var conf TomlConfig
-	if _, err := toml.Decode(string(configTomlData), &conf); err != nil {
+	conf := TomlConfig{}
+	if err := toml.Unmarshal(configTomlData, &conf); err != nil {
 		panic(err)
 	}
 
