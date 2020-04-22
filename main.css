@@ -17,8 +17,24 @@ header {
 	grid-template-columns: 30% 70%;
 }
 
-h1.title {
+.aboutHeader {
 	margin: 1em 0;
+	line-height: 2.1em;
+}
+
+.navigation-links {
+	display: flex;
+	flex-direction: row;
+	list-style: none;
+	padding: 0;
+}
+.navigation-links li {
+	padding-right: 1em;
+}
+
+a {
+	color: #002649;
+	text-transform: lowercase;
 }
 
 .logoContainer {
