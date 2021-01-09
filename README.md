@@ -2,6 +2,8 @@
 
 <h1>phi</h1>
 
+![Go](https://github.com/felixangell/phi/workflows/Go/badge.svg)
+
 Phi is a minimal code editor designed to look pretty, run fast, and be easy
 to configure and use. It's primary function is for editing code.
 
