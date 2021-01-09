@@ -68,7 +68,7 @@ func (p *PieceTable) Undo() *PieceNode {
 	// append it so we can redo it later if necessary
 	p.redoList = append(p.redoList, change)
 
-	return p.nodes[nodeIndex-1]
+	return change
 }
 
 func (p *PieceTable) Delete(line int, idx int) {
