@@ -260,7 +260,6 @@ func (n *BufferView) OnUpdate() bool {
 	controlDown = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
 	superDown = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
 
-	shortcutName := "ctrl"
 	source := cfg.Shortcuts.Controls
 
 	if strife.PollKeys() && (superDown || controlDown) {
@@ -268,10 +267,8 @@ func (n *BufferView) OnUpdate() bool {
 		if runtime.GOOS == "darwin" {
 			if superDown {
 				source = cfg.Shortcuts.Supers
-				shortcutName = "super"
 			} else if controlDown {
 				source = cfg.Shortcuts.Controls
-				shortcutName = "control"
 			}
 		} else {
 			source = cfg.Shortcuts.Controls

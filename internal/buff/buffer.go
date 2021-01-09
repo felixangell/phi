@@ -431,10 +431,10 @@ func (b *Buffer) processTextInput(r rune) bool {
 		}
 	}
 
-	mainSuper, shortcutName := controlDown, "ctrl"
+	mainSuper, _ := controlDown, "ctrl"
 	source := cfg.Shortcuts.Controls
 	if runtime.GOOS == "darwin" {
-		mainSuper, shortcutName = superDown, "super"
+		mainSuper, _ = superDown, "super"
 		source = cfg.Shortcuts.Supers
 	}
 
