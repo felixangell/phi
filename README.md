@@ -2,8 +2,6 @@
 
 <h1>phi</h1>
 
-[![Build Status](https://travis-ci.org/felixangell/phi.svg?branch=master)](https://travis-ci.org/felixangell/phi)
-
 Phi is a minimal code editor designed to look pretty, run fast, and be easy
 to configure and use. It's primary function is for editing code.
 
