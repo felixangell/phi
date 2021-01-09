@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: install_deps
+      runs: |
+        sudo apt-get install libsdl2{,-image,-ttf,-gfx}-dev
 
     - name: Set up Go
       uses: actions/setup-go@v2
