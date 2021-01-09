@@ -152,7 +152,7 @@ func NewDefaultConfig() *PhiEditorConfig {
 			MaintainIndentation: true,
 			HighlightLine:       true,
 			FontPath:            "/Library/Fonts",
-			FontFace:            "Arial Unicode",
+			FontFace:            "Go-Mono",
 			FontSize:            24,
 			ShowLineNumbers:     true,
 		},
