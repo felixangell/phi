@@ -249,15 +249,7 @@ func Setup() TomlConfig {
 			}
 		}
 
-		size := 16
-		switch runtime.GOOS {
-		case "windows":
-			size = 64
-		case "darwin":
-			size = 512
-		case "linux":
-			size = 96
-		}
+		size := getIconSize()
 
 		// download the icon and
 		// write it to the phi-editor folder.
@@ -278,16 +270,13 @@ func Setup() TomlConfig {
 				if err != nil {
 					panic(err)
 				}
-				defer func() {
-					if err := file.Close(); err != nil {
-						panic(err)
-					}
-				}()
-
 				if _, err := file.Write([]byte(syntaxDef)); err != nil {
 					panic(err)
 				}
 				log.Println("Wrote syntax for language '" + name + "'")
+				if err := file.Close(); err != nil {
+					panic(err)
+				}
 			}
 		}
 	}
@@ -330,4 +319,17 @@ func Setup() TomlConfig {
 
 	configureAndValidate(&conf)
 	return conf
+}
+
+func getIconSize() int {
+	size := 16
+	switch runtime.GOOS {
+	case "windows":
+		size = 64
+	case "darwin":
+		size = 512
+	case "linux":
+		size = 96
+	}
+	return size
 }
