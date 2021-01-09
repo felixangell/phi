@@ -13,7 +13,7 @@ jobs:
     steps:
     - name: install_deps
       uses: actions/checkout@v2
-      runs: |
+      run: |
         sudo apt-get install libsdl2{,-image,-ttf,-gfx}-dev
 
     - name: Set up Go
