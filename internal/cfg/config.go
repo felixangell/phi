@@ -78,6 +78,7 @@ type RenderConfig struct {
 	AlwaysRender       bool `toml:"always_render"`
 	VerticalSync       bool `toml:"vertical_sync"`
 	SyntaxHighlighting bool `toml:"syntax_highlighting"`
+	FrameSleepInterval uint32 `toml:"frame_sleep_interval"`
 }
 
 // todo make this more extendable...
@@ -138,6 +139,14 @@ var Shortcuts = shortcutConfig{
 func NewDefaultConfig() *TomlConfig {
 	log.Println("Loading default configuration")
 	return &TomlConfig{
+		Render: &RenderConfig{
+			Aliased:            true,
+			Accelerated:        true,
+			ThrottleCpuUsage:   true,
+			AlwaysRender:       true,
+			VerticalSync:       true,
+			SyntaxHighlighting: true,
+		},
 		Editor: &EditorConfig{},
 		Theme: &ThemeConfig{
 			Background:   0x002649,

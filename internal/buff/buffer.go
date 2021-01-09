@@ -20,13 +20,6 @@ import (
 	"unicode"
 )
 
-var (
-	timer       = 0
-	resetTimer  = 0
-	shouldDraw  = true
-	shouldFlash = false
-)
-
 const (
 	DefaultScrollAmount = 10
 )
