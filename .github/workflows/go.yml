@@ -11,8 +11,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: install_deps
+    - name: Checkout
       uses: actions/checkout@v2
+
+    - name: Install dependencies
       run: |
         sudo apt-get install libsdl2{,-image,-ttf,-gfx}-dev
 
