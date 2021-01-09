@@ -125,6 +125,16 @@ type EditorConfig struct {
 	LoadedFont          *strife.Font `toml:"loaded_font"`
 }
 
+type shortcutConfig struct {
+	Supers   map[string]string
+	Controls map[string]string
+}
+
+var Shortcuts = shortcutConfig{
+	Supers:   map[string]string{},
+	Controls: map[string]string{},
+}
+
 func NewDefaultConfig() *TomlConfig {
 	log.Println("Loading default configuration")
 	return &TomlConfig{
@@ -135,7 +145,7 @@ func NewDefaultConfig() *TomlConfig {
 			Cursor:       0xf2f4f6,
 			CursorInvert: 0xffffff,
 		},
-		
+
 		// TODO syntax defaults
 		associations: map[string]*LanguageSyntaxConfig{},
 	}
