@@ -3,7 +3,7 @@ package buff
 import (
 	"fmt"
 
-	"github.com/felixangell/phi/lex"
+	"github.com/felixangell/phi/internal/lex"
 )
 
 func CloseBuffer(v *BufferView, commands []*lex.Token) BufferDirtyState {

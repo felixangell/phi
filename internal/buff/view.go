@@ -6,9 +6,9 @@ import (
 	"runtime"
 	"unicode"
 
-	"github.com/felixangell/phi/cfg"
-	"github.com/felixangell/phi/gui"
-	"github.com/felixangell/phi/lex"
+	"github.com/felixangell/phi/internal/cfg"
+	"github.com/felixangell/phi/internal/gui"
+	"github.com/felixangell/phi/internal/lex"
 	"github.com/felixangell/strife"
 	"github.com/fsnotify/fsnotify"
 	"github.com/veandco/go-sdl2/sdl"

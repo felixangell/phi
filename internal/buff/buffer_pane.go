@@ -5,8 +5,8 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/felixangell/phi/cfg"
-	"github.com/felixangell/phi/gui"
+	"github.com/felixangell/phi/internal/cfg"
+	"github.com/felixangell/phi/internal/gui"
 	"github.com/felixangell/strife"
 )
 

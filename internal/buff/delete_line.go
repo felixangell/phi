@@ -1,6 +1,6 @@
 package buff
 
-import "github.com/felixangell/phi/lex"
+import "github.com/felixangell/phi/internal/lex"
 
 func DeleteLine(v *BufferView, _ []*lex.Token) BufferDirtyState {
 	b := v.getCurrentBuff()

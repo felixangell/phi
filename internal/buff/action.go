@@ -1,7 +1,7 @@
 package buff
 
 import (
-	"github.com/felixangell/phi/lex"
+	"github.com/felixangell/phi/internal/lex"
 	"log"
 	"strconv"
 )

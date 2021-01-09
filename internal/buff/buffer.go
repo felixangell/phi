@@ -2,10 +2,10 @@ package buff
 
 import (
 	"fmt"
-	"github.com/felixangell/phi/cfg"
-	"github.com/felixangell/phi/gui"
-	"github.com/felixangell/phi/lex"
-	"github.com/felixangell/phi/piecetable"
+	"github.com/felixangell/phi/internal/cfg"
+	"github.com/felixangell/phi/internal/gui"
+	"github.com/felixangell/phi/internal/lex"
+	"github.com/felixangell/phi/pkg/piecetable"
 	"github.com/felixangell/strife"
 	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/veandco/go-sdl2/sdl"

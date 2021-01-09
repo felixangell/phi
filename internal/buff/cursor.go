@@ -1,7 +1,7 @@
 package buff
 
 import (
-	"github.com/felixangell/phi/cfg"
+	"github.com/felixangell/phi/internal/cfg"
 	"github.com/felixangell/strife"
 )
 

@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/felixangell/phi/lex"
+	"github.com/felixangell/phi/internal/lex"
 )
 
 func ExitPhi(v *BufferView, _ []*lex.Token) BufferDirtyState {

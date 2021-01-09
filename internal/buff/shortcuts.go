@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/atotto/clipboard"
-	"github.com/felixangell/phi/lex"
+	"github.com/felixangell/phi/internal/lex"
 )
 
 func ShowPalette(v *BufferView, _ []*lex.Token) BufferDirtyState {

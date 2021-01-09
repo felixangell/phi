@@ -3,6 +3,8 @@ tests/
 phi-editor
 phi
 phi.exe
+main
+main.exe
 fmt.sh
 .idea/
 vendor/
