@@ -4,12 +4,14 @@ type LanguageSyntaxConfig struct {
 	Syntax map[string]*SyntaxCriteria `toml:"syntax"`
 }
 
-type DefaultSyntax map[string]string
+func NewLanguageSyntaxConfig() *LanguageSyntaxConfig {
+	return &LanguageSyntaxConfig{Syntax: map[string]*SyntaxCriteria{}}
+}
 
-var DefaultSyntaxSet = DefaultSyntax{}
+var DefaultSyntaxSet = map[string]string{}
 
-func RegisterSyntax(name string, s string) {
-	DefaultSyntaxSet[name] = s
+func RegisterSyntax(name string, syntaxTomlDef string) {
+	DefaultSyntaxSet[name] = syntaxTomlDef
 }
 
 func init() {

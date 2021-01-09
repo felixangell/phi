@@ -189,7 +189,7 @@ type selection struct {
 	ex, ey int
 }
 
-func (s *selection) renderAt(ctx *strife.Renderer, xOff int, yOff int) {
+func (s *selection) renderAt(ctx *strife.Renderer, _ int, _ int) {
 	ctx.SetColor(strife.Blue)
 
 	yd := (s.ey - s.sy) + 1

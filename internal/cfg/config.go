@@ -126,7 +126,7 @@ type EditorConfig struct {
 }
 
 func NewDefaultConfig() *TomlConfig {
-	log.Println("Loading default configuration... this should never happen")
+	log.Println("Loading default configuration")
 	return &TomlConfig{
 		Editor: &EditorConfig{},
 		Theme: &ThemeConfig{
@@ -135,5 +135,8 @@ func NewDefaultConfig() *TomlConfig {
 			Cursor:       0xf2f4f6,
 			CursorInvert: 0xffffff,
 		},
+		
+		// TODO syntax defaults
+		associations: map[string]*LanguageSyntaxConfig{},
 	}
 }
