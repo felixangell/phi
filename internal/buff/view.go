@@ -36,7 +36,7 @@ func (r *reloadBufferEvent) String() string {
 type BufferView struct {
 	gui.BaseComponent
 
-	conf           *cfg.TomlConfig
+	conf           *cfg.PhiEditorConfig
 	buffers        []*BufferPane
 	focusedBuff    int
 	commandPalette *CommandPalette
@@ -48,7 +48,7 @@ type BufferView struct {
 
 // NewView creaets a new view with the given width and height
 // as well as configurations.
-func NewView(width, height int, conf *cfg.TomlConfig) *BufferView {
+func NewView(width, height int, conf *cfg.PhiEditorConfig) *BufferView {
 	view := &BufferView{
 		conf:         conf,
 		buffers:      []*BufferPane{},
@@ -392,7 +392,7 @@ func (n *BufferView) AddBuffer() *Buffer {
 		conf.Theme.HighlightLineBackground,
 		conf.Theme.GutterBackground,
 		conf.Theme.GutterForeground,
-		conf.Editor.LoadedFont,
+		gui.GetDefaultFont(),
 	}, n, len(n.buffers))
 
 	c.SetFocus(true)

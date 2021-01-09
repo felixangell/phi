@@ -18,7 +18,7 @@ type CommandPalette struct {
 	gui.BaseComponent
 	buff       *Buffer
 	parentBuff *Buffer
-	conf       *cfg.TomlConfig
+	conf       *cfg.PhiEditorConfig
 	parent     *BufferView
 
 	pathToIndex map[string]int
@@ -80,12 +80,12 @@ func (s *suggestion) render(x, y int, ctx *strife.Renderer) {
 	ctx.Text(s.name, x+border, y+yOffs)
 }
 
-func NewCommandPalette(conf cfg.TomlConfig, view *BufferView) *CommandPalette {
+func NewCommandPalette(conf cfg.PhiEditorConfig, view *BufferView) *CommandPalette {
 	conf.Editor.ShowLineNumbers = false
 	conf.Editor.HighlightLine = false
 
 	newSize := int(float64(conf.Editor.FontSize) * cfg.ScaleFactor)
-	paletteFont, err := conf.Editor.LoadedFont.DeriveFont(newSize)
+	paletteFont, err := gui.GetDefaultFont().DeriveFont(newSize)
 	if err != nil {
 		panic(err)
 	}

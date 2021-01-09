@@ -125,7 +125,7 @@ type Buffer struct {
 	index        int
 	parent       *BufferView
 	curs         *Cursor
-	cfg          *cfg.TomlConfig
+	cfg          *cfg.PhiEditorConfig
 	buffOpts     BufferConfig
 	cam          *camera
 	table        *piecetable.PieceTable
@@ -137,22 +137,11 @@ type Buffer struct {
 }
 
 // NewBuffer creates a new buffer with the given configurations
-func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *BufferView, index int) *Buffer {
+func NewBuffer(conf *cfg.PhiEditorConfig, buffOpts BufferConfig, parent *BufferView, index int) *Buffer {
 	config := conf
 	if config == nil {
 		config = cfg.NewDefaultConfig()
 	}
-
-	// TODO we load the font in config, instead
-	// we should load it when used, for example here.
-	// DPI FIX.
-	newSize := int(float64(config.Editor.FontSize) * cfg.ScaleFactor)
-	scaledFont, err := config.Editor.LoadedFont.DeriveFont(newSize)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("loading new font thing")
-	config.Editor.LoadedFont = scaledFont
 
 	curs := sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_IBEAM)
 
@@ -209,8 +198,8 @@ func (s *selection) renderAt(ctx *strife.Renderer, _ int, _ int) {
 			width = s.ex * lastCharW
 		}
 
-		xPos := (s.sx * lastCharW)
-		yPos := ((s.sy + y) * (lastCharH + pad))
+		xPos := s.sx * lastCharW
+		yPos := (s.sy + y) * (lastCharH + pad)
 
 		ctx.SetColor(strife.Blue)
 		ctx.Rect(b.ex+xPos, b.ey+yPos, width, height, strife.Fill)

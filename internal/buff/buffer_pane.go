@@ -2,9 +2,6 @@ package buff
 
 import (
 	"fmt"
-	"log"
-	"path/filepath"
-
 	"github.com/felixangell/phi/internal/cfg"
 	"github.com/felixangell/phi/internal/gui"
 	"github.com/felixangell/strife"
@@ -19,18 +16,10 @@ type BufferPane struct {
 }
 
 func NewBufferPane(buff *Buffer) *BufferPane {
-	fontPath := filepath.Join(cfg.FontFolder, buff.cfg.Editor.FontFace+".ttf")
-	// FIXME DPI
-	metaPanelFont, err := strife.LoadFont(fontPath, int(14.0*cfg.ScaleFactor))
-	if err != nil {
-		log.Println("Note: failed to load meta panel font ", fontPath)
-		metaPanelFont = buff.buffOpts.font
-	}
-
 	return &BufferPane{
 		gui.BaseComponent{},
 		buff,
-		metaPanelFont,
+		gui.GetDefaultFont(),
 	}
 }
 

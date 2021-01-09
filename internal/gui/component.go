@@ -1,8 +1,28 @@
 package gui
 
 import (
+	"github.com/felixangell/phi/internal/cfg"
 	"github.com/felixangell/strife"
+	"path/filepath"
 )
+
+var loadedFont *strife.Font
+
+func LoadDefaultFont(config *cfg.PhiEditorConfig) {
+	fontPath := filepath.Join(config.Editor.FontPath, config.Editor.FontFace+".ttf")
+	var err error
+	loadedFont, err = strife.LoadFont(fontPath, int(14.0*cfg.ScaleFactor))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func GetDefaultFont() *strife.Font {
+	if loadedFont == nil {
+		panic("No font loaded")
+	}
+	return loadedFont
+}
 
 type Component interface {
 	SetPosition(x, y int)

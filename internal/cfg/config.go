@@ -5,11 +5,9 @@ import (
 	"log"
 	"regexp"
 	"strconv"
-
-	"github.com/felixangell/strife"
 )
 
-type TomlConfig struct {
+type PhiEditorConfig struct {
 	Editor       *EditorConfig               `toml:"editor"`
 	Cursor       *CursorConfig               `toml:"cursor"`
 	Render       *RenderConfig               `toml:"render"`
@@ -23,7 +21,7 @@ type TomlConfig struct {
 // GetSyntaxConfig returns a pointer to the parsed
 // syntax language file for the given file extension
 // e.g. what syntax def we need for a .cpp file or a .h file
-func (t *TomlConfig) GetSyntaxConfig(ext string) (*LanguageSyntaxConfig, error) {
+func (t *PhiEditorConfig) GetSyntaxConfig(ext string) (*LanguageSyntaxConfig, error) {
 	if val, ok := t.associations[ext]; ok {
 		return val, nil
 	}
@@ -72,12 +70,12 @@ func (c CursorConfig) GetCaretWidth() int {
 }
 
 type RenderConfig struct {
-	Aliased            bool `toml:"aliased"`
-	Accelerated        bool `toml:"accelerated"`
-	ThrottleCpuUsage   bool `toml:"throttle_cpu_usage"`
-	AlwaysRender       bool `toml:"always_render"`
-	VerticalSync       bool `toml:"vertical_sync"`
-	SyntaxHighlighting bool `toml:"syntax_highlighting"`
+	Aliased            bool   `toml:"aliased"`
+	Accelerated        bool   `toml:"accelerated"`
+	ThrottleCpuUsage   bool   `toml:"throttle_cpu_usage"`
+	AlwaysRender       bool   `toml:"always_render"`
+	VerticalSync       bool   `toml:"vertical_sync"`
+	SyntaxHighlighting bool   `toml:"syntax_highlighting"`
 	FrameSleepInterval uint32 `toml:"frame_sleep_interval"`
 }
 
@@ -113,17 +111,16 @@ type PaletteConfig struct {
 }
 
 type EditorConfig struct {
-	TabSize             int          `toml:"tab_size"`
-	HungryBackspace     bool         `toml:"hungry_backspace"`
-	TabsAreSpaces       bool         `toml:"tabs_are_spaces"`
-	MatchBraces         bool         `toml:"match_braces"`
-	MaintainIndentation bool         `toml:"maintain_indentation"`
-	HighlightLine       bool         `toml:"highlight_line"`
-	FontPath            string       `toml:"font_path"`
-	FontFace            string       `toml:"font_face"`
-	FontSize            int          `toml:"font_size"`
-	ShowLineNumbers     bool         `toml:"show_line_numbers"`
-	LoadedFont          *strife.Font `toml:"loaded_font"`
+	TabSize             int    `toml:"tab_size"`
+	HungryBackspace     bool   `toml:"hungry_backspace"`
+	TabsAreSpaces       bool   `toml:"tabs_are_spaces"`
+	MatchBraces         bool   `toml:"match_braces"`
+	MaintainIndentation bool   `toml:"maintain_indentation"`
+	HighlightLine       bool   `toml:"highlight_line"`
+	FontPath            string `toml:"font_path"`
+	FontFace            string `toml:"font_face"`
+	FontSize            int    `toml:"font_size"`
+	ShowLineNumbers     bool   `toml:"show_line_numbers"`
 }
 
 type shortcutConfig struct {
@@ -136,9 +133,9 @@ var Shortcuts = shortcutConfig{
 	Controls: map[string]string{},
 }
 
-func NewDefaultConfig() *TomlConfig {
+func NewDefaultConfig() *PhiEditorConfig {
 	log.Println("Loading default configuration")
-	return &TomlConfig{
+	return &PhiEditorConfig{
 		Render: &RenderConfig{
 			Aliased:            true,
 			Accelerated:        true,
@@ -147,12 +144,30 @@ func NewDefaultConfig() *TomlConfig {
 			VerticalSync:       true,
 			SyntaxHighlighting: true,
 		},
-		Editor: &EditorConfig{},
+		Editor: &EditorConfig{
+			TabSize:             4,
+			HungryBackspace:     false,
+			TabsAreSpaces:       true,
+			MatchBraces:         true,
+			MaintainIndentation: true,
+			HighlightLine:       true,
+			FontPath:            "/Library/Fonts",
+			FontFace:            "Arial Unicode",
+			FontSize:            24,
+			ShowLineNumbers:     true,
+		},
 		Theme: &ThemeConfig{
 			Background:   0x002649,
 			Foreground:   0xf2f4f6,
 			Cursor:       0xf2f4f6,
 			CursorInvert: 0xffffff,
+		},
+		Cursor: &CursorConfig{
+			FlashRate:  0,
+			ResetDelay: 0,
+			Draw:       true,
+			Flash:      false,
+			BlockWidth: "block",
 		},
 
 		// TODO syntax defaults

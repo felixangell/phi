@@ -3,6 +3,7 @@ package editor
 import (
 	"github.com/felixangell/phi/internal/buff"
 	"github.com/felixangell/phi/internal/cfg"
+	"github.com/felixangell/phi/internal/gui"
 	"github.com/felixangell/strife"
 	"io/ioutil"
 	"log"
@@ -11,7 +12,6 @@ import (
 
 type PhiEditor struct {
 	running     bool
-	defaultFont *strife.Font
 	mainView    *buff.BufferView
 }
 
@@ -25,7 +25,9 @@ func (n *PhiEditor) Resize(w, h int) {
 
 func (n *PhiEditor) HandleEvent(_ strife.StrifeEvent) {}
 
-func (n *PhiEditor) ApplyConfig(conf *cfg.TomlConfig) {
+func (n *PhiEditor) ApplyConfig(conf *cfg.PhiEditorConfig) {
+	gui.LoadDefaultFont(conf)
+
 	mainView := buff.NewView(int(1280.0*cfg.ScaleFactor), int(720.0*cfg.ScaleFactor), conf)
 
 	args := os.Args
@@ -47,7 +49,6 @@ func (n *PhiEditor) ApplyConfig(conf *cfg.TomlConfig) {
 	}
 
 	n.mainView = mainView
-	n.defaultFont = conf.Editor.LoadedFont
 }
 
 func (n *PhiEditor) Update() bool {
@@ -55,6 +56,6 @@ func (n *PhiEditor) Update() bool {
 }
 
 func (n *PhiEditor) Render(ctx *strife.Renderer) {
-	ctx.SetFont(n.defaultFont)
+	ctx.SetFont(gui.GetDefaultFont())
 	n.mainView.OnRender(ctx)
 }
