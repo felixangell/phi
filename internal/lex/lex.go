@@ -144,7 +144,6 @@ func (l *Lexer) Tokenize() []*Token {
 			case curr == ' ':
 				return nil
 			}
-
 			panic(fmt.Sprintln("unhandled input! ", string(curr)))
 		}(); token != nil {
 			result = append(result, token)

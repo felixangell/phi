@@ -310,8 +310,6 @@ func (n *BufferView) OnUpdate() bool {
 				log.Println("Executing action '" + actionName + "'")
 				return bool(action.proc(n, []*lex.Token{}))
 			}
-		} else {
-			log.Println("view: unimplemented shortcut", shortcutName, "+", string(unicode.ToLower(r)), "#", int(r), actionName, key)
 		}
 	}
 

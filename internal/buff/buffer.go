@@ -76,7 +76,6 @@ func (a *AutoCompleteBox) process(r rune) {
 	}
 
 	word := string(a.lastRunes)
-	println("looking up word: ", word)
 
 	results := fuzzy.RankFind(word, a.vocabulary)
 	a.suggestions = []string{}
@@ -461,8 +460,6 @@ func (b *Buffer) processTextInput(r rune) bool {
 			if action, ok := register[actionName]; ok {
 				return bool(action.proc(b.parent, []*lex.Token{}))
 			}
-		} else {
-			log.Println("warning, unimplemented shortcut", shortcutName, "+", unicode.ToLower(r), "#", int(r), actionName)
 		}
 	}
 
@@ -1116,8 +1113,6 @@ func (b *Buffer) processLeftClick() {
 
 	yPosToLine := (((yPos) / (lastCharH + pad)) + 1) + b.cam.y
 	xPosToLine := ((xPos - b.ex) / (lastCharW)) + b.cam.x
-
-	fmt.Println(yPos, " line ", yPosToLine, " - ", xPos, " char ", xPosToLine)
 
 	b.gotoLine(int64(yPosToLine))
 
