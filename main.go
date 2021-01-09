@@ -106,7 +106,9 @@ func main() {
 		}
 	})
 
-	window.Create()
+	if err := window.Create(); err != nil {
+		panic(err)
+	}
 
 	{
 		size := 16
@@ -122,7 +124,7 @@ func main() {
 		}
 
 		iconFile := fmt.Sprintf("icon%d.png", size)
-		icon, err := strife.LoadImage(filepath.Join(cfg.ICON_DIR_PATH, iconFile))
+		icon, err := strife.LoadImage(filepath.Join(cfg.IconDirPath, iconFile))
 		if err != nil {
 			log.Println("Failed to load icon ", err.Error())
 		} else {

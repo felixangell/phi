@@ -23,21 +23,21 @@ import (
 //
 
 const (
-	CONFIG_DIR_PATH  = "/.phi-editor/"
-	CONFIG_TOML_FILE = "config.toml"
+	ConfigDirPath  = "/.phi-editor/"
+	ConfigTomlFile = "config.toml"
 )
 
-var FONT_FOLDER string = ""
+var FontFolder = ""
 
 // this is the absolute path to the
 // config.toml file. todo rename/refactor
-var CONFIG_FULL_PATH string = ""
+var ConfigFullPath = ""
 
 // the absolute path to the config directory
 // rename/refactor due here too!
-var configDirAbsPath string = ""
+var configDirAbsPath = ""
 
-var ICON_DIR_PATH string = ""
+var IconDirPath = ""
 
 // TODO we only had double key combos
 // e.g. cmd+s. we want to handle things
@@ -85,14 +85,14 @@ func configureAndValidate(conf *TomlConfig) {
 		if len(conf.Editor.Font_Path) == 0 {
 			switch runtime.GOOS {
 			case "windows":
-				FONT_FOLDER = filepath.Join(os.Getenv("WINDIR"), "fonts")
+				FontFolder = filepath.Join(os.Getenv("WINDIR"), "fonts")
 			case "darwin":
-				FONT_FOLDER = "/Library/Fonts/"
+				FontFolder = "/Library/Fonts/"
 			case "linux":
-				FONT_FOLDER = findFontFolder()
+				FontFolder = findFontFolder()
 			}
 			// and set it accordingly.
-			conf.Editor.Font_Path = FONT_FOLDER
+			conf.Editor.Font_Path = FontFolder
 		}
 
 		// we only support ttf at the moment.
@@ -190,15 +190,15 @@ func Setup() TomlConfig {
 		home = os.Getenv("USERPROFILE")
 	}
 
-	CONFIG_DIR := filepath.Join(home, CONFIG_DIR_PATH)
+	CONFIG_DIR := filepath.Join(home, ConfigDirPath)
 	configDirAbsPath = CONFIG_DIR
 
-	CONFIG_PATH := filepath.Join(CONFIG_DIR, CONFIG_TOML_FILE)
+	CONFIG_PATH := filepath.Join(CONFIG_DIR, ConfigTomlFile)
 
 	// this folder is where we store all of the language syntax
 	SYNTAX_CONFIG_DIR := filepath.Join(CONFIG_DIR, "syntax")
 
-	CONFIG_FULL_PATH = CONFIG_PATH
+	ConfigFullPath = CONFIG_PATH
 
 	// if the user doesn't have a /.phi-editor
 	// directory we create it for them.
@@ -211,9 +211,9 @@ func Setup() TomlConfig {
 	// ----
 	// downloads the icon from github
 	// and puts it into the phi-editor config folder.
-	ICON_DIR_PATH = filepath.Join(CONFIG_DIR, "icons")
-	if _, err := os.Stat(ICON_DIR_PATH); os.IsNotExist(err) {
-		if err := os.Mkdir(ICON_DIR_PATH, 0775); err != nil {
+	IconDirPath = filepath.Join(CONFIG_DIR, "icons")
+	if _, err := os.Stat(IconDirPath); os.IsNotExist(err) {
+		if err := os.Mkdir(IconDirPath, 0775); err != nil {
 			panic(err)
 		}
 
@@ -223,7 +223,7 @@ func Setup() TomlConfig {
 		downloadIcon := func(iconSize int) {
 			log.Println("downloading the phi icon ", iconSize, "x", iconSize, " png image.")
 
-			file, err := os.Create(filepath.Join(ICON_DIR_PATH, fmt.Sprintf("icon%d.png", iconSize)))
+			file, err := os.Create(filepath.Join(IconDirPath, fmt.Sprintf("icon%d.png", iconSize)))
 			defer file.Close()
 			if err != nil {
 				log.Println(err.Error())

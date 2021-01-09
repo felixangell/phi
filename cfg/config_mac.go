@@ -9,7 +9,7 @@ tabs_are_spaces = true
 match_braces = false
 maintain_indentation = true
 highlight_line = true
-font_face = "Courier New"
+font_face = "Arial Unicode"
 font_size = 20
 show_line_numbers = true
 
