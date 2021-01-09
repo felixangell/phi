@@ -80,7 +80,7 @@ func (c *Cursor) Render(ctx *strife.Renderer, xOff, yOff int) {
 	xPos := b.ex + (xOff + c.rx*lastCharW) - (b.cam.x * lastCharW)
 	yPos := b.ey + (yOff + c.ry*c.height) - (b.cam.y * c.height)
 
-	// NOTE: we dont have to scale the curor here because
+	// NOTE: we dont have to scale the cursor here because
 	// it's based off the font size which has already been scaled.
 	ctx.SetColor(strife.HexRGB(b.buffOpts.cursor))
 	ctx.Rect(xPos, yPos, c.width, c.height, strife.Fill)

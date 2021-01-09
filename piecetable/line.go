@@ -37,8 +37,6 @@ func (l *Line) String() string {
 		mod := l.parent.nodes[keyName]
 
 		if mod.Length >= 0 {
-
-			// append!
 			if mod.Start >= len(data) {
 				data += mod.Data
 				continue

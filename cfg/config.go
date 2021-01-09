@@ -49,22 +49,22 @@ type Command struct {
 }
 
 type CursorConfig struct {
-	Flash_Rate  int64
-	Reset_Delay int64
-	Draw        bool
-	Flash       bool
-	Block_Width string
+	FlashRate  int64  `toml:"flash_rate"`
+	ResetDelay int64  `toml:"reset_delay"`
+	Draw       bool   `toml:"draw"`
+	Flash      bool   `toml:"flash"`
+	BlockWidth string `toml:"block_width"`
 }
 
 func (c CursorConfig) GetCaretWidth() int {
-	if c.Block_Width == "block" {
+	if c.BlockWidth == "block" {
 		return -1
 	}
-	if c.Block_Width == "" {
+	if c.BlockWidth == "" {
 		return -1
 	}
 
-	value, err := strconv.ParseInt(c.Block_Width, 10, 32)
+	value, err := strconv.ParseInt(c.BlockWidth, 10, 32)
 	if err != nil {
 		panic(err)
 	}
@@ -72,12 +72,12 @@ func (c CursorConfig) GetCaretWidth() int {
 }
 
 type RenderConfig struct {
-	Aliased             bool
-	Accelerated         bool
-	Throttle_Cpu_Usage  bool
-	Always_Render       bool
-	Vertical_Sync       bool
-	Syntax_Highlighting bool
+	Aliased            bool `toml:"aliased"`
+	Accelerated        bool `toml:"accelerated"`
+	ThrottleCpuUsage   bool `toml:"throttle_cpu_usage"`
+	AlwaysRender       bool `toml:"always_render"`
+	VerticalSync       bool `toml:"vertical_sync"`
+	SyntaxHighlighting bool `toml:"syntax_highlighting"`
 }
 
 // todo make this more extendable...
@@ -86,43 +86,43 @@ type RenderConfig struct {
 // the default theme in the EditorConfig
 // instead.
 type ThemeConfig struct {
-	Background                uint32
-	Foreground                uint32
-	Cursor                    uint32
-	Cursor_Invert             uint32
-	Palette                   PaletteConfig
-	Gutter_Background         uint32
-	Gutter_Foreground         uint32
-	Highlight_Line_Background uint32
+	Background              uint32
+	Foreground              uint32
+	Cursor                  uint32
+	CursorInvert            uint32 `toml:"cursor_invert"`
+	Palette                 PaletteConfig
+	GutterBackground        uint32 `toml:"gutter_background"`
+	GutterForeground        uint32 `toml:"gutter_foreground"`
+	HighlightLineBackground uint32 `toml:"highlight_line_background"`
 }
 
 type PaletteConfig struct {
-	Background    uint32
-	Foreground    uint32
-	Cursor        uint32
-	Outline       uint32
-	Render_Shadow bool
-	Shadow_Color  uint32
-	Suggestion    struct {
-		Background          uint32
-		Foreground          uint32
-		Selected_Background uint32
-		Selected_Foreground uint32
+	Background   uint32 `toml:"background"`
+	Foreground   uint32 `toml:"foreground"`
+	Cursor       uint32 `toml:"cursor"`
+	Outline      uint32 `toml:"outline"`
+	RenderShadow bool   `toml:"render_shadow"`
+	ShadowColor  uint32 `toml:"shadow_color"`
+	Suggestion   struct {
+		Background         uint32 `toml:"background"`
+		Foreground         uint32 `toml:"foreground"`
+		SelectedBackground uint32 `toml:"selected_background"`
+		SelectedForeground uint32 `toml:"selected_foreground"`
 	}
 }
 
 type EditorConfig struct {
-	Tab_Size             int
-	Hungry_Backspace     bool
-	Tabs_Are_Spaces      bool
-	Match_Braces         bool
-	Maintain_Indentation bool
-	Highlight_Line       bool
-	Font_Path            string
-	Font_Face            string
-	Font_Size            int
-	Show_Line_Numbers    bool
-	Loaded_Font          *strife.Font
+	TabSize             int          `toml:"tab_size"`
+	HungryBackspace     bool         `toml:"hungry_backspace"`
+	TabsAreSpaces       bool         `toml:"tabs_are_spaces"`
+	MatchBraces         bool         `toml:"match_braces"`
+	MaintainIndentation bool         `toml:"maintain_indentation"`
+	HighlightLine       bool         `toml:"highlight_line"`
+	FontPath            string       `toml:"font_path"`
+	FontFace            string       `toml:"font_face"`
+	FontSize            int          `toml:"font_size"`
+	ShowLineNumbers     bool         `toml:"show_line_numbers"`
+	LoadedFont          *strife.Font `toml:"loaded_font"`
 }
 
 func NewDefaultConfig() *TomlConfig {
@@ -130,10 +130,10 @@ func NewDefaultConfig() *TomlConfig {
 	return &TomlConfig{
 		Editor: &EditorConfig{},
 		Theme: &ThemeConfig{
-			Background:    0x002649,
-			Foreground:    0xf2f4f6,
-			Cursor:        0xf2f4f6,
-			Cursor_Invert: 0xffffff,
+			Background:   0x002649,
+			Foreground:   0xf2f4f6,
+			Cursor:       0xf2f4f6,
+			CursorInvert: 0xffffff,
 		},
 	}
 }

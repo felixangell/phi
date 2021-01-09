@@ -257,8 +257,6 @@ func (n *BufferView) OnInit() {
 
 // OnUpdate ...
 func (n *BufferView) OnUpdate() bool {
-	dirty := false
-
 	controlDown = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
 	superDown = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
 
@@ -266,6 +264,7 @@ func (n *BufferView) OnUpdate() bool {
 	source := cfg.Shortcuts.Controls
 
 	if strife.PollKeys() && (superDown || controlDown) {
+		// FIXME this sucks move it.
 		if runtime.GOOS == "darwin" {
 			if superDown {
 				source = cfg.Shortcuts.Supers
@@ -309,7 +308,7 @@ func (n *BufferView) OnUpdate() bool {
 		if actionExists {
 			if action, ok := register[actionName]; ok {
 				log.Println("Executing action '" + actionName + "'")
-				return action.proc(n, []*lex.Token{})
+				return bool(action.proc(n, []*lex.Token{}))
 			}
 		} else {
 			log.Println("view: unimplemented shortcut", shortcutName, "+", string(unicode.ToLower(r)), "#", int(r), actionName, key)
@@ -323,7 +322,7 @@ func (n *BufferView) OnUpdate() bool {
 
 	n.commandPalette.OnUpdate()
 
-	return dirty
+	return false
 }
 
 // Resize will resize all of the components in the view
@@ -384,16 +383,16 @@ func (n *BufferView) OnDispose() {}
 func (n *BufferView) AddBuffer() *Buffer {
 	n.UnfocusBuffers()
 
-	cfg := n.conf
-	c := NewBuffer(cfg, BufferConfig{
-		cfg.Theme.Background,
-		cfg.Theme.Foreground,
-		cfg.Theme.Cursor,
-		cfg.Theme.Cursor_Invert,
-		cfg.Theme.Highlight_Line_Background,
-		cfg.Theme.Gutter_Background,
-		cfg.Theme.Gutter_Foreground,
-		cfg.Editor.Loaded_Font,
+	conf := n.conf
+	c := NewBuffer(conf, BufferConfig{
+		conf.Theme.Background,
+		conf.Theme.Foreground,
+		conf.Theme.Cursor,
+		conf.Theme.CursorInvert,
+		conf.Theme.HighlightLineBackground,
+		conf.Theme.GutterBackground,
+		conf.Theme.GutterForeground,
+		conf.Editor.LoadedFont,
 	}, n, len(n.buffers))
 
 	c.SetFocus(true)

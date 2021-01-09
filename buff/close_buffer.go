@@ -6,7 +6,7 @@ import (
 	"github.com/felixangell/phi/lex"
 )
 
-func CloseBuffer(v *BufferView, commands []*lex.Token) bool {
+func CloseBuffer(v *BufferView, commands []*lex.Token) BufferDirtyState {
 	b := v.getCurrentBuff()
 	if b == nil {
 		return false

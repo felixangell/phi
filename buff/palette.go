@@ -1,7 +1,7 @@
 package buff
 
 import (
-	"fmt"
+	"log"
 	"strings"
 
 	"github.com/felixangell/phi/cfg"
@@ -13,15 +13,6 @@ import (
 )
 
 var commandSet []string
-
-func init() {
-	// commandSet = make([]string, len(action.Register))
-	// idx := 0
-	// for _, action := range action.Register {
-	// 	commandSet[idx] = action.name
-	// 	idx++
-	// }
-}
 
 type CommandPalette struct {
 	gui.BaseComponent
@@ -49,17 +40,16 @@ type suggestion struct {
 }
 
 func (s *suggestion) renderHighlighted(x, y int, ctx *strife.Renderer) {
-	// wewlad
 	conf := s.parent.conf.Theme.Palette
 
 	border := 5
 	ctx.SetColor(strife.HexRGB(conf.Outline))
 	ctx.Rect(x-border, y-border, suggestionBoxWidth+(border*2), suggestionBoxHeight+(border*2), strife.Fill)
 
-	ctx.SetColor(strife.HexRGB(conf.Suggestion.Selected_Background))
+	ctx.SetColor(strife.HexRGB(conf.Suggestion.SelectedBackground))
 	ctx.Rect(x, y, suggestionBoxWidth, suggestionBoxHeight, strife.Fill)
 
-	ctx.SetColor(strife.HexRGB(conf.Suggestion.Selected_Foreground))
+	ctx.SetColor(strife.HexRGB(conf.Suggestion.SelectedForeground))
 
 	// FIXME strife library needs something to get
 	// text width and heights... for now we render offscreen to measure... lol
@@ -91,11 +81,11 @@ func (s *suggestion) render(x, y int, ctx *strife.Renderer) {
 }
 
 func NewCommandPalette(conf cfg.TomlConfig, view *BufferView) *CommandPalette {
-	conf.Editor.Show_Line_Numbers = false
-	conf.Editor.Highlight_Line = false
+	conf.Editor.ShowLineNumbers = false
+	conf.Editor.HighlightLine = false
 
-	newSize := int(float64(conf.Editor.Font_Size) * cfg.ScaleFactor)
-	paletteFont, err := conf.Editor.Loaded_Font.DeriveFont(newSize)
+	newSize := int(float64(conf.Editor.FontSize) * cfg.ScaleFactor)
+	paletteFont, err := conf.Editor.LoadedFont.DeriveFont(newSize)
 	if err != nil {
 		panic(err)
 	}
@@ -110,7 +100,7 @@ func NewCommandPalette(conf cfg.TomlConfig, view *BufferView) *CommandPalette {
 			conf.Theme.Palette.Cursor,
 			conf.Theme.Palette.Cursor, // TODO invert
 
-			conf.Theme.Highlight_Line_Background,
+			conf.Theme.HighlightLineBackground,
 
 			// we dont show line numbers
 			// so these aren't necessary
@@ -151,12 +141,8 @@ func NewCommandPalette(conf cfg.TomlConfig, view *BufferView) *CommandPalette {
 
 func (b *CommandPalette) processCommand() {
 	input := b.buff.table.Lines[0].String()
-	fmt.Println("raw comand palette input is ", input)
-
 	tokens := lex.New(input).Tokenize()
-	fmt.Println("tokenized to", tokens)
 
-	// FIXME
 	if len(tokens) <= 1 {
 		return
 	}
@@ -165,12 +151,12 @@ func (b *CommandPalette) processCommand() {
 		command := tokens[1].Lexeme
 		action, exists := register[command]
 		if !exists {
-			fmt.Println("No such action ", command)
+			log.Println("No such action ", command)
 			return
 		}
 
 		args := tokens[2:]
-		fmt.Println("executing action", command, "with arguments", args)
+		log.Println("executing action", command, "with arguments", args)
 		action.proc(b.parent, args)
 	}
 
@@ -190,7 +176,6 @@ func (b *CommandPalette) calculateCommandSuggestions() {
 	}
 
 	if len(tokenizedLine) == 1 {
-		// no command so fill sugg box with all commands
 		suggestions := make([]suggestion, len(commandSet))
 
 		for idx, cmd := range commandSet {
@@ -239,6 +224,7 @@ func (b *CommandPalette) calculateSuggestions() {
 		return
 	}
 
+	// FIXME
 	// fill it with the currently open files!
 
 	openFiles := make([]string, len(b.parent.buffers))
@@ -252,15 +238,14 @@ func (b *CommandPalette) calculateSuggestions() {
 	}
 
 	ranks := fuzzy.RankFind(input, openFiles)
-	suggestions := []suggestion{}
+	var suggestions []suggestion
 	for _, r := range ranks {
 		pane := b.parent.buffers[r.OriginalIndex]
 		if pane != nil {
-			sugg := suggestion{
+			suggestions = append(suggestions, suggestion{
 				b,
 				pane.Buff.filePath,
-			}
-			suggestions = append(suggestions, sugg)
+			})
 		}
 	}
 
@@ -366,11 +351,11 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 	b.buff.OnRender(ctx)
 
 	if b.recentSuggestions != nil {
-		for i, sugg := range *b.recentSuggestions {
+		for i, suggestion := range *b.recentSuggestions {
 			if b.suggestionIndex != i {
-				sugg.render(x, y+((i+1)*(suggestionBoxHeight+border)), ctx)
+				suggestion.render(x, y+((i+1)*(suggestionBoxHeight+border)), ctx)
 			} else {
-				sugg.renderHighlighted(x, y+((i+1)*(suggestionBoxHeight+border)), ctx)
+				suggestion.renderHighlighted(x, y+((i+1)*(suggestionBoxHeight+border)), ctx)
 			}
 		}
 	}

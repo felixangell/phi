@@ -19,7 +19,7 @@ type BufferPane struct {
 }
 
 func NewBufferPane(buff *Buffer) *BufferPane {
-	fontPath := filepath.Join(cfg.FontFolder, buff.cfg.Editor.Font_Face+".ttf")
+	fontPath := filepath.Join(cfg.FontFolder, buff.cfg.Editor.FontFace+".ttf")
 	// FIXME DPI
 	metaPanelFont, err := strife.LoadFont(fontPath, int(14.0*cfg.ScaleFactor))
 	if err != nil {
@@ -67,7 +67,7 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 
 	// tab info etc. on right hand side
 	{
-		tabSize := b.Buff.cfg.Editor.Tab_Size
+		tabSize := b.Buff.cfg.Editor.TabSize
 
 		// TODO
 		syntaxName := "Undefined"

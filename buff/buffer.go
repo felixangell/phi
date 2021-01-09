@@ -153,13 +153,13 @@ func NewBuffer(conf *cfg.TomlConfig, buffOpts BufferConfig, parent *BufferView, 
 	// TODO we load the font in config, instead
 	// we should load it when used, for example here.
 	// DPI FIX.
-	newSize := int(float64(config.Editor.Font_Size) * cfg.ScaleFactor)
-	scaledFont, err := config.Editor.Loaded_Font.DeriveFont(newSize)
+	newSize := int(float64(config.Editor.FontSize) * cfg.ScaleFactor)
+	scaledFont, err := config.Editor.LoadedFont.DeriveFont(newSize)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("loading new font thing")
-	config.Editor.Loaded_Font = scaledFont
+	config.Editor.LoadedFont = scaledFont
 
 	curs := sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_IBEAM)
 
@@ -195,15 +195,6 @@ func (s *selection) renderAt(ctx *strife.Renderer, xOff int, yOff int) {
 	yd := (s.ey - s.sy) + 1
 
 	b := s.parent
-
-	/*
-
-		highlightLinePosY := b.ey + (ry + b.curs.ry*(last_h+pad)) - (b.cam.y * (last_h + pad))
-		highlightLinePosX := b.ex + rx
-
-		ctx.Rect(highlightLinePosX, highlightLinePosY, b.w-b.ex, (last_h+pad)-b.ey, strife.Fill)
-
-	*/
 
 	// renders the highlighting for a line.
 	for y := 0; y < yd; y++ {
@@ -285,7 +276,9 @@ func (b *Buffer) OpenFile(filePath string) {
 		if err != nil {
 			panic(err)
 		} else {
-			f.Close()
+			if err := f.Close(); err != nil {
+				panic(err)
+			}
 		}
 	}
 
@@ -484,7 +477,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 		actionName, actionExists := source[key]
 		if actionExists {
 			if action, ok := register[actionName]; ok {
-				return action.proc(b.parent, []*lex.Token{})
+				return bool(action.proc(b.parent, []*lex.Token{}))
 			}
 		} else {
 			log.Println("warning, unimplemented shortcut", shortcutName, "+", unicode.ToLower(r), "#", int(r), actionName)
@@ -513,7 +506,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 	// this escapes out of a closing bracket
 	// rather than inserting a new one IF we are inside
 	// brackets.
-	if b.cfg.Editor.Match_Braces {
+	if b.cfg.Editor.MatchBraces {
 		if r == ')' || r == '}' || r == ']' {
 			currLine := b.table.Lines[b.curs.y]
 			if b.curs.x < currLine.Len() {
@@ -534,7 +527,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 
 	// we don't need to match braces
 	// let's not continue any further
-	if !b.cfg.Editor.Match_Braces {
+	if !b.cfg.Editor.MatchBraces {
 		return true
 	}
 
@@ -572,10 +565,10 @@ func (b *Buffer) deleteNext() {
 // FIXME clean this up!
 func (b *Buffer) deletePrev() {
 	if b.curs.x > 0 {
-		if b.cfg.Editor.Hungry_Backspace && b.curs.x >= int(b.cfg.Editor.Tab_Size) {
+		if b.cfg.Editor.HungryBackspace && b.curs.x >= int(b.cfg.Editor.TabSize) {
 			// cut out the last {TAB_SIZE} amount of characters
 			// and check em
-			tabSize := int(b.cfg.Editor.Tab_Size)
+			tabSize := int(b.cfg.Editor.TabSize)
 
 			// render the line...
 			currLine := b.table.Lines[b.curs.y].String()
@@ -584,7 +577,7 @@ func (b *Buffer) deletePrev() {
 			if strings.HasPrefix(before, b.makeTab()) {
 				// delete {TAB_SIZE} amount of characters
 				// from the cursors x pos
-				for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {
+				for i := 0; i < int(b.cfg.Editor.TabSize); i++ {
 
 					b.table.Delete(b.curs.y, b.curs.x)
 
@@ -1026,7 +1019,7 @@ func (b *Buffer) processActionKey(key int) bool {
 		// HACK FIXME
 		b.modified = true
 
-		if b.cfg.Editor.Tabs_Are_Spaces {
+		if b.cfg.Editor.TabsAreSpaces {
 			// make an empty rune array of TAB_SIZE, cast to string
 			// and insert it.
 			tab := b.makeTab()
@@ -1113,7 +1106,7 @@ func min(a, b int) int {
 // TODO(Felix) this is really stupid
 func (b *Buffer) makeTab() string {
 	blah := []rune{}
-	for i := 0; i < int(b.cfg.Editor.Tab_Size); i++ {
+	for i := 0; i < int(b.cfg.Editor.TabSize); i++ {
 		blah = append(blah, ' ')
 	}
 	return string(blah)
@@ -1133,12 +1126,6 @@ func (b *Buffer) HandleEvent(evt strife.StrifeEvent) {
 
 var lastCursorDraw = time.Now()
 var renderFlashingCursor = true
-
-var lastTimer = time.Now()
-var ldx, ldy = 0, 0
-
-var ySpeed = 1
-var last = time.Now()
 
 func (b *Buffer) processLeftClick() {
 	// here we set the cursor y position
@@ -1161,6 +1148,8 @@ func (b *Buffer) processLeftClick() {
 		b.moveRight()
 	}
 }
+
+const ySpeed = 1
 
 func (b *Buffer) OnUpdate() bool {
 	if "animations on" == "true" {
@@ -1231,9 +1220,9 @@ func (b *Buffer) processInput(pred func(r int) bool) bool {
 		}
 	}
 
-	// handle cursor flash
-	if b.cfg.Cursor.Flash && 15 == 12 {
-		if time.Now().Sub(lastCursorDraw) >= time.Duration(b.cfg.Cursor.Flash_Rate)*time.Millisecond {
+	// FIXME for now this is only enabled in debug mode.
+	if b.cfg.Cursor.Flash && cfg.DebugMode {
+		if time.Now().Sub(lastCursorDraw) >= time.Duration(b.cfg.Cursor.FlashRate)*time.Millisecond {
 			renderFlashingCursor = !renderFlashingCursor
 			lastCursorDraw = time.Now()
 		}
@@ -1255,14 +1244,9 @@ type syntaxRuneInfo struct {
 // dimensions of the last character we rendered
 var lastCharW, lastCharH int
 
-// runs up a lexer instance
 func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch map[string]bool, bg uint32, fg uint32) {
-	// start up a lexer instance and
-	// lex the line.
 	lexer := lex.New(currLine)
-
 	tokenStream := lexer.Tokenize()
-
 	for _, tok := range tokenStream {
 		if _, ok := toMatch[tok.Lexeme]; ok {
 			(*matches)[tok.Start] = syntaxRuneInfo{bg, fg, len(tok.Lexeme)}
@@ -1365,7 +1349,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	ctx.SetColor(strife.HexRGB(b.buffOpts.background))
 	ctx.Rect(x, y, w, h, strife.Fill)
 
-	if b.cfg.Editor.Highlight_Line && b.HasFocus() {
+	if b.cfg.Editor.HighlightLine && b.HasFocus() {
 		ctx.SetColor(strife.HexRGB(b.buffOpts.highlightLine)) // highlight_line_col?
 
 		highlightLinePosY := b.ey + (ry + b.curs.ry*(lastCharH+pad)) - (b.cam.y * (lastCharH + pad))
@@ -1471,7 +1455,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 				yCol++
 				continue
 			case '\t':
-				xCol += b.cfg.Editor.Tab_Size
+				xCol += b.cfg.Editor.TabSize
 				continue
 			}
 
@@ -1513,7 +1497,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			}
 		}
 
-		if b.cfg.Editor.Show_Line_Numbers {
+		if b.cfg.Editor.ShowLineNumbers {
 			gutterPadPx := 10
 
 			// how many chars we need

@@ -1,20 +1,23 @@
 package buff
 
 import (
+	"github.com/felixangell/phi/lex"
 	"log"
 	"strconv"
-	"strings"
-
-	"github.com/felixangell/phi/lex"
 )
+
+// BufferDirtyState ...
+type BufferDirtyState bool
+
+type BufferActionFn func(*BufferView, []*lex.Token) BufferDirtyState
 
 type BufferAction struct {
 	name          string
-	proc          func(*BufferView, []*lex.Token) bool
+	proc          BufferActionFn
 	showInPalette bool
 }
 
-func NewBufferAction(name string, proc func(*BufferView, []*lex.Token) bool) BufferAction {
+func NewBufferAction(name string, proc BufferActionFn) BufferAction {
 	return BufferAction{
 		name:          name,
 		proc:          proc,
@@ -22,29 +25,11 @@ func NewBufferAction(name string, proc func(*BufferView, []*lex.Token) bool) Buf
 	}
 }
 
-func OpenFile(v *BufferView, commands []*lex.Token) bool {
-	path := ""
-	if path == "" {
-		panic("unimplemented")
-		// ive removed this since the cross platform
-		// thing causes too much hassle on diff. platforms
-		// going to wriet my own file open viewer thing built
-		// into the editor instead.
-	}
-
-	buff := v.AddBuffer()
-	if len(strings.TrimSpace(path)) == 0 {
-		return false
-	}
-
-	buff.OpenFile(path)
-	buff.SetFocus(true)
-	v.focusedBuff = buff.index
-
-	return false
+func OpenFile(v *BufferView, _ []*lex.Token) BufferDirtyState {
+	panic("unimplemented")
 }
 
-func NewFile(v *BufferView, commands []*lex.Token) bool {
+func NewFile(v *BufferView, commands []*lex.Token) BufferDirtyState {
 	// TODO some nice error stuff
 	// have an error roll thing in the view?
 
@@ -65,7 +50,7 @@ func NewFile(v *BufferView, commands []*lex.Token) bool {
 	return false
 }
 
-func GotoLine(v *BufferView, commands []*lex.Token) bool {
+func GotoLine(v *BufferView, commands []*lex.Token) BufferDirtyState {
 	if len(commands) == 0 {
 		return false
 	}
@@ -89,7 +74,7 @@ func GotoLine(v *BufferView, commands []*lex.Token) bool {
 	return false
 }
 
-func focusLeft(v *BufferView, commands []*lex.Token) bool {
+func focusLeft(v *BufferView, _ []*lex.Token) BufferDirtyState {
 	if v == nil {
 		return false
 	}
@@ -97,7 +82,7 @@ func focusLeft(v *BufferView, commands []*lex.Token) bool {
 	return false
 }
 
-func focusRight(v *BufferView, commands []*lex.Token) bool {
+func focusRight(v *BufferView, _ []*lex.Token) BufferDirtyState {
 	if v == nil {
 		return false
 	}
@@ -105,7 +90,7 @@ func focusRight(v *BufferView, commands []*lex.Token) bool {
 	return false
 }
 
-func pageDown(v *BufferView, commands []*lex.Token) bool {
+func pageDown(v *BufferView, _ []*lex.Token) BufferDirtyState {
 	if v == nil {
 		return false
 	}
@@ -121,7 +106,7 @@ func pageDown(v *BufferView, commands []*lex.Token) bool {
 	return false
 }
 
-func pageUp(v *BufferView, commands []*lex.Token) bool {
+func pageUp(v *BufferView, _ []*lex.Token) BufferDirtyState {
 	if v == nil {
 		return false
 	}

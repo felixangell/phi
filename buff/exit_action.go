@@ -7,16 +7,13 @@ import (
 	"github.com/felixangell/phi/lex"
 )
 
-func ExitPhi(v *BufferView, commands []*lex.Token) bool {
-	// todo this probably wont work...
-	// would also be nice to have a thing
-	// that asks if we want to save all buffers
-	// rather than going thru each one specifically?
+func ExitPhi(v *BufferView, _ []*lex.Token) BufferDirtyState {
 	for i := range v.buffers {
-		CloseBuffer(v, []*lex.Token{})
 		log.Println("Closing buffer ", i)
+		CloseBuffer(v, []*lex.Token{})
 	}
 
+	log.Println("Exiting!")
 	os.Exit(0)
 	return false
 }

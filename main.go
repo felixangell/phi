@@ -54,7 +54,7 @@ func (n *PhiEditor) init(conf *cfg.TomlConfig) {
 	}
 
 	n.mainView = mainView
-	n.defaultFont = conf.Editor.Loaded_Font
+	n.defaultFont = conf.Editor.LoadedFont
 }
 
 func (n *PhiEditor) dispose() {
@@ -78,7 +78,7 @@ func main() {
 	windowConfig := strife.DefaultConfig()
 	windowConfig.Accelerated = config.Render.Accelerated
 	windowConfig.Alias = config.Render.Aliased
-	windowConfig.VerticalSync = config.Render.Vertical_Sync
+	windowConfig.VerticalSync = config.Render.VerticalSync
 
 	ww, wh := float32(640.0), float32(360.0)
 
@@ -153,7 +153,7 @@ func main() {
 
 		shouldRender := editor.update()
 
-		if shouldRender || config.Render.Always_Render {
+		if shouldRender || config.Render.AlwaysRender {
 			ctx.Clear()
 			editor.render(ctx)
 
@@ -173,7 +173,7 @@ func main() {
 			frames, updates = 0, 0
 		}
 
-		if config.Render.Throttle_Cpu_Usage {
+		if config.Render.ThrottleCpuUsage {
 			// todo put in the config how long
 			// we sleep for!
 			time.Sleep(16)
