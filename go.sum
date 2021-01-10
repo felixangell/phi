@@ -7,6 +7,8 @@ github.com/felixangell/strife v0.2.0 h1:UoKznQghuOC/pio4C1eYBGd5z23H+u2GJXHhGytu
 github.com/felixangell/strife v0.2.0/go.mod h1:I48zwoDuHBbURAmbBqjh3CzqVa4+yoAKePtfyj5v7po=
 github.com/felixangell/strife v0.2.1 h1:H6T5gIFE8qd5H1i1u5xcG56OTUNhEz8g5AIByZEh/Xg=
 github.com/felixangell/strife v0.2.1/go.mod h1:I48zwoDuHBbURAmbBqjh3CzqVa4+yoAKePtfyj5v7po=
+github.com/felixangell/strife v0.2.2 h1:Dfja3sJcZG5ljzT3FnS7DcLio+U11Vy6Hwea2dEZhFA=
+github.com/felixangell/strife v0.2.2/go.mod h1:I48zwoDuHBbURAmbBqjh3CzqVa4+yoAKePtfyj5v7po=
 github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWoS4=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/lithammer/fuzzysearch v1.1.1 h1:8F9OAV2xPuYblToVohjanztdnPjbtA0MLgMvDKQ0Z08=
@@ -22,6 +24,8 @@ golang.org/x/sys v0.0.0-20191005200804-aed5e4c7ecf9 h1:L2auWcuQIvxz9xSEqzESnV/QN
 golang.org/x/sys v0.0.0-20191005200804-aed5e4c7ecf9/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210108172913-0df2131ae363 h1:wHn06sgWHMO1VsQ8F+KzDJx/JzqfsNLnc+oEi07qD7s=
 golang.org/x/sys v0.0.0-20210108172913-0df2131ae363/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20210110051926-789bb1bd4061 h1:DQmQoKxQWtyybCtX/3dIuDBcAhFszqq8YiNeS6sNu1c=
+golang.org/x/sys v0.0.0-20210110051926-789bb1bd4061/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.2 h1:tW2bmiBqwgJj/UpqtC8EpXEZVYOwU0yG4iWbprSVAcs=
 golang.org/x/text v0.3.2/go.mod h1:bEr9sfX3Q8Zfm5fL9x+3itogRgK3+ptLWKqgva+5dAk=
 golang.org/x/text v0.3.5 h1:i6eZZ+zk0SOf0xgBpEpPD18qWcJda6q1sxt3S0kzyUQ=

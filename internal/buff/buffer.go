@@ -1288,7 +1288,7 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 				matched := syntax.CompiledPattern.FindStringIndex(a)
 				if matched != nil {
 					if _, ok := matches[charIndex]; !ok {
-						matchedStrLen := (matched[1] - matched[0])
+						matchedStrLen := matched[1] - matched[0]
 
 						colouring := colours[syntaxIndex]
 						matches[charIndex+matched[0]] = syntaxRuneInfo{
