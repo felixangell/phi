@@ -1198,8 +1198,7 @@ func (b *Buffer) processInput(pred func(r int) bool) bool {
 		}
 	}
 
-	// FIXME for now this is only enabled in debug mode.
-	if b.cfg.Cursor.Flash && cfg.DebugMode {
+	if b.cfg.Cursor.Flash || cfg.DebugMode {
 		if time.Now().Sub(lastCursorDraw) >= time.Duration(b.cfg.Cursor.FlashRate)*time.Millisecond {
 			renderFlashingCursor = !renderFlashingCursor
 			lastCursorDraw = time.Now()
