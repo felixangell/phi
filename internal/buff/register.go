@@ -1,5 +1,7 @@
 package buff
 
+import "github.com/felixangell/phi/internal/lex"
+
 var register = map[string]BufferAction{
 	"page_down":    NewBufferAction("page_down", pageDown),
 	"page_up":      NewBufferAction("page_up", pageUp),
@@ -16,4 +18,11 @@ var register = map[string]BufferAction{
 	"paste":        NewBufferAction("paste", Paste),
 	"show_palette": NewBufferAction("show_palette", ShowPalette),
 	"exit":         NewBufferAction("exit", ExitPhi),
+}
+
+func ExecuteCommandIfExist(command string, view *BufferView, tokens ...*lex.Token) BufferDirtyState {
+	if cmd, ok := register[command]; ok {
+		return cmd.proc(view, tokens)
+	}
+	return false
 }

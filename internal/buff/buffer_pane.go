@@ -65,7 +65,7 @@ func (b *BufferPane) renderMetaPanel(ctx *strife.Renderer) {
 		ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
 
 		ctx.SetFont(b.font)
-		lastWidth, _ = ctx.Text(infoLine, ((x + w) - (lastWidth + (pad))), mpY+(pad/2))
+		lastWidth, _ = ctx.Text(infoLine, (x+w)-(lastWidth+(pad)), mpY+(pad/2))
 	}
 
 	{

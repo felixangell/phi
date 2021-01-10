@@ -8,7 +8,6 @@ import (
 
 	"github.com/felixangell/phi/internal/cfg"
 	"github.com/felixangell/phi/internal/gui"
-	"github.com/felixangell/phi/internal/lex"
 	"github.com/felixangell/strife"
 	"github.com/fsnotify/fsnotify"
 	"github.com/veandco/go-sdl2/sdl"
@@ -303,10 +302,7 @@ func (n *BufferView) OnUpdate() bool {
 
 		actionName, actionExists := source[key]
 		if actionExists {
-			if action, ok := register[actionName]; ok {
-				log.Println("Executing action '" + actionName + "'")
-				return bool(action.proc(n, []*lex.Token{}))
-			}
+			return bool(ExecuteCommandIfExist(actionName, n))
 		}
 	}
 

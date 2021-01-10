@@ -128,6 +128,8 @@ type shortcutConfig struct {
 	Controls map[string]string
 }
 
+// FIXME we should define some default shorcuts somehow.
+// why are these a global and not stored in the config itself?
 var Shortcuts = shortcutConfig{
 	Supers:   map[string]string{},
 	Controls: map[string]string{},

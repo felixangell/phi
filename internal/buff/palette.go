@@ -72,11 +72,9 @@ func (s *suggestion) render(x, y int, ctx *strife.Renderer) {
 
 	ctx.SetColor(strife.HexRGB(conf.Suggestion.Foreground))
 
-	// FIXME strife library needs something to get
-	// text width and heights... for now we render offscreen to measure... lol
-	_, h := ctx.Text("foo", -500000, -50000)
+	_, textHeight := ctx.GetStringDimension("foo")
 
-	yOffs := (suggestionBoxHeight / 2) - (h / 2)
+	yOffs := (suggestionBoxHeight / 2) - (textHeight / 2)
 	ctx.Text(s.name, x+border, y+yOffs)
 }
 
@@ -148,16 +146,10 @@ func (b *CommandPalette) processCommand() {
 	}
 
 	if tokens[0].Equals("!") && tokens[1].IsType(lex.Word) {
-		command := tokens[1].Lexeme
-		action, exists := register[command]
-		if !exists {
-			log.Println("No such action ", command)
-			return
-		}
-
+		commandName := tokens[1].Lexeme
 		args := tokens[2:]
-		log.Println("executing action", command, "with arguments", args)
-		action.proc(b.parent, args)
+		log.Println("executing action", commandName, "with arguments", args)
+		ExecuteCommandIfExist(commandName, b.parent, args...)
 	}
 
 	if index, ok := b.pathToIndex[input]; ok {

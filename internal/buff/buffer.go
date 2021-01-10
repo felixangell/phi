@@ -455,11 +455,10 @@ func (b *Buffer) processTextInput(r rune) bool {
 			key = string(unicode.ToLower(r))
 		}
 
+		// FIXME(FELIX): what is source?
 		actionName, actionExists := source[key]
 		if actionExists {
-			if action, ok := register[actionName]; ok {
-				return bool(action.proc(b.parent, []*lex.Token{}))
-			}
+			return bool(ExecuteCommandIfExist(actionName, b.parent))
 		}
 	}
 
