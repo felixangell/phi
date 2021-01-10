@@ -15,6 +15,7 @@ import (
 	"math"
 	"os"
 	"path"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -1205,12 +1206,15 @@ type syntaxRuneInfo struct {
 // dimensions of the last character we rendered
 var lastCharW, lastCharH int
 
-func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch map[string]bool, bg uint32, fg uint32) {
+func lexFindMatches(matches *map[int]syntaxRuneInfo, currLine string, toMatch []string, bg uint32, fg uint32) {
 	lexer := lex.New(currLine)
 	tokenStream := lexer.Tokenize()
 	for _, tok := range tokenStream {
-		if _, ok := toMatch[tok.Lexeme]; ok {
-			(*matches)[tok.Start] = syntaxRuneInfo{bg, fg, len(tok.Lexeme)}
+		// hashset for match.
+		for _, ms := range toMatch {
+			if strings.Compare(ms, tok.Lexeme) == 0 {
+				(*matches)[tok.Start] = syntaxRuneInfo{bg, fg, len(tok.Lexeme)}
+			}
 		}
 	}
 }
@@ -1267,9 +1271,11 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 	for syntaxIndex, syntax := range subjects {
 		if syntax.Pattern != "" {
 			for charIndex := 0; charIndex < len(currLine); charIndex++ {
-				a := string(currLine[charIndex:])
+				a := currLine[charIndex:]
 
-				matched := syntax.CompiledPattern.FindStringIndex(a)
+				patt := lazyCompileRegExPattern(syntax.Pattern)
+
+				matched := patt.FindStringIndex(a)
 				if matched != nil {
 					if _, ok := matches[charIndex]; !ok {
 						matchedStrLen := matched[1] - matched[0]
@@ -1288,7 +1294,7 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 			}
 		} else {
 			colouring := colours[syntaxIndex]
-			lexFindMatches(&matches, currLine, syntax.MatchList, colouring.bg, colouring.fg)
+			lexFindMatches(&matches, currLine, syntax.Match, colouring.bg, colouring.fg)
 		}
 	}
 
@@ -1298,6 +1304,21 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 	}
 
 	return matches
+}
+
+var patts = map[string]*regexp.Regexp{}
+
+// FIXME
+func lazyCompileRegExPattern(pattern string) *regexp.Regexp {
+	if cachedPattern, ok := patts[pattern]; ok {
+		return cachedPattern
+	}
+	compiledPattern, err := regexp.Compile(pattern)
+	if err != nil {
+		panic(err)
+	}
+	patts[pattern] = compiledPattern
+	return compiledPattern
 }
 
 func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {

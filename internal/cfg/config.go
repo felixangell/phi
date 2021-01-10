@@ -3,26 +3,36 @@ package cfg
 import (
 	"errors"
 	"log"
-	"regexp"
 	"strconv"
+	"strings"
 )
 
 type PhiEditorConfig struct {
-	Editor       *EditorConfig               `toml:"editor"`
-	Cursor       *CursorConfig               `toml:"cursor"`
-	Render       *RenderConfig               `toml:"render"`
-	Theme        *ThemeConfig                `toml:"theme"`
-	Associations map[string]FileAssociations `toml:"file_associations"`
-	Commands     map[string]Command          `toml:"commands"`
-
-	associations map[string]*LanguageSyntaxConfig
+	Editor               *EditorConfig               `toml:"editor"`
+	Cursor               *CursorConfig               `toml:"cursor"`
+	Render               *RenderConfig               `toml:"render"`
+	Theme                *ThemeConfig                `toml:"theme"`
+	Associations         map[string]FileAssociations `toml:"file_associations"`
+	Commands             map[string]Command          `toml:"commands"`
+	LanguageAssociations map[string]*LanguageSyntaxConfig
 }
 
 // GetSyntaxConfig returns a pointer to the parsed
 // syntax language file for the given file extension
 // e.g. what syntax def we need for a .cpp file or a .h file
 func (p *PhiEditorConfig) GetSyntaxConfig(ext string) (*LanguageSyntaxConfig, error) {
-	if val, ok := p.associations[ext]; ok {
+	// fixme relationship is wrong way round so for now we have to iterate over keys.. very st upid
+
+	var theKey string
+	for key, assoc := range p.Associations {
+		for _, assocExt := range assoc.Extensions {
+			if strings.Compare(ext, assocExt) == 0 {
+				theKey = key
+			}
+		}
+	}
+
+	if val, ok := p.LanguageAssociations[theKey]; ok {
 		return val, nil
 	}
 	return nil, errors.New("no language for extension '" + ext + "'")
@@ -37,9 +47,6 @@ type SyntaxCriteria struct {
 	Background uint32   `toml:"background"`
 	Match      []string `toml:"match"`
 	Pattern    string   `toml:"pattern"`
-
-	CompiledPattern *regexp.Regexp
-	MatchList       map[string]bool
 }
 
 type Command struct {
@@ -196,8 +203,11 @@ func NewDefaultConfig() *PhiEditorConfig {
 			"md":   {Extensions: []string{".md", ".markdown"}},
 			"toml": {Extensions: []string{".toml"}},
 		},
-
-		// TODO syntax defaults
-		associations: map[string]*LanguageSyntaxConfig{},
+		LanguageAssociations: map[string]*LanguageSyntaxConfig{
+			"go":   GoConfig(),
+			"c":    CConfig(),
+			"md":   MarkdownConfig(),
+			"toml": TOMLConfig(),
+		},
 	}
 }
