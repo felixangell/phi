@@ -1478,7 +1478,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			gutterPadPx := 10
 
 			// how many chars we need
-			numLinesCharWidth := len(string(numLines)) + 2
+			numLinesCharWidth := len(fmt.Sprintf("%d", numLines)) + 2
 
 			gutterWidth := lastCharW*numLinesCharWidth + (gutterPadPx * 2)
 
