@@ -161,7 +161,7 @@ func NewDefaultConfig() *PhiEditorConfig {
 				Outline:      0xebedef,
 				RenderShadow: true,
 				ShadowColor:  0x000000,
-				Suggestion:   SuggestionConfig{
+				Suggestion: SuggestionConfig{
 					Background:         0xebedef,
 					Foreground:         0x3a3839,
 					SelectedBackground: 0xc7cdb1,
@@ -170,10 +170,10 @@ func NewDefaultConfig() *PhiEditorConfig {
 			},
 		},
 		Cursor: &CursorConfig{
-			FlashRate:  0,
-			ResetDelay: 0,
+			FlashRate:  400, // in ms
+			ResetDelay: 400,
 			Draw:       true,
-			Flash:      false,
+			Flash:      true,
 			BlockWidth: "block",
 		},
 		Commands: map[string]Command{
@@ -189,6 +189,12 @@ func NewDefaultConfig() *PhiEditorConfig {
 			"paste":        {"super+v"},
 			"close_buffer": {"super+w"},
 			"delete_line":  {"super+d"},
+		},
+		Associations: map[string]FileAssociations{
+			"c":    {Extensions: []string{".c", ".h", ".cc"}},
+			"go":   {Extensions: []string{".go"}},
+			"md":   {Extensions: []string{".md", ".markdown"}},
+			"toml": {Extensions: []string{".toml"}},
 		},
 
 		// TODO syntax defaults

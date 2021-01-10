@@ -20,7 +20,7 @@ func main() {
 	windowConfig.Alias = config.Render.Aliased
 	windowConfig.VerticalSync = config.Render.VerticalSync
 
-	scaledWidth, scaledHeight := calcScaledWindowDimension()
+	scaledWidth, scaledHeight := calcScaledWindowDimension(800, 600)
 	window := strife.SetupRenderWindow(scaledWidth, scaledHeight, windowConfig)
 	window.AllowHighDPI()
 	window.SetTitle("Hello world!")
@@ -88,15 +88,13 @@ func main() {
 	}
 }
 
-func calcScaledWindowDimension() (int, int) {
-	ww, wh := float32(640.0), float32(360.0)
-
+func calcScaledWindowDimension(width, height float32) (int, int) {
 	dpi, defDpi := strife.GetDisplayDPI(0)
 
 	cfg.ScaleFactor = float64(dpi / defDpi)
 
-	scaledWidth := int((ww * dpi) / defDpi)
-	scaledHeight := int((wh * dpi) / defDpi)
+	scaledWidth := int((width * dpi) / defDpi)
+	scaledHeight := int((height * dpi) / defDpi)
 	return scaledWidth, scaledHeight
 }
 
