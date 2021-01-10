@@ -189,7 +189,7 @@ func (b *CommandPalette) calculateCommandSuggestions() {
 	}
 
 	ranks := fuzzy.RankFind(command, commandSet)
-	suggestions := []suggestion{}
+	var suggestions []suggestion
 
 	for _, r := range ranks {
 		cmdName := commandSet[r.OriginalIndex]

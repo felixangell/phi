@@ -95,6 +95,13 @@ type ThemeConfig struct {
 	HighlightLineBackground uint32 `toml:"highlight_line_background"`
 }
 
+type SuggestionConfig struct {
+	Background         uint32 `toml:"background"`
+	Foreground         uint32 `toml:"foreground"`
+	SelectedBackground uint32 `toml:"selected_background"`
+	SelectedForeground uint32 `toml:"selected_foreground"`
+}
+
 type PaletteConfig struct {
 	Background   uint32 `toml:"background"`
 	Foreground   uint32 `toml:"foreground"`
@@ -102,12 +109,7 @@ type PaletteConfig struct {
 	Outline      uint32 `toml:"outline"`
 	RenderShadow bool   `toml:"render_shadow"`
 	ShadowColor  uint32 `toml:"shadow_color"`
-	Suggestion   struct {
-		Background         uint32 `toml:"background"`
-		Foreground         uint32 `toml:"foreground"`
-		SelectedBackground uint32 `toml:"selected_background"`
-		SelectedForeground uint32 `toml:"selected_foreground"`
-	}
+	Suggestion   SuggestionConfig
 }
 
 type EditorConfig struct {
@@ -144,7 +146,7 @@ func NewDefaultConfig() *PhiEditorConfig {
 			HighlightLine:       true,
 			FontPath:            "/Library/Fonts",
 			FontFace:            "Go-Mono",
-			FontSize:            24,
+			FontSize:            20,
 			ShowLineNumbers:     true,
 		},
 		Theme: &ThemeConfig{
@@ -152,6 +154,20 @@ func NewDefaultConfig() *PhiEditorConfig {
 			Foreground:   0xf2f4f6,
 			Cursor:       0xf2f4f6,
 			CursorInvert: 0xffffff,
+			Palette: PaletteConfig{
+				Background:   0xffffff,
+				Foreground:   0x000000,
+				Cursor:       0xf2f4f6,
+				Outline:      0xebedef,
+				RenderShadow: true,
+				ShadowColor:  0x000000,
+				Suggestion:   SuggestionConfig{
+					Background:         0xebedef,
+					Foreground:         0x3a3839,
+					SelectedBackground: 0xc7cdb1,
+					SelectedForeground: 0x3a3839,
+				},
+			},
 		},
 		Cursor: &CursorConfig{
 			FlashRate:  0,
