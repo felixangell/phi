@@ -1129,7 +1129,8 @@ func (b *Buffer) processLeftClick() {
 const ySpeed = 1
 
 func (b *Buffer) OnUpdate() bool {
-	if "animations on" == "true" {
+	if cfg.DebugMode {
+		// these are some shitty animations only in debug mode
 		if b.cam.y < b.cam.dy {
 			b.cam.y += ySpeed
 		}
