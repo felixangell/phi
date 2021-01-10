@@ -2,15 +2,13 @@ package buff
 
 import (
 	"fmt"
-	"log"
-	"runtime"
-	"unicode"
-
 	"github.com/felixangell/phi/internal/cfg"
+	"github.com/felixangell/phi/internal/command_handler"
 	"github.com/felixangell/phi/internal/gui"
 	"github.com/felixangell/strife"
 	"github.com/fsnotify/fsnotify"
 	"github.com/veandco/go-sdl2/sdl"
+	"log"
 )
 
 type bufferEvent interface {
@@ -259,50 +257,10 @@ func (n *BufferView) OnUpdate() bool {
 	controlDown = strife.KeyPressed(sdl.K_LCTRL) || strife.KeyPressed(sdl.K_RCTRL)
 	superDown = strife.KeyPressed(sdl.K_LGUI) || strife.KeyPressed(sdl.K_RGUI)
 
-	source := cfg.Shortcuts.Controls
-
 	if strife.PollKeys() && (superDown || controlDown) {
-		// FIXME this sucks move it.
-		if runtime.GOOS == "darwin" {
-			if superDown {
-				source = cfg.Shortcuts.Supers
-			} else if controlDown {
-				source = cfg.Shortcuts.Controls
-			}
-		} else {
-			source = cfg.Shortcuts.Controls
-		}
-
-		r := rune(strife.PopKey())
-
-		if r == 'l' {
-			cfg.DebugMode = !cfg.DebugMode
-		}
-
-		left := sdl.K_LEFT
-		right := sdl.K_RIGHT
-		up := sdl.K_UP
-		down := sdl.K_DOWN
-
-		// map to left/right/etc.
-		// FIXME
-		var key string
-		switch int(r) {
-		case left:
-			key = "left"
-		case right:
-			key = "right"
-		case up:
-			key = "up"
-		case down:
-			key = "down"
-		default:
-			key = string(unicode.ToLower(r))
-		}
-
-		actionName, actionExists := source[key]
-		if actionExists {
-			return bool(ExecuteCommandIfExist(actionName, n))
+		actionName, ok := command_handler.DeduceCommand(superDown, controlDown, strife.PopKey())
+		if ok {
+			ExecuteCommandIfExist(actionName, n)
 		}
 	}
 

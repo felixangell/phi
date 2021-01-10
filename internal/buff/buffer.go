@@ -3,6 +3,7 @@ package buff
 import (
 	"fmt"
 	"github.com/felixangell/phi/internal/cfg"
+	"github.com/felixangell/phi/internal/command_handler"
 	"github.com/felixangell/phi/internal/gui"
 	"github.com/felixangell/phi/internal/lex"
 	"github.com/felixangell/phi/pkg/piecetable"
@@ -274,7 +275,7 @@ func (b *Buffer) OpenFile(filePath string) {
 	b.table = piecetable.MakePieceTable(string(contents))
 
 	// because appendLine sets modified to true
-	// we should reset this to false since weve
+	// we should reset this to false since we've
 	// only loaded a file.
 	b.modified = false
 }
@@ -384,7 +385,6 @@ var altAlternative = map[rune]rune{
 }
 
 func (b *Buffer) deleteLine() {
-	// HACK FIXME
 	b.modified = true
 
 	if len(b.table.Lines) > 1 {
@@ -405,73 +405,58 @@ func (b *Buffer) deleteLine() {
 	b.moveToEndOfLine()
 }
 
-func (b *Buffer) processTextInput(r rune) bool {
-	if altDown && r == '\t' {
+func (b *Buffer) processTextInput(keyCode int) bool {
+	keyValue := rune(keyCode)
+
+	if altDown && keyValue == '\t' {
 		// nop, we dont want to
 		// insert tabs when we
 		// alt tab out of view of this app
 		return true
 	}
 
-	b.autoComplete.process(r)
+	b.autoComplete.process(keyValue)
 
 	// FIXME
 	// only do the alt alternatives on mac osx
 	// todo change this so it's not checking on every
 	// input
 	if runtime.GOOS == "darwin" && altDown {
-		if val, ok := altAlternative[r]; ok {
-			r = val
+		if val, ok := altAlternative[keyValue]; ok {
+			keyValue = val
 		}
 	}
 
 	if capsLockDown {
-		if unicode.IsLetter(r) {
-			r = unicode.ToUpper(r)
+		if unicode.IsLetter(keyValue) {
+			keyValue = unicode.ToUpper(keyValue)
 		}
 	}
 
+	// this logic is fucked
 	mainSuper, _ := controlDown, "ctrl"
-	source := cfg.Shortcuts.Controls
 	if runtime.GOOS == "darwin" {
 		mainSuper, _ = superDown, "super"
-		source = cfg.Shortcuts.Supers
 	}
 
+	// FIXME!
 	if mainSuper {
-		// FIXME magic numbers!
-		left := 1073741903
-		right := 1073741904
-
-		// map to left/right/etc.
-		// FIXME
-		var key string
-		switch int(r) {
-		case left:
-			key = "left"
-		case right:
-			key = "right"
-		default:
-			key = string(unicode.ToLower(r))
-		}
-
-		// FIXME(FELIX): what is source?
-		actionName, actionExists := source[key]
-		if actionExists {
-			return bool(ExecuteCommandIfExist(actionName, b.parent))
+		cmdName, ok := command_handler.DeduceCommand(superDown, controlDown, keyCode)
+		if ok {
+			return bool(ExecuteCommandIfExist(cmdName, b.parent))
 		}
 	}
 
 	if shiftDown {
 		// if it's a letter convert to uppercase
-		if unicode.IsLetter(r) {
-			r = unicode.ToUpper(r)
+		if unicode.IsLetter(keyValue) {
+			keyValue = unicode.ToUpper(keyValue)
 		} else {
 
 			// otherwise we have to look in our trusy
 			// shift mapping thing.
-			if val, ok := shiftAlternative[r]; ok {
-				r = val
+			if val, ok := shiftAlternative[keyValue]; ok {
+				keyValue = val
 			}
 
 		}
@@ -485,11 +470,11 @@ func (b *Buffer) processTextInput(r rune) bool {
 	// rather than inserting a new one IF we are inside
 	// brackets.
 	if b.cfg.Editor.MatchBraces {
-		if r == ')' || r == '}' || r == ']' {
+		if keyValue == ')' || keyValue == '}' || keyValue == ']' {
 			currLine := b.table.Lines[b.curs.y]
 			if b.curs.x < currLine.Len() {
 				curr := b.table.Index(b.curs.y, b.curs.x+1)
-				if curr == r {
+				if curr == keyValue {
 					b.moveRight()
 					return true
 				}
@@ -500,7 +485,7 @@ func (b *Buffer) processTextInput(r rune) bool {
 	// HACK FIXME
 	b.modified = true
 
-	b.table.Insert(string(r), b.curs.y, b.curs.x)
+	b.table.Insert(string(keyValue), b.curs.y, b.curs.x)
 	b.moveRight()
 
 	// we don't need to match braces
@@ -511,13 +496,13 @@ func (b *Buffer) processTextInput(r rune) bool {
 
 	// TODO: shall we match single quotes and double quotes too?
 
-	matchingPair := int(r)
+	matchingPair := int(keyValue)
 
 	// the offset in the ASCII Table is +2 for { and for [
 	// but its +1 for parenthesis (
 	offset := 2
 
-	switch r {
+	switch keyValue {
 	case '(':
 		offset = 1
 		fallthrough
@@ -1191,7 +1176,7 @@ func (b *Buffer) processInput(pred func(r int) bool) bool {
 			return true
 		}
 
-		textEntered := b.processTextInput(rune(keyCode))
+		textEntered := b.processTextInput(keyCode)
 		if textEntered {
 			return true
 		}

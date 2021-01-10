@@ -3,6 +3,7 @@ package editor
 import (
 	"github.com/felixangell/phi/internal/buff"
 	"github.com/felixangell/phi/internal/cfg"
+	"github.com/felixangell/phi/internal/command_handler"
 	"github.com/felixangell/phi/internal/gui"
 	"github.com/felixangell/strife"
 	"io/ioutil"
@@ -27,6 +28,7 @@ func (n *PhiEditor) HandleEvent(_ strife.StrifeEvent) {}
 
 func (n *PhiEditor) ApplyConfig(conf *cfg.PhiEditorConfig) {
 	gui.LoadDefaultFont(conf)
+	command_handler.SetupCommandHandler(conf)
 
 	mainView := buff.NewView(int(1280.0*cfg.ScaleFactor), int(720.0*cfg.ScaleFactor), conf)
 

@@ -21,8 +21,8 @@ type PhiEditorConfig struct {
 // GetSyntaxConfig returns a pointer to the parsed
 // syntax language file for the given file extension
 // e.g. what syntax def we need for a .cpp file or a .h file
-func (t *PhiEditorConfig) GetSyntaxConfig(ext string) (*LanguageSyntaxConfig, error) {
-	if val, ok := t.associations[ext]; ok {
+func (p *PhiEditorConfig) GetSyntaxConfig(ext string) (*LanguageSyntaxConfig, error) {
+	if val, ok := p.associations[ext]; ok {
 		return val, nil
 	}
 	return nil, errors.New("no language for extension '" + ext + "'")
@@ -123,20 +123,9 @@ type EditorConfig struct {
 	ShowLineNumbers     bool   `toml:"show_line_numbers"`
 }
 
-type shortcutConfig struct {
-	Supers   map[string]string
-	Controls map[string]string
-}
-
-// FIXME we should define some default shorcuts somehow.
-// why are these a global and not stored in the config itself?
-var Shortcuts = shortcutConfig{
-	Supers:   map[string]string{},
-	Controls: map[string]string{},
-}
-
 func NewDefaultConfig() *PhiEditorConfig {
 	log.Println("Loading default configuration")
+
 	return &PhiEditorConfig{
 		Render: &RenderConfig{
 			Aliased:            true,
@@ -170,6 +159,20 @@ func NewDefaultConfig() *PhiEditorConfig {
 			Draw:       true,
 			Flash:      false,
 			BlockWidth: "block",
+		},
+		Commands: map[string]Command{
+			"undo":         {"super+z"},
+			"redo":         {"super+y"},
+			"exit":         {"super+q"},
+			"save":         {"super+s"},
+			"page_down":    {"ctrl+down"},
+			"page_up":      {"ctrl+up"},
+			"show_palette": {"super+p"},
+			"focus_left":   {"super+left"},
+			"focus_right":  {"super+right"},
+			"paste":        {"super+v"},
+			"close_buffer": {"super+w"},
+			"delete_line":  {"super+d"},
 		},
 
 		// TODO syntax defaults
