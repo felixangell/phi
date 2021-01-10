@@ -360,12 +360,9 @@ func (n *BufferView) OnRender(ctx *strife.Renderer) {
 	n.commandPalette.OnRender(ctx)
 
 	if cfg.DebugMode {
-		ctx.SetColor(strife.HexRGB(0xff00ff))
+		ctx.SetColor(strife.HexRGB(cfg.DebugModeRenderColour))
 		mx, my := strife.MouseCoords()
 		ctx.Rect(mx, my, 16, 16, strife.Line)
-
-		// FIXME
-		// renderDebugPane(ctx, 10, 10)
 	}
 }
 

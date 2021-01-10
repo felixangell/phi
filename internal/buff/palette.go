@@ -361,7 +361,7 @@ func (b *CommandPalette) OnRender(ctx *strife.Renderer) {
 	}
 
 	if cfg.DebugMode {
-		ctx.SetColor(strife.HexRGB(0xff00ff))
+		ctx.SetColor(strife.HexRGB(cfg.DebugModeRenderColour))
 		ctx.Rect(xPos, yPos, paletteWidth, paletteHeight, strife.Line)
 	}
 }

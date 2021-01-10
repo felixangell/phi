@@ -86,7 +86,7 @@ func (c *Cursor) Render(ctx *strife.Renderer, xOff, yOff int) {
 	ctx.Rect(xPos, yPos, c.width, c.height, strife.Fill)
 
 	if cfg.DebugMode {
-		ctx.SetColor(strife.HexRGB(0xff00ff))
+		ctx.SetColor(strife.HexRGB(cfg.DebugModeRenderColour))
 		ctx.Rect(xPos, yPos, c.width, c.height, strife.Line)
 	}
 }

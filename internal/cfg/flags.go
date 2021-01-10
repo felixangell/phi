@@ -6,8 +6,9 @@ import (
 )
 
 var (
-	DebugMode   = false
-	ScaleFactor = 1.0
+	DebugMode             = false
+	DebugModeRenderColour = uint32(0xff00ff)
+	ScaleFactor           = 1.0
 
 	// TODO this should be set from somewhere.
 	FontFolder = "/Library/Fonts"

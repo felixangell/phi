@@ -1317,12 +1317,9 @@ func (b *Buffer) syntaxHighlightLine(currLine string) map[int]syntaxRuneInfo {
 }
 
 func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
-	// TODO load this from config files!
-
 	x, y := b.GetPos()
 	w, h := b.GetSize()
 
-	// BACKGROUND
 	ctx.SetColor(strife.HexRGB(b.buffOpts.background))
 	ctx.Rect(x, y, w, h, strife.Fill)
 
@@ -1337,30 +1334,25 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		ctx.Rect(highlightLinePosX, highlightLinePosY, width, height, strife.Fill)
 	}
 
-	var visibleLines, visibleChars int = 50, -1
+	var visibleLines, visibleChars = 50, -1
 
-	// HACK
-	// force a render off screen
-	// so we can calculate the size of characters
-	{
-		if int(lastCharH) == 0 || int(lastCharW) == 0 {
-			lastCharW, lastCharH = ctx.Text("_", -50, -50)
-		}
+	if lastCharH == 0 || lastCharW == 0 {
+		lastCharW, lastCharH = ctx.GetStringDimension("_")
 	}
 
 	// lastCharH > 0 means we have done
 	// a render.
-	if int(lastCharH) > 0 && int(h) != 0 {
+	if lastCharH > 0 && h != 0 {
 		// render an extra three lines just
 		// so we dont cut anything off if its
 		// not evenly divisible
-		visibleLines = (int(h-b.ey) / int(lastCharH)) + 3
+		visibleLines = (h - b.ey/lastCharH) + 3
 	}
 
 	// calculate how many chars we can fit
 	// on the screen.
-	if int(lastCharW) > 0 && int(w) != 0 {
-		visibleChars = (int(w-b.ex) / int(lastCharW)) - 3
+	if lastCharW > 0 && w != 0 {
+		visibleChars = (w - b.ex/lastCharW) - 3
 	}
 
 	start := b.cam.y
@@ -1390,7 +1382,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 		b.curs.SetSize(cursorWidth, cursorHeight)
 	}
 
-	// render the ol' cursor
+	// render the cursor
 	if b.HasFocus() && (renderFlashingCursor || b.curs.moving) && b.cfg.Cursor.Draw {
 		b.curs.Render(ctx, rx, ry)
 	}
@@ -1469,7 +1461,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			lastCharW, lastCharH = ctx.Text(string(char), xPos, yPos)
 
 			if cfg.DebugMode {
-				ctx.SetColor(strife.HexRGB(0xff00ff))
+				ctx.SetColor(strife.HexRGB(cfg.DebugModeRenderColour))
 				ctx.Rect(xPos, yPos, lastCharW, lastCharH, strife.Line)
 			}
 		}
@@ -1490,7 +1482,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 			ctx.Rect(rx, yPos, gutterWidth, h, strife.Fill)
 
 			if cfg.DebugMode {
-				ctx.SetColor(strife.HexRGB(0xff00ff))
+				ctx.SetColor(strife.HexRGB(cfg.DebugModeRenderColour))
 				ctx.Rect(rx, yPos, gutterWidth, h, strife.Line)
 			}
 
@@ -1514,7 +1506,7 @@ func (b *Buffer) renderAt(ctx *strife.Renderer, rx int, ry int) {
 	}
 
 	if cfg.DebugMode {
-		ctx.SetColor(strife.HexRGB(0xff00ff))
+		ctx.SetColor(strife.HexRGB(cfg.DebugModeRenderColour))
 		ctx.Rect(b.ex+rx, b.ey+ry, w-b.ex, h-b.ey, strife.Line)
 	}
 }
