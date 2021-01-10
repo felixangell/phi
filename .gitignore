@@ -1,12 +1,7 @@
 
 tests/
-phi-editor
-phi
-phi.exe
-main
-main.exe
-fmt.sh
 .idea/
+main
 vendor/
 .DS_Store
 
