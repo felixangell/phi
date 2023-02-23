@@ -10,6 +10,5 @@ require (
 	github.com/lithammer/fuzzysearch v1.1.1
 	github.com/stretchr/testify v1.6.1
 	github.com/veandco/go-sdl2 v0.4.5
-	golang.org/x/sys v0.0.0-20210110051926-789bb1bd4061 // indirect
-	golang.org/x/text v0.3.5 // indirect
+	golang.org/x/text v0.3.8 // indirect
 )
